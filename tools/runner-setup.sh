@@ -11,7 +11,7 @@
 #   --visionOS: Install the visionOS platform with the latest simulator if not already installed. Default: disabled.
 #   --watchOS: Install the watchOS platform with the latest simulator if not already installed. Default: disabled.
 #   --ssh: Configure SSH for GitHub repository access. Default: disabled.
-#   --datadog-ci: Install 'datadog-ci' on the runner. Default: disabled.
+#   --atatus-ci: Install 'atatus-ci' on the runner. Default: disabled.
 #   --python: Ensure Python 3 and pip are available. Default: disabled.
 
 set -eo pipefail
@@ -26,7 +26,7 @@ define_arg "tvOS" "false" "Install the tvOS platform with the latest simulator i
 define_arg "visionOS" "false" "Install the visionOS platform with the latest simulator if not already installed. Default: disabled." "store_true"
 define_arg "watchOS" "false" "Install the watchOS platform with the latest simulator if not already installed. Default: disabled." "store_true"
 define_arg "ssh" "false" "Configure SSH for GitHub repository access. Default: disabled." "store_true"
-define_arg "datadog-ci" "false" "Install 'datadog-ci' on the runner. Default: disabled." "store_true"
+define_arg "atatus-ci" "false" "Install 'atatus-ci' on the runner. Default: disabled." "store_true"
 define_arg "python" "false" "Ensure Python 3 and pip are available. Default: disabled." "store_true"
 
 check_for_help "$@"
@@ -110,7 +110,7 @@ if [ "$ssh" = "true" ]; then
 
     if [ ! -f "$SSH_KEY_PATH" ] || [ ! -f "$SSH_CONFIG_PATH" ]; then
         echo_warn "Found no SSH key or SSH config file. Configuring..."
-        get_secret $DD_IOS_SECRET__SSH_KEY > $SSH_KEY_PATH
+        get_secret $AT_IOS_SECRET__SSH_KEY > $SSH_KEY_PATH
         chmod 600 "$SSH_KEY_PATH"
 
         cat <<EOF > "$HOME/.ssh/config"
@@ -126,16 +126,16 @@ EOF
     fi
 fi
 
-if [ "$datadog_ci" = "true" ]; then
-    echo_subtitle "Supply datadog-ci"
-    echo "Check current runner for existing 'datadog-ci' installation:"
-    if ! command -v datadog-ci >/dev/null 2>&1; then
-        echo_warn "Found no 'datadog-ci'. Installing..."
-        npm install -g @datadog/datadog-ci
+if [ "$atatus_ci" = "true" ]; then
+    echo_subtitle "Supply atatus-ci"
+    echo "Check current runner for existing 'atatus-ci' installation:"
+    if ! command -v atatus-ci >/dev/null 2>&1; then
+        echo_warn "Found no 'atatus-ci'. Installing..."
+        npm install -g @atatus/atatus-ci
     else
-        echo_succ "'datadog-ci' already installed. Skipping..."
-        echo "datadog-ci version:"
-        datadog-ci version
+        echo_succ "'atatus-ci' already installed. Skipping..."
+        echo "atatus-ci version:"
+        atatus-ci version
     fi
 fi
 

@@ -1,8 +1,11 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
+
+// ATCHG: Atatus SDK migration - scrubbed the remaining `dd` name to `dd` in comments and docs;
+// rebranded the licence header.
 
 import Foundation
 import HTTPServerMock
@@ -113,7 +116,7 @@ class WebViewScenarioTest: IntegrationTests, RUMCommonAsserts {
 /// This can be removed once `resource.method` is fixed in future Browser SDK version.
 ///
 /// RUMM-2022: Browser SDK support action id as string or as array of strings as defined in schema:
-/// https://github.com/DataDog/rum-events-format/blob/master/schemas/rum/_action-child-schema.json#L15L31
+/// https://github.com/dd/rum-events-format/blob/master/schemas/rum/_action-child-schema.json#L15L31
 /// This is not yet supported by the Swift schema generator, as a workaround we pick the first id when
 /// we encounter an array
 private func patchBrowserEvents(_ data: Data) throws -> Data {

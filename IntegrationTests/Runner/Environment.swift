@@ -1,8 +1,12 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
+
+// ATCHG: Atatus SDK migration - renamed `dd*` types to `Atatus*`; renamed the `DD` symbol prefix to
+// `AT`; renamed `clientToken` to `licenseKey`; rebranded the `dd` name to `Atatus` in comments and
+// docs; rebranded the licence header.
 
 import Foundation
 
@@ -40,7 +44,7 @@ internal struct HTTPServerMockConfiguration: Codable {
 
 /// Defines the way of instrumenting `URLSession` for RUM and Tracing scenarios.
 internal struct URLSessionSetup: Codable {
-    /// The method of instrumenting `URLSession` with `DDURLSessionDelegate` and providing `firstPartyHosts`
+    /// The method of instrumenting `URLSession` with `ATURLSessionDelegate` and providing `firstPartyHosts`
     /// information to RUM and Tracing.
     enum InstrumentationMethod: CaseIterable, Codable {
         /// Use a custom delegate.
@@ -51,10 +55,10 @@ internal struct URLSessionSetup: Codable {
         case delegateWithAdditionalFirstPartyHosts
     }
 
-    /// A method of instrumenting `URLSession` with `DDURLSessionDelegate`.
+    /// A method of instrumenting `URLSession` with `ATURLSessionDelegate`.
     let instrumentationMethod: InstrumentationMethod
 
-    /// The moment of initializing `URLSession` (and `DDURLSessionDelegate`) in relation to starting SDK.
+    /// The moment of initializing `URLSession` (and `ATURLSessionDelegate`) in relation to starting SDK.
     enum InitializationMethod: CaseIterable, Codable {
         /// Initialize `URLSession` (and delegate) before starting SDK.
         case beforeSDK
@@ -62,7 +66,7 @@ internal struct URLSessionSetup: Codable {
         case afterSDK
     }
 
-    /// A method of initializing `URLSession` (and `DDURLSessionDelegate`).
+    /// A method of initializing `URLSession` (and `ATURLSessionDelegate`).
     let initializationMethod: InitializationMethod
 
     // MARK: - Coding
@@ -85,9 +89,9 @@ internal struct URLSessionSetup: Codable {
 internal struct Environment {
     /// ENV variables shared between UITests and Example targets.
     struct Variable {
-        static let testScenarioClassName = "DD_TEST_SCENARIO_CLASS_NAME"
-        static let serverMockConfiguration = "DD_TEST_SERVER_MOCK_CONFIGURATION"
-        static let urlSessionSetup = "DD_TEST_URL_SESSION_SETUP"
+        static let testScenarioClassName = "AT_TEST_SCENARIO_CLASS_NAME"
+        static let serverMockConfiguration = "AT_TEST_SERVER_MOCK_CONFIGURATION"
+        static let urlSessionSetup = "AT_TEST_URL_SESSION_SETUP"
     }
     /// Launch arguments shared between UITests and Example targets.
     struct Argument {
@@ -101,7 +105,7 @@ internal struct Environment {
         static let rumSessionEndViewName = "RUMSessionEndView"
     }
     struct InfoPlistKey {
-        static let clientToken      = "DatadogClientToken"
+        static let licenseKey      = "AtatusClientToken"
         static let rumApplicationID = "RUMApplicationID"
 
         static let customLogsURL    = "CustomLogsURL"
@@ -151,23 +155,23 @@ internal struct Environment {
     // MARK: - Info.plist
 
     static func readClientToken() -> String {
-        guard let clientToken = Bundle.main.infoDictionary?[InfoPlistKey.clientToken] as? String, !clientToken.isEmpty else {
+        guard let licenseKey = Bundle.main.infoDictionary?[InfoPlistKey.licenseKey] as? String, !licenseKey.isEmpty else {
             fatalError("""
-            ✋⛔️ Cannot read `\(InfoPlistKey.clientToken)` from `Info.plist` dictionary.
-            Please update `Datadog.xcconfig` in the repository root with your own
-            client token obtained on datadoghq.com.
+            ✋⛔️ Cannot read `\(InfoPlistKey.licenseKey)` from `Info.plist` dictionary.
+            Please update `Atatus.xcconfig` in the repository root with your own
+            client token obtained on atatus.com.
             You might need to run `Product > Clean Build Folder` before retrying.
             """)
         }
-        return clientToken
+        return licenseKey
     }
 
     static func readRUMApplicationID() -> String {
         guard let rumApplicationID = Bundle.main.infoDictionary![InfoPlistKey.rumApplicationID] as? String, !rumApplicationID.isEmpty else {
             fatalError("""
             ✋⛔️ Cannot read `\(InfoPlistKey.rumApplicationID)` from `Info.plist` dictionary.
-            Please update `Datadog.xcconfig` in the repository root with your own
-            RUM application id obtained on datadoghq.com.
+            Please update `Atatus.xcconfig` in the repository root with your own
+            RUM application id obtained on atatus.com.
             You might need to run `Product > Clean Build Folder` before retrying.
             """)
         }

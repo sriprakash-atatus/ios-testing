@@ -1,19 +1,22 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
+
+// ATCHG: Atatus SDK migration - renamed `dd*` types to `Atatus*`; renamed the `DD` symbol prefix to
+// `AT`; rebranded the licence header.
 
 import Foundation
 
 /// Establishes a communications channel from UITests runner to the app under tests (allows sending messages
-/// from `DatadogIntegrationTests` to `Example` app).
+/// from `AtatusIntegrationTests` to `Example` app).
 ///
 /// Ref.: https://developer.apple.com/documentation/corefoundation/cfmessageport-rs2
 ///
-/// Note: this class is used by two targets: `DatadogIntegrationTests` (sender) and `Example` (receiver).
+/// Note: this class is used by two targets: `AtatusIntegrationTests` (sender) and `Example` (receiver).
 internal class MessagePortChannel {
-    private static let portName = "DDExampleAppPort" as CFString
+    private static let portName = "ATExampleAppPort" as CFString
 
     enum Message: Int32 {
         case endRUMSession = 0x1111

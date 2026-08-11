@@ -1,8 +1,10 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
+
+// ATCHG: Atatus SDK migration - renamed `dd*` types to `Atatus*`; rebranded the licence header.
 
 import Foundation
 import XCTest
@@ -107,7 +109,7 @@ extension XCTestCase {
     /// `completionHandler` runs as part of `session.dataTask`'s completion handler. This is useful to finish
     /// active (or parent) spans in a more realistic way. Here's a description of problem this solves.
     ///
-    /// By the end of a request interception, the `DatadogURLSessionHandler.interceptionDidComplete(interception:)`
+    /// By the end of a request interception, the `AtatusURLSessionHandler.interceptionDidComplete(interception:)`
     /// method is called. In situations where a span should be created to trace this request, that span is created inside this
     /// method. This span can be a child of a currently active span, or a root span if no active span is present.
     ///

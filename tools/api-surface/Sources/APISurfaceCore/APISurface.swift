@@ -1,8 +1,11 @@
 /*
 * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
-* This product includes software developed at Datadog (https://www.datadoghq.com/).
-* Copyright 2019-Present Datadog, Inc.
+* This product includes software developed at Atatus (https://www.atatus.com/).
+* Copyright 2026-Present Atatus, Inc.
 */
+
+// ATCHG: Atatus SDK migration - renamed `dd*` types to `Atatus*`; renamed `com.ddhq.*`
+// identifiers to `com.atatus.*`; rebranded the licence header.
 
 import Foundation
 import SourceKittenFramework
@@ -14,7 +17,7 @@ public struct APISurfaceError: Error, CustomStringConvertible {
 /// Builds a module interface for an SPM library.
 ///
 /// Building is split from parsing so that all modules can be compiled serially into a single, shared derived data
-/// path (so common dependencies such as `DatadogInternal` compile only once and each leaf module compiles once),
+/// path (so common dependencies such as `AtatusInternal` compile only once and each leaf module compiles once),
 /// keeping the expensive SourceKit parsing as a separate, clearly-bounded step.
 public struct APISurface {
     /// The name of the SPM library this surface was generated for.
@@ -106,7 +109,7 @@ internal final class PatchedPackageWorkspace {
 
         func tempURL() throws -> URL {
             let osTemporaryDirectoryURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-            let testDirectoryName = "com.datadoghq.api-surface-\(UUID().uuidString)"
+            let testDirectoryName = "com.atatus.api-surface-\(UUID().uuidString)"
             let url = osTemporaryDirectoryURL.appending(component: testDirectoryName, directoryHint: .isDirectory)
             try fm.createDirectory(at: url, withIntermediateDirectories: true)
             return url

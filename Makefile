@@ -12,7 +12,7 @@ all: env-check repo-setup dependencies templates
 		models-generate rum-models-generate sr-models-generate models-verify rum-models-verify sr-models-verify \
 		api-surface spi-docs-build \
 		profiling-protoc \
-		dogfood-shopist dogfood-datadog-app \
+		dogfood-shopist dogfood-atatus-app \
 		release-build release-validate release-publish-github \
 		release-publish-podspec release-publish-internal-podspecs release-publish-dependent-podspecs \
 		set-ci-secret
@@ -114,17 +114,17 @@ test-ios:
 
 # Run unit tests for all iOS schemes
 test-ios-all:
-	@$(MAKE) test-ios SCHEME="DatadogCore"
-	@$(MAKE) test-ios SCHEME="DatadogInternal"
-	@$(MAKE) test-ios SCHEME="DatadogRUM"
-	@$(MAKE) test-ios SCHEME="DatadogSessionReplay"
-	@$(MAKE) test-ios SCHEME="DatadogLogs"
-	@$(MAKE) test-ios SCHEME="DatadogTrace"
-	@$(MAKE) test-ios SCHEME="DatadogCrashReporting"
-	@$(MAKE) test-ios SCHEME="DatadogWebViewTracking"
-	@$(MAKE) test-ios SCHEME="DatadogFlags"
-	@$(MAKE) test-ios SCHEME="DatadogProfiling"
-	@$(MAKE) test-ios SCHEME="DatadogIntegrationTests"
+	@$(MAKE) test-ios SCHEME="AtatusCore"
+	@$(MAKE) test-ios SCHEME="AtatusInternal"
+	@$(MAKE) test-ios SCHEME="AtatusRUM"
+	@$(MAKE) test-ios SCHEME="AtatusSessionReplay"
+	@$(MAKE) test-ios SCHEME="AtatusLogs"
+	@$(MAKE) test-ios SCHEME="AtatusTrace"
+	@$(MAKE) test-ios SCHEME="AtatusCrashReporting"
+	@$(MAKE) test-ios SCHEME="AtatusWebViewTracking"
+	@$(MAKE) test-ios SCHEME="AtatusFlags"
+	@$(MAKE) test-ios SCHEME="AtatusProfiling"
+	@$(MAKE) test-ios SCHEME="AtatusIntegrationTests"
 
 # Run unit tests for specified SCHEME using tvOS Simulator
 test-tvos:
@@ -136,15 +136,15 @@ test-tvos:
 
 # Run unit tests for all tvOS schemes
 test-tvos-all:
-	@$(MAKE) test-tvos SCHEME="DatadogCore"
-	@$(MAKE) test-tvos SCHEME="DatadogInternal"
-	@$(MAKE) test-tvos SCHEME="DatadogRUM"
-	@$(MAKE) test-tvos SCHEME="DatadogLogs"
-	@$(MAKE) test-tvos SCHEME="DatadogTrace"
-	@$(MAKE) test-tvos SCHEME="DatadogCrashReporting"
-	@$(MAKE) test-tvos SCHEME="DatadogFlags"
-	@$(MAKE) test-tvos SCHEME="DatadogProfiling"
-	@$(MAKE) test-tvos SCHEME="DatadogIntegrationTests"
+	@$(MAKE) test-tvos SCHEME="AtatusCore"
+	@$(MAKE) test-tvos SCHEME="AtatusInternal"
+	@$(MAKE) test-tvos SCHEME="AtatusRUM"
+	@$(MAKE) test-tvos SCHEME="AtatusLogs"
+	@$(MAKE) test-tvos SCHEME="AtatusTrace"
+	@$(MAKE) test-tvos SCHEME="AtatusCrashReporting"
+	@$(MAKE) test-tvos SCHEME="AtatusFlags"
+	@$(MAKE) test-tvos SCHEME="AtatusProfiling"
+	@$(MAKE) test-tvos SCHEME="AtatusIntegrationTests"
 
 # Run unit tests for specified SCHEME using watchOS Simulator
 test-watchos:
@@ -156,14 +156,14 @@ test-watchos:
 
 # Run unit tests for all watchOS schemes
 test-watchos-all:
-	@$(MAKE) test-watchos SCHEME="DatadogCore"
-	@$(MAKE) test-watchos SCHEME="DatadogInternal"
-	@$(MAKE) test-watchos SCHEME="DatadogRUM"
-	@$(MAKE) test-watchos SCHEME="DatadogLogs"
-	@$(MAKE) test-watchos SCHEME="DatadogTrace"
-	@$(MAKE) test-watchos SCHEME="DatadogCrashReporting"
-	@$(MAKE) test-watchos SCHEME="DatadogFlags"
-	@$(MAKE) test-watchos SCHEME="DatadogIntegrationTests"
+	@$(MAKE) test-watchos SCHEME="AtatusCore"
+	@$(MAKE) test-watchos SCHEME="AtatusInternal"
+	@$(MAKE) test-watchos SCHEME="AtatusRUM"
+	@$(MAKE) test-watchos SCHEME="AtatusLogs"
+	@$(MAKE) test-watchos SCHEME="AtatusTrace"
+	@$(MAKE) test-watchos SCHEME="AtatusCrashReporting"
+	@$(MAKE) test-watchos SCHEME="AtatusFlags"
+	@$(MAKE) test-watchos SCHEME="AtatusIntegrationTests"
 
 # Run unit tests for specified SCHEME using visionOS Simulator
 test-visionos:
@@ -175,16 +175,16 @@ test-visionos:
 
 # Run unit tests for all visionOS schemes
 test-visionos-all:
-	@$(MAKE) test-visionos SCHEME="DatadogCore"
-	@$(MAKE) test-visionos SCHEME="DatadogInternal"
-	@$(MAKE) test-visionos SCHEME="DatadogRUM"
-	@$(MAKE) test-visionos SCHEME="DatadogLogs"
-	@$(MAKE) test-visionos SCHEME="DatadogTrace"
-	@$(MAKE) test-visionos SCHEME="DatadogCrashReporting"
-	@$(MAKE) test-visionos SCHEME="DatadogWebViewTracking"
-	@$(MAKE) test-visionos SCHEME="DatadogFlags"
-	@$(MAKE) test-visionos SCHEME="DatadogProfiling"
-	@$(MAKE) test-visionos SCHEME="DatadogIntegrationTests"
+	@$(MAKE) test-visionos SCHEME="AtatusCore"
+	@$(MAKE) test-visionos SCHEME="AtatusInternal"
+	@$(MAKE) test-visionos SCHEME="AtatusRUM"
+	@$(MAKE) test-visionos SCHEME="AtatusLogs"
+	@$(MAKE) test-visionos SCHEME="AtatusTrace"
+	@$(MAKE) test-visionos SCHEME="AtatusCrashReporting"
+	@$(MAKE) test-visionos SCHEME="AtatusWebViewTracking"
+	@$(MAKE) test-visionos SCHEME="AtatusFlags"
+	@$(MAKE) test-visionos SCHEME="AtatusProfiling"
+	@$(MAKE) test-visionos SCHEME="AtatusIntegrationTests"
 
 # Run UI tests for specified TEST_PLAN
 ui-test:
@@ -262,30 +262,30 @@ spm-build:
 
 # Builds SPM package for iOS
 spm-build-ios:
-	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="generic/platform=ios"
+	@$(MAKE) spm-build SCHEME="Atatus-Package" DESTINATION="generic/platform=ios"
 
 # Builds SPM package for tvOS
 spm-build-tvos:
-	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="generic/platform=tvOS"
+	@$(MAKE) spm-build SCHEME="Atatus-Package" DESTINATION="generic/platform=tvOS"
 
 # Builds SPM package for visionOS
 spm-build-visionos:
-	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="generic/platform=visionOS"
+	@$(MAKE) spm-build SCHEME="Atatus-Package" DESTINATION="generic/platform=visionOS"
 
 # Builds SPM package for watchOS
 spm-build-watchos:
 	# Build only compatible schemes for watchOS:
-	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="generic/platform=watchOS"
+	@$(MAKE) spm-build SCHEME="Atatus-Package" DESTINATION="generic/platform=watchOS"
 
 # Builds SPM package for macOS (and Mac Catalyst)
 spm-build-macos:
 	# Whole package for Mac Catalyst:
-	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="platform=macOS,variant=Mac Catalyst"
+	@$(MAKE) spm-build SCHEME="Atatus-Package" DESTINATION="platform=macOS,variant=Mac Catalyst"
 	# Only compatible schemes for macOS:
-	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogCore"
-	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogLogs"
-	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogTrace"
-	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogCrashReporting"
+	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="AtatusCore"
+	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="AtatusLogs"
+	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="AtatusTrace"
+	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="AtatusCrashReporting"
 
 # Builds a new version of the E2E app and publishes it to synthetics.
 e2e-upload:
@@ -312,21 +312,21 @@ benchmark-tests-open:
 	@$(MAKE) -C BenchmarkTests open
 
 xcodeproj-session-replay:
-		@echo "⚙️  Generating 'DatadogSessionReplay.xcodeproj'..."
-		@cd DatadogSessionReplay/ && swift package generate-xcodeproj
+		@echo "⚙️  Generating 'AtatusSessionReplay.xcodeproj'..."
+		@cd AtatusSessionReplay/ && swift package generate-xcodeproj
 		@echo "OK 👌"
 
 templates:
 	@$(ECHO_TITLE) "make templates"
 	./tools/xcode-templates/install-xcode-templates.sh
 
-# Generate data models from https://github.com/DataDog/rum-events-format
+# Generate data models from https://github.com/dd/rum-events-format
 models-generate:
 	@$(call require_param,PRODUCT) # 'rum' or 'sr'
 	@$(call require_param,GIT_REF)
 	@$(ECHO_TITLE) "make models-generate PRODUCT='$(PRODUCT)' GIT_REF='$(GIT_REF)'"
 	./tools/rum-models-generator/run.py generate $(PRODUCT) --git_ref=$(GIT_REF) --skip_objc $(SKIP_OBJC_TYPES)
-# Validate data models against https://github.com/DataDog/rum-events-format
+# Validate data models against https://github.com/dd/rum-events-format
 models-verify:
 	@$(call require_param,PRODUCT) # 'rum' or 'sr'
 	@$(ECHO_TITLE) "make models-verify PRODUCT='$(PRODUCT)'"
@@ -353,7 +353,7 @@ sr-models-verify:
 # Generate profiling protobuf-c files from pprof proto
 protoc-pprof:
 	@$(ECHO_TITLE) "protoc-pprof"
-	./tools/protoc-pprof.sh --proto-path DatadogProfiling/Protos/profile.proto --output-dir DatadogProfiling/Mach
+	./tools/protoc-pprof.sh --proto-path AtatusProfiling/Protos/profile.proto --output-dir AtatusProfiling/Mach
 
 # Pushes current SR snapshots to snapshots repo
 sr-snapshots-push:
@@ -410,10 +410,10 @@ ifeq ($(ENV),ci)
   OBJC_OUTPUT_PATH := api-surface-objc-generated
 endif
 
-# Define the list of Datadog modules for API surface generation
-DATADOG_MODULES := DatadogCore DatadogLogs DatadogTrace DatadogRUM DatadogCrashReporting DatadogWebViewTracking DatadogSessionReplay DatadogFlags DatadogProfiling
+# Define the list of Atatus modules for API surface generation
+ATATUS_MODULES := AtatusCore AtatusLogs AtatusTrace AtatusRUM AtatusCrashReporting AtatusWebViewTracking AtatusSessionReplay AtatusFlags AtatusProfiling
 
-# Generate api-surface files for Datadog APIs.
+# Generate api-surface files for Atatus APIs.
 # Builds and parses each module once, emitting both the Swift and ObjC surfaces in a single run.
 api-surface:
 	@$(ECHO_TITLE) "make api-surface"
@@ -421,18 +421,18 @@ api-surface:
 	@cd tools/api-surface && \
 		swift run api-surface generate \
 		--path ../../ \
-		$(foreach module,$(DATADOG_MODULES),--library-name $(module)) \
+		$(foreach module,$(ATATUS_MODULES),--library-name $(module)) \
 		--language swift --output-file ../../$(SWIFT_OUTPUT_PATH) \
 		--language objc --output-file ../../$(OBJC_OUTPUT_PATH)
 
-# Verify API surface files for Datadog APIs (Swift + ObjC) in a single run.
+# Verify API surface files for Atatus APIs (Swift + ObjC) in a single run.
 api-surface-verify:
 	@$(ECHO_TITLE) "make api-surface-verify"
 	@echo "Verifying api-surface (swift + objc)"
 	@cd tools/api-surface && \
 		swift run api-surface verify \
 		--path ../../ \
-		$(foreach module,$(DATADOG_MODULES),--library-name $(module)) \
+		$(foreach module,$(ATATUS_MODULES),--library-name $(module)) \
 		--language swift --output-file /tmp/api-surface-swift-generated --reference-file ../../api-surface-swift \
 		--language objc --output-file /tmp/api-surface-objc-generated --reference-file ../../api-surface-objc
 
@@ -452,11 +452,11 @@ dogfood-shopist:
 	@$(ECHO_TITLE) "make dogfood-shopist DRY_RUN='$(DRY_RUN)'"
 	DRY_RUN=$(DRY_RUN) ./tools/dogfooding/dogfood.sh --shopist
 
-# Creates dogfooding PR in datadog-ios
-dogfood-datadog-app:
+# Creates dogfooding PR in atatus-ios
+dogfood-atatus-app:
 	@:$(eval DRY_RUN ?= 1)
-	@$(ECHO_TITLE) "make dogfood-datadog-app DRY_RUN='$(DRY_RUN)'"
-	DRY_RUN=$(DRY_RUN) ./tools/dogfooding/dogfood.sh --datadog-app
+	@$(ECHO_TITLE) "make dogfood-atatus-app DRY_RUN='$(DRY_RUN)'"
+	DRY_RUN=$(DRY_RUN) ./tools/dogfooding/dogfood.sh --atatus-app
 
 # Builds release artifacts for given tag
 release-build:
@@ -494,21 +494,21 @@ release-publish-podspec:
 		 --artifacts-path "$(ARTIFACTS_PATH)" \
 		 --podspec-name "$(PODSPEC_NAME)"
 
-# Publish DatadogInternal podspec
+# Publish AtatusInternal podspec
 release-publish-internal-podspecs:
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogInternal.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="AtatusInternal.podspec"
 
-# Publish podspecs that depend on DatadogInternal
+# Publish podspecs that depend on AtatusInternal
 release-publish-dependent-podspecs:
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogCore.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogLogs.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogTrace.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogRUM.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSessionReplay.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogCrashReporting.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogWebViewTracking.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogFlags.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogProfiling.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="AtatusCore.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="AtatusLogs.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="AtatusTrace.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="AtatusRUM.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="AtatusSessionReplay.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="AtatusCrashReporting.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="AtatusWebViewTracking.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="AtatusFlags.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="AtatusProfiling.podspec"
 
 # Set ot update CI secrets
 set-ci-secret:
@@ -517,7 +517,7 @@ set-ci-secret:
 
 bump:
 	@read -p "Enter version number: " version;  \
-	echo "// GENERATED FILE: Do not edit directly\n\ninternal let __sdkVersion = \"$$version\"" > DatadogCore/Sources/Versioning.swift; \
+	echo "// GENERATED FILE: Do not edit directly\n\ninternal let __sdkVersion = \"$$version\"" > AtatusCore/Sources/Versioning.swift; \
 	./tools/podspec_bump_version.sh $$version; \
 	git add . ; \
 	git commit -m "Bumped version to $$version"; \

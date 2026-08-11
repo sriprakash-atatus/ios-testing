@@ -1,12 +1,12 @@
 # ----------------------------------
-# API surface for DatadogCore:
+# API surface for AtatusCore:
 # ----------------------------------
 
 public final class objc_TrackingConsent: NSObject
     public static func granted() -> objc_TrackingConsent
     public static func notGranted() -> objc_TrackingConsent
     public static func pending() -> objc_TrackingConsent
-public final class objc_Datadog: NSObject
+public final class objc_Atatus: NSObject
     public static func initialize(configuration: objc_Configuration,trackingConsent: objc_TrackingConsent)
     public static func initialize(configuration: objc_Configuration,trackingConsent: objc_TrackingConsent,instanceName: String)
     public static func setVerbosityLevel(_ verbosityLevel: objc_CoreLoggerLevel)
@@ -31,16 +31,16 @@ public final class objc_Datadog: NSObject
     public static func stopInstance(instanceName: String?)
     public static func clearAllData()
     public static func clearAllData(instanceName: String?)
-public final class objc_DatadogSite: NSObject
-    public static func us1() -> objc_DatadogSite
-    public static func us3() -> objc_DatadogSite
-    public static func us5() -> objc_DatadogSite
-    public static func eu1() -> objc_DatadogSite
-    public static func ap1() -> objc_DatadogSite
-    public static func ap2() -> objc_DatadogSite
-    public static func uk1() -> objc_DatadogSite
-    public static func us1_fed() -> objc_DatadogSite
-    public static func us2_fed() -> objc_DatadogSite
+public final class objc_AtatusSite: NSObject
+    public static func us1() -> objc_AtatusSite
+    public static func us3() -> objc_AtatusSite
+    public static func us5() -> objc_AtatusSite
+    public static func eu1() -> objc_AtatusSite
+    public static func ap1() -> objc_AtatusSite
+    public static func ap2() -> objc_AtatusSite
+    public static func uk1() -> objc_AtatusSite
+    public static func us1_fed() -> objc_AtatusSite
+    public static func us2_fed() -> objc_AtatusSite
 public enum objc_BatchSize: Int
     case small
     case medium
@@ -61,7 +61,7 @@ public protocol objc_ServerDateProvider: AnyObject
 public final class objc_Configuration: NSObject
     public var clientToken: String
     public var env: String
-    public var site: objc_DatadogSite
+    public var site: objc_AtatusSite
     public var service: String?
     public var version: String?
     public var batchSize: objc_BatchSize
@@ -90,7 +90,7 @@ public final class objc_URLSessionInstrumentation: NSObject
     public static func disable(delegateClass: URLSessionDataDelegate.Type, instanceName: String?)
 
 # ----------------------------------
-# API surface for DatadogLogs:
+# API surface for AtatusLogs:
 # ----------------------------------
 
 public enum objc_LogLevel: Int
@@ -286,7 +286,7 @@ public enum objc_LogEventRadioAccessTechnology: Int
     case unknown
 
 # ----------------------------------
-# API surface for DatadogTrace:
+# API surface for AtatusTrace:
 # ----------------------------------
 
 public protocol objc_OTSpan
@@ -369,7 +369,7 @@ public final class objc_Tracer: NSObject, objc_OTTracer
     public func extractWithFormat(_ format: String, carrier: Any) throws
 
 # ----------------------------------
-# API surface for DatadogRUM:
+# API surface for AtatusRUM:
 # ----------------------------------
 
 public class objc_RUMActionEvent: NSObject
@@ -3660,7 +3660,7 @@ public class objc_TelemetryConfigurationEventTelemetryConfigurationPlugins: NSOb
     public var pluginsInfo: [String: Any]
 public enum objc_TelemetryConfigurationEventTelemetryConfigurationSelectedTracingPropagators: Int
     case none
-    case datadog
+    case atatus
     case b3
     case b3multi
     case tracecontext
@@ -4018,13 +4018,13 @@ public class objc_RUMMonitor: NSObject
     public func _internal_sync_addError(_ error: Error,source: objc_RUMErrorSource,attributes: [String: Any])
 
 # ----------------------------------
-# API surface for DatadogCrashReporting:
+# API surface for AtatusCrashReporting:
 # ----------------------------------
 
 
 
 # ----------------------------------
-# API surface for DatadogWebViewTracking:
+# API surface for AtatusWebViewTracking:
 # ----------------------------------
 
 public final class objc_WebViewTracking: NSObject
@@ -4033,7 +4033,7 @@ public final class objc_WebViewTracking: NSObject
     public static func disable(webView: WKWebView)
 
 # ----------------------------------
-# API surface for DatadogSessionReplay:
+# API surface for AtatusSessionReplay:
 # ----------------------------------
 
 public final class objc_SessionReplay: NSObject
@@ -4088,13 +4088,13 @@ public final class objc_SessionReplayPrivacyOverrides: NSObject
     @objc public var hide: NSNumber?
 
 # ----------------------------------
-# API surface for DatadogFlags:
+# API surface for AtatusFlags:
 # ----------------------------------
 
 
 
 # ----------------------------------
-# API surface for DatadogProfiling:
+# API surface for AtatusProfiling:
 # ----------------------------------
 
 

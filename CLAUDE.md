@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is the Datadog SDK for iOS and tvOS — a modular Swift/Objective-C library for observability (Logs, Traces, RUM, Session Replay, Crash Reporting, WebView Tracking, and Feature Flags).
+This is the Atatus SDK for iOS and tvOS — a modular Swift/Objective-C library for observability (Logs, Traces, RUM, Session Replay, Crash Reporting, WebView Tracking, and Feature Flags).
 
 **Start with `AGENTS.md`** — it is the entry point to all SDK documentation. Follow its pointers to `docs/` for deeper context on architecture, conventions, testing, and development recipes.
 
@@ -14,12 +14,12 @@ Use these skills (via `/skill-name`) for common workflows:
 
 | Skill | When to use |
 |---|---|
-| `dd-sdk-ios:git-branch` | Creating a new branch for a JIRA ticket or feature |
-| `dd-sdk-ios:git-commit` | Committing changes (signed commits, message format) |
-| `dd-sdk-ios:open-pr` | Opening a pull request against `develop` |
-| `dd-sdk-ios:running-tests` | Running unit, module, or integration tests |
-| `dd-sdk-ios:xcode-file-management` | Adding, removing, moving, or renaming Swift source files |
-| `dd-sdk-ios:update-feature-docs` | Review and update all `*_FEATURE.md` docs after public API changes |
+| `atatus-sdk-ios:git-branch` | Creating a new branch for a JIRA ticket or feature |
+| `atatus-sdk-ios:git-commit` | Committing changes (signed commits, message format) |
+| `atatus-sdk-ios:open-pr` | Opening a pull request against `develop` |
+| `atatus-sdk-ios:running-tests` | Running unit, module, or integration tests |
+| `atatus-sdk-ios:xcode-file-management` | Adding, removing, moving, or renaming Swift source files |
+| `atatus-sdk-ios:update-feature-docs` | Review and update all `*_FEATURE.md` docs after public API changes |
 
 ## CI Environment
 

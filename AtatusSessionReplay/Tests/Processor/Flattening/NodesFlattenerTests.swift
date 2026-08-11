@@ -1,0 +1,134 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
+ */
+
+// ATCHG: Atatus SDK migration - renamed module imports `ddSessionReplay` -> `AtatusSessionReplay`;
+// renamed the `DD` symbol prefix to `AT`; rebranded the licence header.
+
+#if os(iOS)
+import XCTest
+@_spi(Internal)
+import TestUtilities
+@_spi(Internal)
+@testable import AtatusSessionReplay
+
+class NodesFlattenerTests: XCTestCase {
+    /*
+        V
+        |
+        V1
+    */
+    func testFlattenNodes_withNodeThatCoversAnotherNode() {
+        // Given
+        let viewportSize = CGSize.mockRandom(minWidth: 1, minHeight: 1)
+        let frame = CGRect.mockRandom(
+            maxX: viewportSize.width - 1,
+            maxY: viewportSize.height - 1,
+            minWidth: 1,
+            minHeight: 1
+        )
+        let coveringNode = Node.mockWith(
+            viewAttributes: .mock(fixture: .opaque),
+            wireframesBuilder: ShapeWireframesBuilderMock(wireframeRect: frame)
+        )
+        let coveredNode = Node.mockWith(
+            viewAttributes: .mockRandom(),
+            wireframesBuilder: ShapeWireframesBuilderMock(wireframeRect: frame)
+        )
+        let snapshot = ViewTreeSnapshot.mockWith(
+            viewportSize: viewportSize,
+            nodes: [coveredNode, coveringNode]
+        )
+        let flattener = NodesFlattener()
+
+        // When
+        let flattenedNodes = flattener.flattenNodes(in: snapshot)
+
+        // Then
+        ATAssertReflectionEqual(flattenedNodes, [coveringNode])
+    }
+
+    /*
+          R
+        /   \
+      CN1  CN2
+       |    |
+       CN   CN
+    */
+    func testFlattenNodes_withMultipleNodesThatAreCoveredByAnotherNode() {
+        // Given
+        let viewportSize = CGSize.mockRandom(minWidth: 1, minHeight: 1)
+        let frame = CGRect.mockRandom(
+            maxX: viewportSize.width - 1,
+            maxY: viewportSize.height - 1,
+            minWidth: 1,
+            minHeight: 1
+        )
+        let coveringNode = Node.mockWith(
+            viewAttributes: .mock(fixture: .opaque),
+            wireframesBuilder: ShapeWireframesBuilderMock(wireframeRect: frame)
+        )
+        let coveredNode1 = Node.mockWith(
+            viewAttributes: .mockRandom(),
+            wireframesBuilder: ShapeWireframesBuilderMock(wireframeRect: frame)
+        )
+        let coveredNode2 = Node.mockWith(
+            viewAttributes: .mockRandom(),
+            wireframesBuilder: ShapeWireframesBuilderMock(wireframeRect: frame)
+        )
+        let rootNode = Node.mockWith(
+            viewAttributes: .mockRandom(),
+            wireframesBuilder: ShapeWireframesBuilderMock(wireframeRect: frame)
+        )
+        let snapshot = ViewTreeSnapshot.mockWith(
+            viewportSize: viewportSize,
+            nodes: [rootNode, coveredNode1, coveringNode, coveredNode2, coveringNode]
+        )
+        let flattener = NodesFlattener()
+
+        // When
+        let flattenedNodes = flattener.flattenNodes(in: snapshot)
+
+        // Then
+        ATAssertReflectionEqual(flattenedNodes, [coveringNode])
+    }
+
+    func testFlattenNodes_removesNodeWhenItsOutsideOfViewportSize() {
+        // Given
+        let viewportSize = CGSize.mockRandom()
+        let outsideFrame = CGRect(origin: .init(x: viewportSize.width, y: viewportSize.height), size: .mockRandom())
+        let outsideNode = Node.mockWith(
+            viewAttributes: .mock(fixture: .opaque),
+            wireframesBuilder: ShapeWireframesBuilderMock(wireframeRect: outsideFrame)
+        )
+        let snapshot = ViewTreeSnapshot.mockWith(viewportSize: viewportSize, nodes: [outsideNode])
+        let flattener = NodesFlattener()
+
+        // When
+        let flattenedNodes = flattener.flattenNodes(in: snapshot)
+
+        // Then
+        ATAssertReflectionEqual(flattenedNodes, [])
+    }
+
+    func testFlattenNodes_doesntRemovesNodeWhenItIntersectsWithViewportSize() {
+        // Given
+        let viewportSize = CGSize.mockRandom()
+        let intersectingFrame = CGRect(origin: .init(x: viewportSize.width - 1, y: viewportSize.height - 1), size: .mockRandom())
+        let intersectingNode = Node.mockWith(
+            viewAttributes: .mock(fixture: .opaque),
+            wireframesBuilder: ShapeWireframesBuilderMock(wireframeRect: intersectingFrame)
+        )
+        let snapshot = ViewTreeSnapshot.mockWith(viewportSize: viewportSize, nodes: [intersectingNode])
+        let flattener = NodesFlattener()
+
+        // When
+        let flattenedNodes = flattener.flattenNodes(in: snapshot)
+
+        // Then
+        ATAssertReflectionEqual(flattenedNodes, [intersectingNode])
+    }
+}
+#endif

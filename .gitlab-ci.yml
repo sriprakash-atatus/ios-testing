@@ -62,7 +62,7 @@ workflow:
     - if: '$CI_COMMIT_BRANCH' # when on other branch with following changes compared to develop
       changes:
         paths:
-          - "Datadog*/**/*"
+          - "Atatus*/**/*"
           - "IntegrationTests/**/*"
           - "SmokeTests/**/*"
           - "TestUtilities/**/*"
@@ -95,7 +95,7 @@ workflow:
       start_in: 40 minutes
 
 .dd-octo-sts-id-token: &dd-octo-sts-id-token
-  DDOCTOSTS_ID_TOKEN:
+  ATOCTOSTS_ID_TOKEN:
     aud: dd-octo-sts
 
 ENV check:
@@ -104,7 +104,7 @@ ENV check:
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
   script:
-    - ./tools/runner-setup.sh --datadog-ci
+    - ./tools/runner-setup.sh --atatus-ci
     - make env-check
 
 # ┌──────────────┐
@@ -439,7 +439,7 @@ E2E Test (upload to s8s):
       - artifacts
     expire_in: 2 weeks
   script:
-    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --datadog-ci
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --atatus-ci
     - make clean
     - export DRY_RUN=${DRY_RUN:-0} # default to 0 if not specified
     - make e2e-upload ARTIFACTS_PATH="artifacts/e2e"
@@ -458,7 +458,7 @@ Benchmark Test (upload to s8s):
       - artifacts
     expire_in: 2 weeks
   script:
-    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --datadog-ci
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --atatus-ci
     - make clean
     - export DRY_RUN=${DRY_RUN:-0} # default to 0 if not specified
     - make benchmark-upload ARTIFACTS_PATH="artifacts/benchmark"
@@ -480,7 +480,7 @@ Dogfood (Shopist):
     - ./tools/runner-setup.sh --ssh
     - DRY_RUN=0 make dogfood-shopist
 
-Dogfood (Datadog app):
+Dogfood (Atatus app):
   stage: dogfood
   interruptible: false
   rules:
@@ -491,7 +491,7 @@ Dogfood (Datadog app):
     <<: *dd-octo-sts-id-token
   script:
     - ./tools/runner-setup.sh --ssh
-    - DRY_RUN=0 make dogfood-datadog-app
+    - DRY_RUN=0 make dogfood-atatus-app
 
 # ┌──────────────┐
 # │ SDK release: │
@@ -518,7 +518,7 @@ Build Artifacts:
   before_script:
     - *export_MAKE_release_params
   script:
-    - ./tools/runner-setup.sh --datadog-ci --xcode "$DEFAULT_XCODE" --ssh
+    - ./tools/runner-setup.sh --atatus-ci --xcode "$DEFAULT_XCODE" --ssh
     - make env-check
     - make clean
     - make release-build release-validate
@@ -533,7 +533,7 @@ Publish GH Asset:
   before_script:
     - *export_MAKE_release_params
   script:
-    - ./tools/runner-setup.sh --datadog-ci --xcode "$DEFAULT_XCODE"
+    - ./tools/runner-setup.sh --atatus-ci --xcode "$DEFAULT_XCODE"
     - make env-check
     - make clean
     - make release-publish-github
@@ -547,7 +547,7 @@ Publish CP podspecs (internal):
   before_script:
     - *export_MAKE_release_params
   script:
-    - ./tools/runner-setup.sh --datadog-ci --xcode "$DEFAULT_XCODE"
+    - ./tools/runner-setup.sh --atatus-ci --xcode "$DEFAULT_XCODE"
     - make env-check
     - make clean
     - make release-publish-internal-podspecs
@@ -562,7 +562,7 @@ Publish CP podspecs (internal):
     - *export_MAKE_release_params
   needs: ["Build Artifacts", "Publish CP podspecs (internal)"]
   script:
-    - ./tools/runner-setup.sh --datadog-ci --xcode "$DEFAULT_XCODE"
+    - ./tools/runner-setup.sh --atatus-ci --xcode "$DEFAULT_XCODE"
     - make env-check
     - make clean
     - make release-publish-podspec PODSPEC_NAME="$PODSPEC_NAME"
@@ -570,47 +570,47 @@ Publish CP podspecs (internal):
 Publish CP podspec (Core):
   extends: .publish-dependent-podspec
   variables:
-    PODSPEC_NAME: "DatadogCore.podspec"
+    PODSPEC_NAME: "AtatusCore.podspec"
 
 Publish CP podspec (Logs):
   extends: .publish-dependent-podspec
   variables:
-    PODSPEC_NAME: "DatadogLogs.podspec"
+    PODSPEC_NAME: "AtatusLogs.podspec"
 
 Publish CP podspec (Trace):
   extends: .publish-dependent-podspec
   variables:
-    PODSPEC_NAME: "DatadogTrace.podspec"
+    PODSPEC_NAME: "AtatusTrace.podspec"
 
 Publish CP podspec (RUM):
   extends: .publish-dependent-podspec
   variables:
-    PODSPEC_NAME: "DatadogRUM.podspec"
+    PODSPEC_NAME: "AtatusRUM.podspec"
 
 Publish CP podspec (SessionReplay):
   extends: .publish-dependent-podspec
   variables:
-    PODSPEC_NAME: "DatadogSessionReplay.podspec"
+    PODSPEC_NAME: "AtatusSessionReplay.podspec"
 
 Publish CP podspec (CrashReporting):
   extends: .publish-dependent-podspec
   variables:
-    PODSPEC_NAME: "DatadogCrashReporting.podspec"
+    PODSPEC_NAME: "AtatusCrashReporting.podspec"
 
 Publish CP podspec (WebViewTracking):
   extends: .publish-dependent-podspec
   variables:
-    PODSPEC_NAME: "DatadogWebViewTracking.podspec"
+    PODSPEC_NAME: "AtatusWebViewTracking.podspec"
 
 Publish CP podspec (Flags):
   extends: .publish-dependent-podspec
   variables:
-    PODSPEC_NAME: "DatadogFlags.podspec"
+    PODSPEC_NAME: "AtatusFlags.podspec"
 
 Publish CP podspec (Profiling):
   extends: .publish-dependent-podspec
   variables:
-    PODSPEC_NAME: "DatadogProfiling.podspec"
+    PODSPEC_NAME: "AtatusProfiling.podspec"
 
 # ┌────────────────┐
 # │ Notifications: │

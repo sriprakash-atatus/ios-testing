@@ -1,21 +1,25 @@
 /*
 * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
-* This product includes software developed at Datadog (https://www.datadoghq.com/).
-* Copyright 2019-Present Datadog, Inc.
+* This product includes software developed at Atatus (https://www.atatus.com/).
+* Copyright 2026-Present Atatus, Inc.
 */
 
+// ATCHG: Atatus SDK migration - renamed module imports `ddFlags` -> `AtatusFlags`, `ddProfiling`
+// -> `AtatusProfiling`, `ddRUM` -> `AtatusRUM`, `ddSessionReplay` -> `AtatusSessionReplay`,
+// `ddTrace` -> `AtatusTrace`; renamed `dd*` types to `Atatus*`; rebranded the licence header.
+
 import UIKit
-import DatadogRUM
-import DatadogSessionReplay // it should compile for iOS and tvOS, but APIs are only available on iOS
-import DatadogTrace
-import DatadogFlags
-import DatadogProfiling
+import AtatusRUM
+import AtatusSessionReplay // it should compile for iOS and tvOS, but APIs are only available on iOS
+import AtatusTrace
+import AtatusFlags
+import AtatusProfiling
 @preconcurrency import OpenTelemetryApi
 
 internal class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
-        DatadogSetup.initialize()
+        AtatusSetup.initialize()
 
         // RUM APIs must be visible:
         RUM.enable(

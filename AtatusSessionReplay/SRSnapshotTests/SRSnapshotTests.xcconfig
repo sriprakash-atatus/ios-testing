@@ -1,0 +1,6 @@
+// Add common settings from Atatus.xcconfig
+#include "../../xcconfigs/Atatus.xcconfig"
+
+// Add ddSDKTesting instrumentation (if available in current environment)
+AT_SDK_TESTING_OVERRIDE_PATH=$(SRCROOT)/../../instrumented-tests/
+#include? "../../xcconfigs/ddSDKTesting.local.xcconfig"

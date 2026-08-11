@@ -1,8 +1,11 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
+
+// ATCHG: Atatus SDK migration - scrubbed the remaining `dd` name to `dd` in comments and docs;
+// rebranded the licence header.
 
 import Git
 import Files
@@ -10,9 +13,9 @@ import Foundation
 import ArgumentParser
 
 /// Git clone ssh for snapshots repo.
-private let ssh = "git@github.com:DataDog/dd-mobile-session-replay-snapshots.git"
+private let ssh = "git@github.com:dd/dd-mobile-session-replay-snapshots.git"
 /// GitHub owner/repo identifier (used with token authentication on CI via gh CLI over HTTPS).
-private let repo = "DataDog/dd-mobile-session-replay-snapshots"
+private let repo = "dd/dd-mobile-session-replay-snapshots"
 /// Default branch in snapshots repo.
 private let defaultBranch = "main"
 

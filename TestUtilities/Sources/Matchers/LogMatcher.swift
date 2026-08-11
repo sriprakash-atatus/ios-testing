@@ -1,8 +1,12 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
+
+// ATCHG: Atatus SDK migration - renamed `dd*` members to `at*`; renamed the `_dd` attribute prefix to
+// `_atatus`; renamed the `ddsource` / `ddtags` query parameters to `atatus_source` / `atatustags`;
+// rebranded the licence header.
 
 import XCTest
 
@@ -15,7 +19,7 @@ public class LogMatcher: JSONDataMatcher {
         static let status = "status"
         static let message = "message"
         static let service = "service"
-        static let tags = "ddtags"
+        static let tags = "atatusTags"
 
         // MARK: - Application info
 
@@ -63,9 +67,9 @@ public class LogMatcher: JSONDataMatcher {
         public static let errorFingerprint = "error.fingerprint"
 
         // MARK: - Dd info
-        static let dd = "_dd"
-        static let ddDevice = "device"
-        static let ddDeviceArchitecture = "architecture"
+        static let dd = "_atatus"
+        static let atDevice = "device"
+        static let atDeviceArchitecture = "architecture"
     }
 
     /// Allowed values for `network.client.available_interfaces` attribute.
@@ -208,8 +212,8 @@ public class LogMatcher: JSONDataMatcher {
 
     public func assertHasArchitecture() {
         var architecture: String?
-        if let device = json[JSONKey.ddDevice] as? [String: Any] {
-            architecture = device[JSONKey.ddDeviceArchitecture] as? String
+        if let device = json[JSONKey.atDevice] as? [String: Any] {
+            architecture = device[JSONKey.atDeviceArchitecture] as? String
         }
 
         XCTAssertNotNil(architecture)

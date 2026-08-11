@@ -1,0 +1,21 @@
+// Add common settings from Atatus.xcconfig
+#include "../xcconfigs/Atatus.xcconfig"
+
+// Both 'ddSDKTesting' and 'AtatusCrashReporting' link PLCR dependency statically, resulting with these runtime warnings:
+//
+//       """
+//       objc[50310]: Class PLCrashReportThreadInfo is implemented in both
+//       /Users/.../AtatusCrashReporting.framework/AtatusCrashReporting (0x10b727208)
+//       and
+//       /Users/.../ddSDKTesting.framework/ddSDKTesting (0x10b5ee928).
+//       One of the two will be used. Which one is undefined.
+//       """
+//
+//       Because some mocks in 'AtatusCrashReportingTests' use PLCR type's subclassing, their runtime cast with 'as? <PLCR_TYPE>' could fail depending in which library is found first
+// We force 'AtatusCrashReporting' to be linked before linking 'ddSDKTesting' so PLCR symbols are found in that library.
+OTHER_LDFLAGS= $(inherited) -framework AtatusCrashReporting
+
+// Add ddSDKTesting instrumentation (if available in current environment)
+ #include? "../xcconfigs/ddSDKTesting.local.xcconfig"
+
+

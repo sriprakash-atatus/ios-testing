@@ -1,8 +1,10 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
+
+// ATCHG: Atatus SDK migration - renamed `dd*` types to `Atatus*`; rebranded the licence header.
 
 import Foundation
 
@@ -15,7 +17,7 @@ private enum SRRequestException: Error {
 
 /// Matcher for asserting known elements of Session Replay (multipart) request.
 ///
-/// See: ``DatadogSessionReplay.RequestBuilder`` to understand the encoding of multipart data operated by this matcher.
+/// See: ``AtatusSessionReplay.RequestBuilder`` to understand the encoding of multipart data operated by this matcher.
 public struct SRRequestMatcher {
     /// Creates matcher from Session Replay `URLRequest`.
     /// The `request` must be a valid Session Replay (multipart) request.
@@ -104,7 +106,7 @@ public struct SRRequestMatcher {
 
 /// Basic parser for HTTP multipart data.
 ///
-/// It supports multipart idoms used in ``DatadogSessionReplay.MultipartFormData``. Other generic capabilities of
+/// It supports multipart idoms used in ``AtatusSessionReplay.MultipartFormData``. Other generic capabilities of
 /// multipart format may not work correctly. Ref.: https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html
 private class MultipartFormDataParser {
     private let cr: UInt8 = 13 // CR

@@ -1,8 +1,11 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
+
+// ATCHG: Atatus SDK migration - renamed `dd.trace_id` / `dd.span_id` to `atatus.trace_id` /
+// `atatus.span_id`; rebranded the licence header.
 
 import HTTPServerMock
 import TestUtilities
@@ -93,9 +96,9 @@ class TracingManualInstrumentationScenarioTests: IntegrationTests, TracingCommon
         logMatchers[1].assertValue(forKeyPath: "error.stack", matches: matcher)
 
         // Assert logs are linked to "data downloading" span
-        logMatchers[0].assertValue(forKey: "dd.trace_id", equals: try spanMatchers[0].traceID()?.toString(representation: .hexadecimal))
-        logMatchers[0].assertValue(forKey: "dd.span_id", equals: try spanMatchers[0].spanID()?.toString(representation: .hexadecimal))
-        logMatchers[1].assertValue(forKey: "dd.trace_id", equals: try spanMatchers[1].traceID()?.toString(representation: .hexadecimal))
-        logMatchers[1].assertValue(forKey: "dd.span_id", equals: try spanMatchers[1].spanID()?.toString(representation: .hexadecimal))
+        logMatchers[0].assertValue(forKey: "atatus.trace_id", equals: try spanMatchers[0].traceID()?.toString(representation: .hexadecimal))
+        logMatchers[0].assertValue(forKey: "atatus.span_id", equals: try spanMatchers[0].spanID()?.toString(representation: .hexadecimal))
+        logMatchers[1].assertValue(forKey: "atatus.trace_id", equals: try spanMatchers[1].traceID()?.toString(representation: .hexadecimal))
+        logMatchers[1].assertValue(forKey: "atatus.span_id", equals: try spanMatchers[1].spanID()?.toString(representation: .hexadecimal))
     }
 }

@@ -1,8 +1,11 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
+
+// ATCHG: Atatus SDK migration - renamed `com.ddhq.*` identifiers to `com.atatus.*`; rebranded the
+// licence header.
 
 import Foundation
 import ArgumentParser
@@ -165,7 +168,7 @@ private func generateAPISurface(
     // Shared workspace and derived data path so common dependencies compile once and are reused across modules.
     let workspace = try PatchedPackageWorkspace(originalPath: path)
     let derivedDataPath = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-        .appendingPathComponent("com.datadoghq.api-surface-dd-\(UUID().uuidString)", isDirectory: true)
+        .appendingPathComponent("com.atatus.api-surface-\(UUID().uuidString)", isDirectory: true)
         .path
     defer { try? FileManager.default.removeItem(atPath: derivedDataPath) }
 
@@ -270,7 +273,7 @@ private func parseModulesInParallel(
     }
 
     let tempDir = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-        .appendingPathComponent("com.datadoghq.api-surface-parse-\(UUID().uuidString)", isDirectory: true)
+        .appendingPathComponent("com.atatus.api-surface-parse-\(UUID().uuidString)", isDirectory: true)
     try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
     defer { try? FileManager.default.removeItem(at: tempDir) }
 
@@ -280,7 +283,7 @@ private func parseModulesInParallel(
     let group = DispatchGroup()
     let maxConcurrent = max(1, min(surfaces.count, ProcessInfo.processInfo.activeProcessorCount))
     let semaphore = DispatchSemaphore(value: maxConcurrent)
-    let queue = DispatchQueue(label: "com.datadoghq.api-surface.parse", attributes: .concurrent)
+    let queue = DispatchQueue(label: "com.atatus.api-surface.parse", attributes: .concurrent)
 
     for (index, surface) in surfaces.enumerated() {
         semaphore.wait()

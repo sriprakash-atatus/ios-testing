@@ -1,10 +1,14 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
 
-import DatadogInternal
+// ATCHG: Atatus SDK migration - renamed module imports `ddInternal` -> `AtatusInternal`; renamed the
+// `DD` symbol prefix to `AT`; renamed `dd*` members to `at*`; renamed the `DD-*` intake headers to their
+// Atatus equivalents; rebranded the licence header.
+
+import AtatusInternal
 import TestUtilities
 import XCTest
 
@@ -14,8 +18,8 @@ let semverRegex = "^\(semverPattern)$"
 
 /// Regex for matching the value of UA header, e.g.: "User-Agent: Example/1.0 CFNetwork (iPhone; iOS/14.5)"
 let userAgentRegex = #"^.*/\d+[.\d]* CFNetwork \([a-zA-Z ]+; iOS/[0-9.]+\)$"#
-/// Regex for matching the value of `DD-REQUEST-ID` header, e.g. "DD-REQUEST-ID: 524A2616-D2AA-4FE5-BBD9-898D173BE658"
-let ddRequestIDRegex = #"^[0-9A-F]{8}(-[0-9A-F]{4}){3}-[0-9A-F]{12}$"#
+/// Regex for matching the value of `ATATUS-REQUEST-ID` header, e.g. "ATATUS-REQUEST-ID: 524A2616-D2AA-4FE5-BBD9-898D173BE658"
+let atRequestIDRegex = #"^[0-9A-F]{8}(-[0-9A-F]{4}){3}-[0-9A-F]{12}$"#
 let numberPattern = "[0-9]+$"
 let sha1Regex = "^[0-9a-f]{40}$"
 

@@ -1,21 +1,26 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
 
-import Foundation
-import DatadogInternal
+// ATCHG: Atatus SDK migration - renamed module imports `ddCore` -> `AtatusCore`,
+// `ddCrashReporting` -> `AtatusCrashReporting`, `ddInternal` -> `AtatusInternal`, `ddLogs`
+// -> `AtatusLogs`, `ddRUM` -> `AtatusRUM`; renamed `dd*` types to `Atatus*`; renamed the `DD`
+// symbol prefix to `AT`; rebranded the licence header.
 
-@testable import DatadogLogs
-@testable import DatadogRUM
-@testable import DatadogCrashReporting
-@testable import DatadogCore
+import Foundation
+import AtatusInternal
+
+@testable import AtatusLogs
+@testable import AtatusRUM
+@testable import AtatusCrashReporting
+@testable import AtatusCore
 
 extension CrashReportingFeature {
     /// Mocks the Crash Reporting feature instance which doesn't load crash reports.
     public static func mockNoOp(
-            core: DatadogCoreProtocol = NOPDatadogCore(),
+            core: AtatusCoreProtocol = NOPAtatusCore(),
             crashReportingPlugin: CrashReportingPlugin = NOPCrashReportingPlugin()
     ) -> Self {
         return .mockWith(
@@ -43,7 +48,7 @@ extension CrashReportingFeature {
 
 public class CrashReportingPluginMock: CrashReportingPlugin {
     /// The crash report loaded by this plugin.
-    public var pendingCrashReport: DDCrashReport?
+    public var pendingCrashReport: ATCrashReport?
     /// If the plugin was asked to delete the crash report.
     @ReadWriteLock
     public var hasPurgedCrashReport: Bool?
@@ -54,7 +59,7 @@ public class CrashReportingPluginMock: CrashReportingPlugin {
 
     public init() {}
 
-    public func readPendingCrashReport(completion: (DDCrashReport?) -> Bool) {
+    public func readPendingCrashReport(completion: (ATCrashReport?) -> Bool) {
         hasPurgedCrashReport = completion(pendingCrashReport)
         didReadPendingCrashReport?()
     }
@@ -74,7 +79,7 @@ public class CrashReportingPluginMock: CrashReportingPlugin {
 }
 
 public class NOPCrashReportingPlugin: CrashReportingPlugin {
-    public func readPendingCrashReport(completion: (DDCrashReport?) -> Bool) {}
+    public func readPendingCrashReport(completion: (ATCrashReport?) -> Bool) {}
     public func inject(context: Data) {}
     public var backtraceReporter: BacktraceReporting? { nil }
 
@@ -92,12 +97,12 @@ public class CrashContextProviderMock: CrashContextProvider {
 }
 
 public class CrashReportSenderMock: CrashReportSender {
-    public var sentCrashReport: DDCrashReport?
+    public var sentCrashReport: ATCrashReport?
     public var sentCrashContext: CrashContext?
 
     public init() {}
 
-    public func send(report: DDCrashReport, with context: CrashContext) {
+    public func send(report: ATCrashReport, with context: CrashContext) {
         sentCrashReport = report
         sentCrashContext = context
         didSendCrashReport?()
@@ -105,13 +110,13 @@ public class CrashReportSenderMock: CrashReportSender {
 
     public var didSendCrashReport: (() -> Void)?
 
-    public func send(launch: DatadogInternal.LaunchReport) {}
+    public func send(launch: AtatusInternal.LaunchReport) {}
 }
 
 public class CrashReceiverMock: FeatureMessageReceiver {
     public var receivedCrash: Crash?
 
-    public func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+    public func receive(message: FeatureMessage, from core: AtatusCoreProtocol) -> Bool {
         guard case let .payload(crash as Crash) = message else {
             return false
         }

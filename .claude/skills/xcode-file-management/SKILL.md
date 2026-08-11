@@ -1,13 +1,13 @@
 ---
-name: dd-sdk-ios:xcode-file-management
-description: Use when adding, removing, moving, or renaming Swift source files in the dd-sdk-ios Xcode project. Use when the task involves file creation, deletion, or relocation in any module (DatadogRUM, DatadogLogs, DatadogCore, etc.). Use when you would otherwise reach for Write, Bash mv/mkdir/rm, or manual pbxproj editing for file management.
+name: atatus-sdk-ios:xcode-file-management
+description: Use when adding, removing, moving, or renaming Swift source files in the atatus-sdk-ios Xcode project. Use when the task involves file creation, deletion, or relocation in any module (AtatusRUM, AtatusLogs, AtatusCore, etc.). Use when you would otherwise reach for Write, Bash mv/mkdir/rm, or manual pbxproj editing for file management.
 ---
 
-# dd-sdk-ios Xcode File Management
+# atatus-sdk-ios Xcode File Management
 
 ## Overview
 
-The dd-sdk-ios project is both an SPM package **and** an Xcode workspace with `.pbxproj` files. SPM builds discover files automatically, but **Xcode does not** — it requires explicit registration in `.pbxproj`. The Xcode MCP server (available from Xcode 26.3+) handles this automatically. Always use it.
+The atatus-sdk-ios project is both an SPM package **and** an Xcode workspace with `.pbxproj` files. SPM builds discover files automatically, but **Xcode does not** — it requires explicit registration in `.pbxproj`. The Xcode MCP server (available from Xcode 26.3+) handles this automatically. Always use it.
 
 ## Prerequisites
 
@@ -21,7 +21,7 @@ Use Xcode MCP tools instead — they update the filesystem AND the `.pbxproj` in
 
 ## Target Membership
 
-Target membership is **implicit** — Xcode MCP infers the target from the navigator path where the file is placed. A file added under `DatadogLogs/` is automatically assigned to the `DatadogLogs` target. No explicit target specification is needed.
+Target membership is **implicit** — Xcode MCP infers the target from the navigator path where the file is placed. A file added under `AtatusLogs/` is automatically assigned to the `AtatusLogs` target. No explicit target specification is needed.
 
 ## Quick Reference
 
@@ -49,7 +49,7 @@ Target membership is **implicit** — Xcode MCP infers the target from the navig
 # ✅ Add a new source file
 XcodeWrite(
   tabIdentifier: <tab>,
-  filePath: "DatadogLogs/Sources/LogBatcher.swift",
+  filePath: "AtatusLogs/Sources/LogBatcher.swift",
   content: "..."
 )
 # → Creates file on disk AND registers it in pbxproj + target membership
@@ -57,13 +57,13 @@ XcodeWrite(
 # ✅ Move a file
 XcodeMV(
   tabIdentifier: <tab>,
-  sourcePath: "DatadogLogs/Sources/LogBatcher.swift",
-  destinationPath: "DatadogLogs/Sources/Batching/LogBatcher.swift"
+  sourcePath: "AtatusLogs/Sources/LogBatcher.swift",
+  destinationPath: "AtatusLogs/Sources/Batching/LogBatcher.swift"
 )
 # → Moves file on disk AND updates pbxproj reference
 
 # ❌ Wrong — file created on disk but invisible to Xcode
-Write(file_path: ".../DatadogLogs/Sources/LogBatcher.swift", content: "...")
+Write(file_path: ".../AtatusLogs/Sources/LogBatcher.swift", content: "...")
 ```
 
 ## Getting the tabIdentifier
@@ -77,12 +77,12 @@ XcodeListWindows()  # → returns tabIdentifier for open workspace
 Xcode MCP uses **project navigator paths**, not filesystem paths. Use `XcodeLS` to discover them:
 
 ```python
-XcodeLS(tabIdentifier: <tab>, path: "DatadogLogs")
+XcodeLS(tabIdentifier: <tab>, path: "AtatusLogs")
 # → ["ConsoleLogger.swift", "Feature/LogsFeature.swift", ...]
 # Note: paths are relative to the Xcode group, not the filesystem root
 ```
 
-To create `DatadogLogs/Sources/Foo.swift` on disk, use the navigator path `DatadogLogs/Foo.swift`.
+To create `AtatusLogs/Sources/Foo.swift` on disk, use the navigator path `AtatusLogs/Foo.swift`.
 
 ## After File Operations
 

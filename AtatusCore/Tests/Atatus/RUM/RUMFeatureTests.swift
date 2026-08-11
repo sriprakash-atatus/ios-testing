@@ -1,0 +1,222 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
+ */
+
+// ATCHG: Atatus SDK migration - renamed module imports `ddCore` -> `AtatusCore`, `ddInternal` ->
+// `AtatusInternal`, `ddRUM` -> `AtatusRUM`; renamed the `DD` symbol prefix to `AT`; renamed
+// `clientToken` to `licenseKey`; renamed the `ddsource` / `ddtags` query parameters to `atatus_source` /
+// `atatustags`; renamed the `DD-*` intake headers to their Atatus equivalents; rebranded the licence
+// header.
+
+import XCTest
+import TestUtilities
+import AtatusInternal
+
+@testable import AtatusCore
+@testable import AtatusRUM
+
+class RUMFeatureTests: XCTestCase {
+    override func setUp() {
+        super.setUp()
+        temporaryCoreDirectory.create()
+    }
+
+    override func tearDown() {
+        temporaryCoreDirectory.delete()
+        super.tearDown()
+    }
+
+    // MARK: - HTTP Message
+
+    func testItUsesExpectedHTTPMessage() throws {
+        let randomApplicationName: String = .mockRandom(among: .alphanumerics)
+        let randomApplicationVersion: String = .mockRandom(among: .decimalDigits)
+        let randomServiceName: String = .mockRandom(among: .alphanumerics)
+        let randomEnvironmentName: String = .mockRandom(among: .alphanumerics)
+        let randomSource: String = .mockRandom(among: .alphanumerics)
+        let randomOrigin: String = .mockRandom(among: .alphanumerics)
+        let randomSDKVersion: String = .mockRandom(among: .alphanumerics)
+        let randomUploadURL: URL = .mockRandom()
+        let randomClientToken: String = .mockRandom()
+        let randomDeviceName: String = .mockRandom()
+        let randomDeviceOSName: String = .mockRandom()
+        let randomDeviceOSVersion: String = .mockRandom()
+        let randomEncryption: DataEncryption? = Bool.random() ? DataEncryptionMock() : nil
+        let randomBackgroundTasksEnabled: Bool = .mockRandom()
+
+        let httpClient = HTTPClientMock(responseCode: 200)
+
+        let core = AtatusCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .combining(
+                storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
+                uploadPerformance: .veryQuick
+            ),
+            httpClient: httpClient,
+            encryption: randomEncryption,
+            contextProvider: .mockWith(
+                context: .mockWith(
+                    licenseKey: randomClientToken,
+                    service: randomServiceName,
+                    env: randomEnvironmentName,
+                    version: randomApplicationVersion,
+                    source: randomSource,
+                    sdkVersion: randomSDKVersion,
+                    ciAppOrigin: randomOrigin,
+                    applicationName: randomApplicationName,
+                    device: .mockWith(name: randomDeviceName),
+                    os: .mockWith(
+                        name: randomDeviceOSName,
+                        version: randomDeviceOSVersion
+                    )
+                )
+            ),
+            applicationVersion: randomApplicationVersion,
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: randomBackgroundTasksEnabled
+        )
+
+        // Given
+        RUM.enable(with: .mockWith { $0.customEndpoint = randomUploadURL }, in: core)
+
+        // When
+        let monitor = RUMMonitor.shared(in: core)
+        monitor.startView(key: .mockAny()) // on starting the first view we sends `application_start` action event
+        core.flushAndTearDown()
+
+        // Then
+        let requests = httpClient.requestsSent()
+        let request = try XCTUnwrap(requests.first)
+        let requestURL = try XCTUnwrap(request.url)
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertTrue(requestURL.absoluteString.starts(with: randomUploadURL.absoluteString + "?"))
+        // ATCHG: the RUM intake now also receives license_key, agent_name, agent_version and
+        // app_name, so assert on the source parameter rather than the whole query string.
+        XCTAssertEqual(
+            URLComponents(url: requestURL, resolvingAgainstBaseURL: false)?
+                .queryItems?.first { $0.name == "atatus_source" }?.value,
+            randomSource
+        )
+        XCTAssertEqual(
+            request.allHTTPHeaderFields?["User-Agent"],
+            """
+            \(randomApplicationName)/\(randomApplicationVersion) CFNetwork (\(randomDeviceName); \(randomDeviceOSName)/\(randomDeviceOSVersion))
+            """
+        )
+        XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "text/plain;charset=UTF-8")
+        XCTAssertEqual(request.allHTTPHeaderFields?["Content-Encoding"], "deflate")
+        XCTAssertEqual(request.allHTTPHeaderFields?["api-key"], randomClientToken)
+        XCTAssertEqual(request.allHTTPHeaderFields?["ATATUS-EVP-ORIGIN"], randomOrigin)
+        XCTAssertEqual(request.allHTTPHeaderFields?["ATATUS-EVP-ORIGIN-VERSION"], randomSDKVersion)
+        XCTAssertEqual(request.allHTTPHeaderFields?["ATATUS-REQUEST-ID"]?.matches(regex: .uuidRegex), true)
+    }
+
+    // MARK: - HTTP Payload
+
+    func testItUsesExpectedPayloadFormatForUploads() throws {
+        let httpClient = HTTPClientMock(responseCode: 200)
+
+        let core = AtatusCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .combining(
+                storagePerformance: StoragePerformanceMock(
+                    maxFileSize: .max,
+                    maxDirectorySize: .max,
+                    maxFileAgeForWrite: .distantFuture, // write all events to single file,
+                    minFileAgeForRead: StoragePerformanceMock.readAllFiles.minFileAgeForRead,
+                    maxFileAgeForRead: StoragePerformanceMock.readAllFiles.maxFileAgeForRead,
+                    maxObjectsInFile: .max,
+                    maxObjectSize: .max
+                ),
+                uploadPerformance: UploadPerformanceMock(
+                    initialUploadDelay: 0.5, // wait enough until events are written,
+                    minUploadDelay: 1,
+                    maxUploadDelay: 1,
+                    uploadDelayChangeRate: 0
+                )
+            ),
+            httpClient: httpClient,
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny()
+        )
+
+        // Given
+        RUM.enable(with: .mockAny(), in: core)
+        core.flushAndTearDown()
+
+        let requests = httpClient.requestsSent()
+        XCTAssertEqual(requests.count, 1)
+        let payload = try XCTUnwrap(requests.first?.decompressed().httpBody)
+
+        // Expected payload format:
+        // ```
+        // view event JSON     - "application launch" view
+        // action event JSON   - "application start" action
+        // ```
+
+        let eventMatchers = try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(payload)
+        XCTAssertFalse(eventMatchers.filterRUMEvents(ofType: RUMViewEvent.self).isEmpty, "It must include view event")
+    }
+
+    func testItOnlyKeepsOneViewEventPerPayload() throws {
+        let httpClient = HTTPClientMock(responseCode: 200)
+
+        let core = AtatusCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .combining(
+                storagePerformance: StoragePerformanceMock(
+                    maxFileSize: .max,
+                    maxDirectorySize: .max,
+                    maxFileAgeForWrite: .distantFuture, // write all events to single file,
+                    minFileAgeForRead: StoragePerformanceMock.readAllFiles.minFileAgeForRead,
+                    maxFileAgeForRead: StoragePerformanceMock.readAllFiles.maxFileAgeForRead,
+                    maxObjectsInFile: .max,
+                    maxObjectSize: .max
+                ),
+                uploadPerformance: UploadPerformanceMock(
+                    initialUploadDelay: 0.5, // wait enough until events are written,
+                    minUploadDelay: 1,
+                    maxUploadDelay: 1,
+                    uploadDelayChangeRate: 0
+                )
+            ),
+            httpClient: httpClient,
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny()
+        )
+
+        // Given
+        RUM.enable(with: .mockAny(), in: core)
+
+        // When
+        RUMMonitor.shared(in: core).addError(message: "1st error")
+        RUMMonitor.shared(in: core).addError(message: "2nd error")
+        RUMMonitor.shared(in: core).addError(message: "3rd error")
+        core.flushAndTearDown()
+
+        // Then
+        let requests = httpClient.requestsSent()
+        XCTAssertEqual(requests.count, 1)
+        let payload = try XCTUnwrap(requests.first?.decompressed().httpBody)
+        let eventMatchers = try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(payload)
+        let viewMatchers = eventMatchers.filterRUMEvents(ofType: RUMViewEvent.self)
+        XCTAssertEqual(viewMatchers.count, 1, "It should keep only one view event")
+        try viewMatchers[0].model(ofType: RUMViewEvent.self) { event in
+            XCTAssertEqual(event.view.error.count, 3, "It should track 3 errors")
+        }
+    }
+}

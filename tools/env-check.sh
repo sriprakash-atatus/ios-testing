@@ -85,9 +85,9 @@ if [ "$CI" = "true" ]; then
     npm --version
 
     echo ""
-    echo_succ "datadog-ci:"
-    check_if_installed datadog-ci
-    datadog-ci version
+    echo_succ "atatus-ci:"
+    check_if_installed atatus-ci
+    atatus-ci version
     
     echo ""
     echo_succ "dd-octo-sts:"

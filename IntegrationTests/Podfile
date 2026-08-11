@@ -6,16 +6,16 @@ use_modular_headers!
 target 'Runner iOS' do
     platform :ios, '12.0'
 
-    pod 'DatadogCore', :path => '..'
-    pod 'DatadogLogs', :path => '..'
-    pod 'DatadogTrace', :path => '..'
-    pod 'DatadogRUM', :path => '..'
-    pod 'DatadogCrashReporting', :path => '..'
-    pod 'DatadogSessionReplay', :path => '..'
-    pod 'DatadogWebViewTracking', :path => '..'
+    pod 'AtatusCore', :path => '..'
+    pod 'AtatusLogs', :path => '..'
+    pod 'AtatusTrace', :path => '..'
+    pod 'AtatusRUM', :path => '..'
+    pod 'AtatusCrashReporting', :path => '..'
+    pod 'AtatusSessionReplay', :path => '..'
+    pod 'AtatusWebViewTracking', :path => '..'
 
     target 'IntegrationScenarios' do
-        pod 'DatadogInternal', :path => '..'
+        pod 'AtatusInternal', :path => '..'
         pod 'TestUtilities', :path => '..'
     end
 end

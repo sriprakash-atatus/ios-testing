@@ -1,0 +1,142 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
+ */
+
+// ATCHG: Atatus SDK migration - renamed module imports `ddInternal` -> `AtatusInternal`; renamed
+// `dd*` types to `Atatus*`; rebranded the licence header.
+
+import Foundation
+import AtatusInternal
+
+/// Passthrough core mocks feature-scope allowing recording events in **sync**.
+///
+/// The `AtatusCoreProtocol` implementation does not require any feature registration,
+/// it will always provide a `FeatureScope` with the current context and a `writer` that will
+/// store all events in the `events` property.
+///
+/// Usage:
+///
+///     let core = PassthroughCoreMock()
+///     core.scope(for: "any-feature-name")?.eventWriteContext { context, writer in
+///         // will always open a scope
+///     }
+///
+/// The Passthrough core does not allow registering or retrieving a Feature instance.
+///
+///     let feature = MyCustomFeature()
+///     try core.register(feature: feature)
+///     core.get(feature: MyCustomFeature.self) // returns nil
+///
+open class PassthroughCoreMock: AtatusCoreProtocol, FeatureScope, @unchecked Sendable {
+    /// Counts references to `PassthroughCoreMock` instances, so we can prevent memory
+    /// leaks of SDK core in `AtatusTestsObserver`.
+    public private(set) static var referenceCount = 0
+
+    /// Current context that will be passed to feature-scopes.
+    @ReadWriteLock
+    public var context: AtatusContext {
+        didSet { send(message: .context(context)) }
+    }
+
+    let writer = FileWriterMock()
+
+    /// The message receiver.
+    public var messageReceiver: FeatureMessageReceiver
+
+    /// Callback called when `eventWriteContext` closure is executed.
+    public var onEventWriteContext: ((Bool) -> Void)?
+
+    /// Creates a Passthrough core mock.
+    ///
+    /// - Parameters:
+    ///   - context: The testing context.
+
+    public required init(
+        context: AtatusContext = .mockAny(),
+        dataStore: DataStore = NOPDataStore(),
+        messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+    ) {
+        self.context = context
+        self.dataStore = dataStore
+        self.messageReceiver = messageReceiver
+
+        messageReceiver.receive(message: .context(context), from: self)
+
+        PassthroughCoreMock.referenceCount += 1
+    }
+
+    deinit {
+        PassthroughCoreMock.referenceCount -= 1
+    }
+
+    /// no-op
+    public func register<T>(feature: T) throws where T: AtatusFeature { }
+    /// no-op
+    public func feature<T>(named name: String, type: T.Type) -> T? { nil }
+
+    /// Always returns a feature-scope.
+    public func scope<T>(for featureType: T.Type) -> FeatureScope where T: AtatusFeature {
+        self
+    }
+
+    public func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
+        _context.mutate { $0.set(additionalContext: context()) }
+    }
+
+    public func send(message: FeatureMessage, else fallback: () -> Void) {
+        if !messageReceiver.receive(message: message, from: self) {
+            fallback()
+        }
+    }
+
+    /// no-op
+    public func set(anonymousId: String?) { }
+
+    /// Execute `block` with the current context and a `writer` to record events.
+    ///
+    /// - Parameter block: The block to execute.
+    public func eventWriteContext(bypassConsent: Bool, _ block: @escaping (AtatusContext, Writer) -> Void) {
+        block(context, writer)
+        onEventWriteContext?(bypassConsent)
+    }
+
+    public func context(_ block: @escaping (AtatusContext) -> Void) {
+        block(context)
+    }
+
+    public var dataStore: DataStore
+
+    /// Recorded events from feature scopes.
+    ///
+    /// Invoking the `writer` from the `eventWriteContext` will add
+    /// events to this stack.
+    public var events: [Encodable] { writer.events }
+
+    /// Recorded metadata from feature scopes.
+    ///
+    /// Invoking the `writer` from the `eventWriteContext` will add
+    /// events to this stack.
+    public var metadata: [Encodable] { writer.metadata }
+
+    /// Returns all events of the given type.
+    ///
+    /// - Parameter type: The event type to retrieve.
+    /// - Returns: A list of event of the give type.
+    public func events<T>(ofType type: T.Type = T.self) -> [T] where T: Encodable {
+        writer.events(ofType: type)
+    }
+
+    /// Returns all metadata of the given type.
+    ///
+    /// - Parameter type: The metadata type to retrieve.
+    /// - Returns: A list of metadata of the give type.
+    public func metadata<T>(ofType type: T.Type = T.self) -> [T] where T: Encodable {
+        writer.metadata(ofType: type)
+    }
+
+    public func mostRecentModifiedFileAt(before: Date) throws -> Date? {
+        return nil
+    }
+}

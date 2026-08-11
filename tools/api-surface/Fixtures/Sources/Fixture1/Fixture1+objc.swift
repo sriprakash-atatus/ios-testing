@@ -1,14 +1,16 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
+
+// ATCHG: Atatus SDK migration - renamed the `DD` symbol prefix to `AT`; rebranded the licence header.
 
 /// ObjC APIs for Fixture1 used in `api-surface` tests.
 
 import Foundation
 
-@objc(DDObjcCar)
+@objc(ATObjcCar)
 @objcMembers
 @_spi(objc)
 public class objc_Car: NSObject {
@@ -45,14 +47,14 @@ public class objc_Car: NSObject {
     }
 }
 
-@objc(DDCarDelegate)
+@objc(ATCarDelegate)
 @_spi(objc)
 public protocol objc_CarDelegate: AnyObject {
     func carDidStart(_ car: objc_Car)
     func carDidStop(_ car: objc_Car)
 }
 
-@objc(DDCarConfiguration)
+@objc(ATCarConfiguration)
 @objcMembers
 @_spi(objc)
 public class objc_CarConfiguration: NSObject {

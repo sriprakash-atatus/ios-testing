@@ -4,10 +4,10 @@ set +x
 set -eo pipefail
 source ./tools/utils/echo-color.sh
 
-KEYCHAIN=datadog.keychain
+KEYCHAIN=atatus.keychain
 KEYCHAIN_PASSWORD="$(openssl rand -base64 32)"
 
-PROFILE=datadog.mobileprovision
+PROFILE=atatus.mobileprovision
 USER_PP_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
 USER_PP_PATH="$USER_PP_DIR/$PROFILE"
 

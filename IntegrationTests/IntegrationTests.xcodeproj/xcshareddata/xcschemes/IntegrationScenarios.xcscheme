@@ -89,9 +89,9 @@
                   <BuildableReference
                      BuildableIdentifier = "primary"
                      BlueprintIdentifier = "61441C2924616F1D003D8BB8"
-                     BuildableName = "DatadogIntegrationTests.xctest"
-                     BlueprintName = "DatadogIntegrationTests"
-                     ReferencedContainer = "container:Datadog.xcodeproj">
+                     BuildableName = "AtatusIntegrationTests.xctest"
+                     BlueprintName = "AtatusIntegrationTests"
+                     ReferencedContainer = "container:Atatus.xcodeproj">
                   </BuildableReference>
                </EnvironmentBuildable>
             </ActionContent>
@@ -104,7 +104,7 @@
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "DATADOG_CLIENT_TOKEN"
+            key = "ATATUS_CLIENT_TOKEN"
             value = "$(DD_SDK_SWIFT_TESTING_CLIENT_TOKEN)"
             isEnabled = "YES">
          </EnvironmentVariable>
@@ -163,9 +163,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "61133B81242393DE00786299"
-            BuildableName = "Datadog.framework"
-            BlueprintName = "Datadog iOS"
-            ReferencedContainer = "container:Datadog.xcodeproj">
+            BuildableName = "Atatus.framework"
+            BlueprintName = "Atatus iOS"
+            ReferencedContainer = "container:Atatus.xcodeproj">
          </BuildableReference>
       </CodeCoverageTargets>
       <TestPlans>

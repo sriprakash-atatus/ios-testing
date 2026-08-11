@@ -1,12 +1,16 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
 
+// ATCHG: Atatus SDK migration - renamed module imports `ddCore` -> `AtatusCore`, `ddRUM` ->
+// `AtatusRUM`; renamed the `DD` symbol prefix to `AT`; rebranded the `dd` name to `Atatus` in comments
+// and docs; rebranded the licence header.
+
 import UIKit
-import DatadogRUM
-import DatadogCore
+import AtatusRUM
+import AtatusCore
 
 /// Scenario which starts a navigation controller. Each view controller pushed to this navigation
 /// uses the RUM manual instrumentation API to send RUM events to the server.
@@ -191,7 +195,7 @@ class RUMResourcesBaseScenario: URLSessionBaseScenario {
             )
         case .delegateWithAdditionalFirstPartyHosts:
             config.urlSessionTracking = .init(
-                firstPartyHostsTracing: .trace(hosts: [], sampleRate: 100), // hosts will be set through `DDURLSessionDelegate`
+                firstPartyHostsTracing: .trace(hosts: [], sampleRate: 100), // hosts will be set through `ATURLSessionDelegate`
                 resourceAttributesProvider: rumResourceAttributesProvider(request:response:data:error:)
             )
         }
@@ -212,7 +216,7 @@ final class RUMNSURLSessionResourcesScenario: RUMResourcesBaseScenario, TestScen
 }
 
 /// Scenario which uses RUM manual instrumentation API to send bunch of RUM events. Each event contains some
-/// "sensitive" information which is scrubbed as configured in `Datadog.Configuration`.
+/// "sensitive" information which is scrubbed as configured in `Atatus.Configuration`.
 final class RUMScrubbingScenario: TestScenario {
     static var storyboardName: String = "RUMScrubbingScenario"
 
@@ -399,7 +403,7 @@ final class RUMFeatureOperationsScenario: TestScenario {
 private class SwiftUIPredicate: SwiftUIRUMViewsPredicate {
     let `default` = DefaultSwiftUIRUMViewsPredicate()
 
-    func rumView(for extractedViewName: String) -> DatadogRUM.RUMView? {
+    func rumView(for extractedViewName: String) -> AtatusRUM.RUMView? {
         if extractedViewName == "RUMSessionEndView" {
             return nil
         }

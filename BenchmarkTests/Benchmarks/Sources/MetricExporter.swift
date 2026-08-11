@@ -1,8 +1,12 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
+
+// ATCHG: Atatus SDK migration - renamed `dd*` types to `Atatus*`; renamed the `DD` symbol prefix to
+// `AT`; renamed the `DD-*` intake headers to their Atatus equivalents; repointed the intake host at the
+// Atatus site; rebranded the `dd` name to `Atatus` in comments and docs; rebranded the licence header.
 
 import Foundation
 import OpenTelemetrySdk
@@ -11,7 +15,7 @@ enum MetricExporterError: Error {
     case unsupportedMetric(type: MetricDataType, dataType: Any.Type)
 }
 
-/// Replacement of otel `DatadogExporter` for metrics.
+/// Replacement of otel `AtatusExporter` for metrics.
 ///
 /// This version does not store data to disk, it uploads to the intake directly.
 /// Additionally, it does not crash.
@@ -29,7 +33,7 @@ final class MetricExporter: OpenTelemetrySdk.MetricExporter {
         case gauge = 3
     }
 
-    /// https://docs.datadoghq.com/api/latest/metrics/#submit-metrics
+    /// https://www.atatus.com/docs/
     internal struct Serie: Codable {
         struct Point: Codable {
             let timestamp: Int64
@@ -55,7 +59,7 @@ final class MetricExporter: OpenTelemetrySdk.MetricExporter {
     let configuration: Configuration
 
     // swiftlint:disable force_unwrapping
-    let intake = URL(string: "https://api.datadoghq.com/api/v2/series")!
+    let intake = URL(string: "https://www.atatus.com/")!
     let prefix = "{ \"series\": [".data(using: .utf8)!
     let separator = ",".data(using: .utf8)!
     let suffix = "]}".data(using: .utf8)!
@@ -90,7 +94,7 @@ final class MetricExporter: OpenTelemetrySdk.MetricExporter {
         return .cumulative
     }
 
-    /// Transforms otel `MetricData` to Datadog `serie`.
+    /// Transforms otel `MetricData` to Atatus `serie`.
     ///
     /// - Parameter metric: The otel metric data
     /// - Returns: The timeserie.
@@ -143,10 +147,10 @@ final class MetricExporter: OpenTelemetrySdk.MetricExporter {
         request.httpMethod = "POST"
         request.allHTTPHeaderFields = [
             "Content-Type": "application/json",
-            "DD-API-KEY": configuration.apiKey,
-            "DD-EVP-ORIGIN": "ios",
-            "DD-EVP-ORIGIN-VERSION": configuration.version,
-            "DD-REQUEST-ID": UUID().uuidString,
+            "api-key": configuration.apiKey,
+            "ATATUS-EVP-ORIGIN": "ios",
+            "ATATUS-EVP-ORIGIN-VERSION": configuration.version,
+            "ATATUS-REQUEST-ID": UUID().uuidString,
         ]
 
         request.httpBody = prefix + data + suffix

@@ -5,7 +5,7 @@
 # Builds XCFrameworks from the specified repository and exports them to the designated output directory.
 
 # Options:
-#   --repo-path: The path to the root of the 'dd-sdk-ios' repository.
+#   --repo-path: The path to the root of the 'atatus-sdk-ios' repository.
 #   --ios: Includes iOS platform slices in the exported XCFrameworks.
 #   --tvos: Includes tvOS platform slices in the exported XCFrameworks.
 #   --output-path: The path to the output directory where XCFrameworks will be stored.
@@ -15,7 +15,7 @@ source ./tools/utils/argparse.sh
 source ./tools/utils/echo-color.sh
 
 set_description "Builds XCFrameworks from the specified repository and exports them to the designated output directory."
-define_arg "repo-path" "" "The path to the root of the 'dd-sdk-ios' repository." "string" "true"
+define_arg "repo-path" "" "The path to the root of the 'atatus-sdk-ios' repository." "string" "true"
 define_arg "ios" "false" "Includes iOS platform slices in the exported XCFrameworks." "store_true"
 define_arg "tvos" "false" "Includes tvOS platform slices in the exported XCFrameworks." "store_true"
 define_arg "output-path" "" "The path to the output directory where XCFrameworks will be stored." "string" "true"
@@ -44,7 +44,7 @@ archive() {
     echo_subtitle2 "➔ Archive scheme: '$scheme' for destination: '$destination'"
 
     xcodebuild archive \
-        -workspace "Datadog.xcworkspace" \
+        -workspace "Atatus.xcworkspace" \
         -scheme $scheme \
         -destination $destination \
         -archivePath $archive_path \
@@ -108,20 +108,20 @@ export REPO_ROOT=$(realpath "$SCRIPT_DIR/../..")
 $REPO_ROOT/tools/carthage-shim.sh bootstrap --platform $PLATFORMS --use-xcframeworks
 cp -r "Carthage/Build/OpenTelemetryApi.xcframework" "$XCFRAMEWORKS_OUTPUT"
 
-# Build Datadog XCFrameworks
-build_xcframework DatadogInternal "$PLATFORMS"
-build_xcframework DatadogCore "$PLATFORMS"
-build_xcframework DatadogLogs "$PLATFORMS"
-build_xcframework DatadogTrace "$PLATFORMS"
-build_xcframework DatadogRUM "$PLATFORMS"
-build_xcframework DatadogCrashReporting "$PLATFORMS"
-build_xcframework DatadogFlags "$PLATFORMS"
-build_xcframework DatadogProfiling "$PLATFORMS"
+# Build Atatus XCFrameworks
+build_xcframework AtatusInternal "$PLATFORMS"
+build_xcframework AtatusCore "$PLATFORMS"
+build_xcframework AtatusLogs "$PLATFORMS"
+build_xcframework AtatusTrace "$PLATFORMS"
+build_xcframework AtatusRUM "$PLATFORMS"
+build_xcframework AtatusCrashReporting "$PLATFORMS"
+build_xcframework AtatusFlags "$PLATFORMS"
+build_xcframework AtatusProfiling "$PLATFORMS"
 
-# Build iOS-only Datadog XCFrameworks
+# Build iOS-only Atatus XCFrameworks
 if [[ "$ios" == "true" ]]; then
-    build_xcframework DatadogWebViewTracking "iOS"
-    build_xcframework DatadogSessionReplay "iOS"
+    build_xcframework AtatusWebViewTracking "iOS"
+    build_xcframework AtatusSessionReplay "iOS"
 fi
 
 rm -rf "$ARCHIVES_TEMP_OUTPUT"

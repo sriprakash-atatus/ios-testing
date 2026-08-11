@@ -1,10 +1,14 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
 
-import DatadogInternal
+// ATCHG: Atatus SDK migration - renamed module imports `ddInternal` -> `AtatusInternal`; renamed the
+// `_dd` attribute prefix to `_atatus`; renamed the `x-dd-*` trace headers to `x-atatus-*`; rebranded
+// the licence header.
+
+import AtatusInternal
 import HTTPServerMock
 import TestUtilities
 import XCTest
@@ -105,7 +109,7 @@ class RUMResourceActiveSpanAugmentationTests: IntegrationTests, RUMCommonAsserts
                 .first
         )
 
-        XCTAssertEqual(firstPartyPOSTRequest.httpHeaders["x-datadog-origin"], "rum")
+        XCTAssertEqual(firstPartyPOSTRequest.httpHeaders["x-atatus-origin"], "rum")
 
         // Get RUM Sessions with expected number of View visits and Resources
         let rumRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
@@ -148,7 +152,7 @@ class RUMResourceActiveSpanAugmentationTests: IntegrationTests, RUMCommonAsserts
 
             // Make sure the sampling priority and decision makers are the expected ones.
             XCTAssertEqual(
-                firstPartyPOSTRequest.httpHeaders["x-datadog-sampling-priority"],
+                firstPartyPOSTRequest.httpHeaders["x-atatus-sampling-priority"],
                 "\(samplingPriority.rawValue)"
             )
 
@@ -184,7 +188,7 @@ class RUMResourceActiveSpanAugmentationTests: IntegrationTests, RUMCommonAsserts
             XCTAssertNil(getTraceID(from: firstPartyPOSTRequest))
             XCTAssertNil(getSpanID(from: firstPartyPOSTRequest))
 
-            XCTAssertNil(firstPartyPOSTRequest.httpHeaders["x-datadog-sampling-priority"])
+            XCTAssertNil(firstPartyPOSTRequest.httpHeaders["x-atatus-sampling-priority"])
             XCTAssertNil(getDecisionMaker(from: firstPartyPOSTRequest))
 
             XCTAssertNil(firstPartyResource.dd.traceId)
@@ -196,7 +200,7 @@ class RUMResourceActiveSpanAugmentationTests: IntegrationTests, RUMCommonAsserts
     private func getDecisionMaker(from request: Request) -> SamplingMechanismType? {
         let tags = getRequestTags(request)
 
-        guard let value = tags["_dd.p.dm"]?.replacingOccurrences(of: "-", with: "") else {
+        guard let value = tags["_atatus.p.dm"]?.replacingOccurrences(of: "-", with: "") else {
             return nil
         }
 

@@ -1,0 +1,43 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
+ */
+
+// ATCHG: Atatus SDK migration - renamed module imports `ddInternal` -> `AtatusInternal`; rebranded the
+// licence header.
+
+import Foundation
+import AtatusInternal
+
+/// Bundles all attachments that are part of a profile event.
+internal struct ProfileAttachments: Codable {
+    internal enum Constants {
+        static let profileEventFilename: String = "event.json"
+        static let rumEventsFilename: String = "rum-mobile-events.json"
+        static let wallFilename: String = "wall.pprof"
+    }
+
+    let pprof: Data
+    let rumEvents: Data?
+}
+
+/// Bundles individually all RUM events that are part of a profile event.
+internal enum RUMEvent {
+    case vital(Vital)
+    case hang(DurationEvent)
+    case longTask(DurationEvent)
+}
+
+extension RUMEvent: Encodable {
+    func encode(to encoder: Encoder) throws {
+        switch self {
+        case .vital(let value):
+            try value.encode(to: encoder)
+        case .hang(let value):
+            try value.encode(to: encoder)
+        case .longTask(let value):
+            try value.encode(to: encoder)
+        }
+    }
+}

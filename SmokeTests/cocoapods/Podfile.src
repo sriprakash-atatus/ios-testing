@@ -1,20 +1,20 @@
 abstract_target 'Common' do
   pod 'OpenTelemetry-Swift-Api', '2.5.0'
-  pod 'DatadogInternal', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
-  pod 'DatadogCore', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
-  pod 'DatadogLogs', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
-  pod 'DatadogTrace', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
-  pod 'DatadogRUM', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
-  pod 'DatadogCore', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
-  pod 'DatadogSessionReplay', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
-  pod 'DatadogCrashReporting', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
-  pod 'DatadogFlags', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
-  pod 'DatadogProfiling', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
+  pod 'AtatusInternal', :git => 'https://github.com/Atatus/atatus-sdk-ios.git', :GIT_REFERENCE
+  pod 'AtatusCore', :git => 'https://github.com/Atatus/atatus-sdk-ios.git', :GIT_REFERENCE
+  pod 'AtatusLogs', :git => 'https://github.com/Atatus/atatus-sdk-ios.git', :GIT_REFERENCE
+  pod 'AtatusTrace', :git => 'https://github.com/Atatus/atatus-sdk-ios.git', :GIT_REFERENCE
+  pod 'AtatusRUM', :git => 'https://github.com/Atatus/atatus-sdk-ios.git', :GIT_REFERENCE
+  pod 'AtatusCore', :git => 'https://github.com/Atatus/atatus-sdk-ios.git', :GIT_REFERENCE
+  pod 'AtatusSessionReplay', :git => 'https://github.com/Atatus/atatus-sdk-ios.git', :GIT_REFERENCE
+  pod 'AtatusCrashReporting', :git => 'https://github.com/Atatus/atatus-sdk-ios.git', :GIT_REFERENCE
+  pod 'AtatusFlags', :git => 'https://github.com/Atatus/atatus-sdk-ios.git', :GIT_REFERENCE
+  pod 'AtatusProfiling', :git => 'https://github.com/Atatus/atatus-sdk-ios.git', :GIT_REFERENCE
 
   target 'App Dynamic iOS' do
     platform :ios, '13.0'
     use_frameworks!
-    pod 'DatadogWebViewTracking', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
+    pod 'AtatusWebViewTracking', :git => 'https://github.com/Atatus/atatus-sdk-ios.git', :GIT_REFERENCE
 
     target 'App Dynamic iOS Tests' do
       inherit! :search_paths
@@ -23,7 +23,7 @@ abstract_target 'Common' do
 
   target 'App Static iOS' do
     platform :ios, '13.0'
-    pod 'DatadogWebViewTracking', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
+    pod 'AtatusWebViewTracking', :git => 'https://github.com/Atatus/atatus-sdk-ios.git', :GIT_REFERENCE
 
     target 'App Static iOS Tests' do
       inherit! :search_paths

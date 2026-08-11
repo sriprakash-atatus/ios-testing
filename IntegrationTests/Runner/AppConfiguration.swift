@@ -1,15 +1,20 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
 
+// ATCHG: Atatus SDK migration - renamed module imports `ddCore` -> `AtatusCore`,
+// `ddCrashReporting` -> `AtatusCrashReporting`, `ddLogs` -> `AtatusLogs`, `ddRUM` ->
+// `AtatusRUM`, `ddTrace` -> `AtatusTrace`; renamed `clientToken` to `licenseKey`; rebranded the
+// `dd` name to `Atatus` in comments and docs; rebranded the licence header.
+
 import UIKit
-import DatadogCore
-import DatadogLogs
-import DatadogTrace
-import DatadogRUM
-import DatadogCrashReporting
+import AtatusCore
+import AtatusLogs
+import AtatusTrace
+import AtatusRUM
+import AtatusCrashReporting
 
 var logger: LoggerProtocol?
 var rumMonitor: RUMMonitorProtocol { RUMMonitor.shared() }
@@ -18,8 +23,8 @@ protocol AppConfiguration {
     /// The tracking consent value applied when initializing the SDK.
     var initialTrackingConsent: TrackingConsent { get }
 
-    /// Datadog SDK configuration for given app configuration.
-    func sdkConfiguration() -> Datadog.Configuration
+    /// Atatus SDK configuration for given app configuration.
+    func sdkConfiguration() -> Atatus.Configuration
 
     /// Returns the initial Storyboard to launch the app in this configuration.
     func initialStoryboard() -> UIStoryboard?
@@ -28,7 +33,7 @@ protocol AppConfiguration {
     var testScenario: TestScenario? { get }
 }
 
-/// The configuration used when launching the Example app for Datadog SDK integration tests (⌘+U).
+/// The configuration used when launching the Example app for Atatus SDK integration tests (⌘+U).
 struct UITestsAppConfiguration: AppConfiguration {
     let testScenario: TestScenario? = Environment.testScenarioClassName()
         .flatMap { className in initializeTestScenario(with: className) }
@@ -50,9 +55,9 @@ struct UITestsAppConfiguration: AppConfiguration {
         return testScenario!.initialTrackingConsent
     }
 
-    func sdkConfiguration() -> Datadog.Configuration {
-        var configuration = Datadog.Configuration(
-            clientToken: "ui-tests-client-token",
+    func sdkConfiguration() -> Atatus.Configuration {
+        var configuration = Atatus.Configuration(
+            licenseKey: "ui-tests-client-token",
             env: "integration",
             service: "ui-tests-service-name",
             batchSize: .small,
@@ -75,8 +80,8 @@ struct UITestsAppConfiguration: AppConfiguration {
 
 extension AppConfiguration {
     func initializeSDK() {
-        // Initialize Datadog SDK
-        Datadog.initialize(
+        // Initialize Atatus SDK
+        Atatus.initialize(
             with: appConfiguration.sdkConfiguration(),
             trackingConsent: appConfiguration.initialTrackingConsent
         )
@@ -84,7 +89,7 @@ extension AppConfiguration {
         appConfiguration.testScenario?.configureFeatures()
 
         // Set user information
-        Datadog.setUserInfo(id: "abcd-1234", name: "foo", email: "foo@example.com", extraInfo: ["key-extraUserInfo": "value-extraUserInfo"])
+        Atatus.setUserInfo(id: "abcd-1234", name: "foo", email: "foo@example.com", extraInfo: ["key-extraUserInfo": "value-extraUserInfo"])
 
         // Create Logger
         logger = Logger.create(
@@ -104,14 +109,14 @@ extension AppConfiguration {
         #endif
 
         // Set highest verbosity level to see debugging logs from the SDK
-        Datadog.verbosityLevel = .debug
+        Atatus.verbosityLevel = .debug
 
         // Enable RUM Views debugging
         RUMMonitor.shared().debug = true
     }
 
     func deinitializeSDK() {
-        Datadog.stopInstance()
+        Atatus.stopInstance()
         logger = nil
     }
 }

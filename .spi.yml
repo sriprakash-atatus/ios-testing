@@ -3,12 +3,12 @@ builder:
   configs:
     - platform: ios
       documentation_targets:
-        - DatadogCore
-        - DatadogLogs
-        - DatadogTrace
-        - DatadogRUM
-        - DatadogSessionReplay
-        - DatadogCrashReporting
-        - DatadogWebViewTracking
-        - DatadogFlags
-        - DatadogProfiling
+        - AtatusCore
+        - AtatusLogs
+        - AtatusTrace
+        - AtatusRUM
+        - AtatusSessionReplay
+        - AtatusCrashReporting
+        - AtatusWebViewTracking
+        - AtatusFlags
+        - AtatusProfiling

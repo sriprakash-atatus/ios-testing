@@ -1,12 +1,16 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
 
+// ATCHG: Atatus SDK migration - renamed module imports `ddCore` -> `AtatusCore`, `ddTrace` ->
+// `AtatusTrace`; rebranded the `dd` name to `Atatus` in comments and docs; rebranded the licence
+// header.
+
 import UIKit
-import DatadogCore
-import DatadogTrace
+import AtatusCore
+import AtatusTrace
 
 internal class TSHomeViewController: UIViewController {
     override func viewDidLoad() {
@@ -26,7 +30,7 @@ internal class TSHomeViewController: UIViewController {
             // Because user info is attached to events in all features, we use it
             // to record current consent value for each event. This is later used
             // for assertions in integration tests.
-            Datadog.setUserInfo(
+            Atatus.setUserInfo(
                 id: "id",
                 name: "John Doe",
                 extraInfo: [

@@ -1,13 +1,16 @@
+// ATCHG: Atatus SDK migration - renamed `dd*` types to `Atatus*`; renamed the `DD` symbol prefix to
+// `AT`; rebranded the `dd` name to `Atatus` in comments and docs.
+
 // swift-tools-version: 6.0
 
 import PackageDescription
 import Foundation
 
-let internalSwiftSettings: [SwiftSetting] = ProcessInfo.processInfo.environment["DD_BENCHMARK"] != nil ?
-    [.define("DD_BENCHMARK")] : []
+let internalSwiftSettings: [SwiftSetting] = ProcessInfo.processInfo.environment["AT_BENCHMARK"] != nil ?
+    [.define("AT_BENCHMARK")] : []
 
 let package = Package(
-    name: "Datadog",
+    name: "Atatus",
     platforms: [
         .iOS(.v12),
         .tvOS(.v12),
@@ -17,40 +20,40 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "DatadogCore",
-            targets: ["DatadogCore"]
+            name: "AtatusCore",
+            targets: ["AtatusCore"]
         ),
         .library(
-            name: "DatadogLogs",
-            targets: ["DatadogLogs"]
+            name: "AtatusLogs",
+            targets: ["AtatusLogs"]
         ),
         .library(
-            name: "DatadogTrace",
-            targets: ["DatadogTrace"]
+            name: "AtatusTrace",
+            targets: ["AtatusTrace"]
         ),
         .library(
-            name: "DatadogRUM",
-            targets: ["DatadogRUM"]
+            name: "AtatusRUM",
+            targets: ["AtatusRUM"]
         ),
         .library(
-            name: "DatadogSessionReplay",
-            targets: ["DatadogSessionReplay"]
+            name: "AtatusSessionReplay",
+            targets: ["AtatusSessionReplay"]
         ),
         .library(
-            name: "DatadogCrashReporting",
-            targets: ["DatadogCrashReporting"]
+            name: "AtatusCrashReporting",
+            targets: ["AtatusCrashReporting"]
         ),
         .library(
-            name: "DatadogWebViewTracking",
-            targets: ["DatadogWebViewTracking"]
+            name: "AtatusWebViewTracking",
+            targets: ["AtatusWebViewTracking"]
         ),
         .library(
-            name: "DatadogFlags",
-            targets: ["DatadogFlags"]
+            name: "AtatusFlags",
+            targets: ["AtatusFlags"]
         ),
         .library(
-            name: "DatadogProfiling",
-            targets: ["DatadogProfiling"]
+            name: "AtatusProfiling",
+            targets: ["AtatusProfiling"]
         ),
     ],
     dependencies: [
@@ -59,12 +62,12 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "DatadogCore",
+            name: "AtatusCore",
             dependencies: [
-                .target(name: "DatadogInternal"),
-                .target(name: "DatadogPrivate"),
+                .target(name: "AtatusInternal"),
+                .target(name: "AtatusPrivate"),
             ],
-            path: "DatadogCore",
+            path: "AtatusCore",
             sources: ["Sources"],
             resources: [
                 .copy("Resources/PrivacyInfo.xcprivacy")
@@ -72,70 +75,70 @@ let package = Package(
             swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings
         ),
         .target(
-            name: "DatadogPrivate",
-            path: "DatadogCore/Private"
+            name: "AtatusPrivate",
+            path: "AtatusCore/Private"
         ),
 
         .target(
-            name: "DatadogInternal",
-            path: "DatadogInternal/Sources",
+            name: "AtatusInternal",
+            path: "AtatusInternal/Sources",
             swiftSettings: internalSwiftSettings
         ),
         .testTarget(
-            name: "DatadogInternalTests",
+            name: "AtatusInternalTests",
             dependencies: [
-                .target(name: "DatadogInternal"),
+                .target(name: "AtatusInternal"),
                 .target(name: "TestUtilities"),
             ],
-            path: "DatadogInternal/Tests"
+            path: "AtatusInternal/Tests"
         ),
 
         .target(
-            name: "DatadogLogs",
+            name: "AtatusLogs",
             dependencies: [
-                .target(name: "DatadogInternal"),
+                .target(name: "AtatusInternal"),
             ],
-            path: "DatadogLogs/Sources"
+            path: "AtatusLogs/Sources"
         ),
         .testTarget(
-            name: "DatadogLogsTests",
+            name: "AtatusLogsTests",
             dependencies: [
-                .target(name: "DatadogLogs"),
+                .target(name: "AtatusLogs"),
                 .target(name: "TestUtilities"),
             ],
-            path: "DatadogLogs/Tests"
+            path: "AtatusLogs/Tests"
         ),
 
         .target(
-            name: "DatadogTrace",
+            name: "AtatusTrace",
             dependencies: [
-                .target(name: "DatadogInternal"),
+                .target(name: "AtatusInternal"),
                 .product(name: "OpenTelemetryApi", package: "opentelemetry-swift-core")
             ],
-            path: "DatadogTrace/Sources",
+            path: "AtatusTrace/Sources",
             swiftSettings: [
                 .swiftLanguageMode(.v6)
             ]
         ),
         .testTarget(
-            name: "DatadogTraceTests",
+            name: "AtatusTraceTests",
             dependencies: [
-                .target(name: "DatadogTrace"),
+                .target(name: "AtatusTrace"),
                 .target(name: "TestUtilities"),
             ],
-            path: "DatadogTrace/Tests",
+            path: "AtatusTrace/Tests",
             swiftSettings: [
                 .swiftLanguageMode(.v6)
             ]
         ),
 
         .target(
-            name: "DatadogRUM",
+            name: "AtatusRUM",
             dependencies: [
-                .target(name: "DatadogInternal"),
-                .target(name: "DatadogRUMPrivate"),
+                .target(name: "AtatusInternal"),
+                .target(name: "AtatusRUMPrivate"),
             ],
-            path: "DatadogRUM",
+            path: "AtatusRUM",
             sources: ["Sources"],
             resources: [
                 .copy("Resources/PrivacyInfo.xcprivacy")
@@ -143,80 +146,80 @@ let package = Package(
             swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings
         ),
         .target(
-            name: "DatadogRUMPrivate",
-            path: "DatadogRUM/Private"
+            name: "AtatusRUMPrivate",
+            path: "AtatusRUM/Private"
         ),
         .testTarget(
-            name: "DatadogRUMTests",
+            name: "AtatusRUMTests",
             dependencies: [
-                .target(name: "DatadogRUM"),
+                .target(name: "AtatusRUM"),
                 .target(name: "TestUtilities"),
             ],
-            path: "DatadogRUM/Tests"
+            path: "AtatusRUM/Tests"
         ),
 
         .target(
-            name: "DatadogCrashReporting",
+            name: "AtatusCrashReporting",
             dependencies: [
-                .target(name: "DatadogInternal"),
+                .target(name: "AtatusInternal"),
                 .product(name: "Recording", package: "KSCrash"),
                 .product(name: "Filters", package: "KSCrash")
             ],
-            path: "DatadogCrashReporting",
+            path: "AtatusCrashReporting",
             sources: ["Sources"],
             resources: [
                 .copy("Resources/PrivacyInfo.xcprivacy")
             ]
         ),
         .testTarget(
-            name: "DatadogCrashReportingTests",
+            name: "AtatusCrashReportingTests",
             dependencies: [
-                .target(name: "DatadogCrashReporting"),
+                .target(name: "AtatusCrashReporting"),
                 .target(name: "TestUtilities"),
             ],
-            path: "DatadogCrashReporting/Tests"
+            path: "AtatusCrashReporting/Tests"
         ),
 
         .target(
-            name: "DatadogWebViewTracking",
+            name: "AtatusWebViewTracking",
             dependencies: [
-                .target(name: "DatadogInternal"),
+                .target(name: "AtatusInternal"),
             ],
-            path: "DatadogWebViewTracking/Sources"
+            path: "AtatusWebViewTracking/Sources"
         ),
         .testTarget(
-            name: "DatadogWebViewTrackingTests",
+            name: "AtatusWebViewTrackingTests",
             dependencies: [
-                .target(name: "DatadogWebViewTracking"),
+                .target(name: "AtatusWebViewTracking"),
                 .target(name: "TestUtilities"),
             ],
-            path: "DatadogWebViewTracking/Tests"
+            path: "AtatusWebViewTracking/Tests"
         ),
 
         .target(
-            name: "DatadogSessionReplay",
-            dependencies: ["DatadogInternal"],
-            path: "DatadogSessionReplay/Sources"
+            name: "AtatusSessionReplay",
+            dependencies: ["AtatusInternal"],
+            path: "AtatusSessionReplay/Sources"
         ),
         .testTarget(
-            name: "DatadogSessionReplayTests",
+            name: "AtatusSessionReplayTests",
             dependencies: [
-                .target(name: "DatadogSessionReplay"),
+                .target(name: "AtatusSessionReplay"),
                 .target(name: "TestUtilities"),
             ],
-            path: "DatadogSessionReplay/Tests",
+            path: "AtatusSessionReplay/Tests",
             resources: [
                 .process("Resources/Assets.xcassets")
             ]
         ),
         
         .target(
-            name: "DatadogProfiling",
+            name: "AtatusProfiling",
             dependencies: [
-                .target(name: "DatadogInternal"),
-                .target(name: "DatadogMachProfiler")
+                .target(name: "AtatusInternal"),
+                .target(name: "AtatusMachProfiler")
             ],
-            path: "DatadogProfiling",
+            path: "AtatusProfiling",
             sources: ["Sources"],
             resources: [
                 .copy("Resources/PrivacyInfo.xcprivacy")
@@ -224,49 +227,49 @@ let package = Package(
             swiftSettings: internalSwiftSettings
         ),
         .target(
-            name: "DatadogMachProfiler",
-            path: "DatadogProfiling/Mach"
+            name: "AtatusMachProfiler",
+            path: "AtatusProfiling/Mach"
         ),
         .testTarget(
-            name: "DatadogProfilingTests",
+            name: "AtatusProfilingTests",
             dependencies: [
-                .target(name: "DatadogMachProfiler"),
-                .target(name: "DatadogProfiling"),
+                .target(name: "AtatusMachProfiler"),
+                .target(name: "AtatusProfiling"),
                 .target(name: "TestUtilities"),
             ],
-            path: "DatadogProfiling/Tests",
+            path: "AtatusProfiling/Tests",
             swiftSettings: [.interoperabilityMode(.Cxx)] + internalSwiftSettings
         ),
 
         .target(
-            name: "DatadogFlags",
+            name: "AtatusFlags",
             dependencies: [
-                .target(name: "DatadogInternal"),
+                .target(name: "AtatusInternal"),
             ],
-            path: "DatadogFlags/Sources"
+            path: "AtatusFlags/Sources"
         ),
         .testTarget(
-            name: "DatadogFlagsTests",
+            name: "AtatusFlagsTests",
             dependencies: [
-                .target(name: "DatadogFlags"),
+                .target(name: "AtatusFlags"),
                 .target(name: "TestUtilities"),
             ],
-            path: "DatadogFlags/Tests"
+            path: "AtatusFlags/Tests"
         ),
 
         .target(
             name: "TestUtilities",
             dependencies: [
-                .target(name: "DatadogCore"),
-                .target(name: "DatadogPrivate"),
-                .target(name: "DatadogInternal"),
-                .target(name: "DatadogLogs"),
-                .target(name: "DatadogRUM"),
-                .target(name: "DatadogSessionReplay"),
-                .target(name: "DatadogTrace"),
-                .target(name: "DatadogCrashReporting"),
-                .target(name: "DatadogWebViewTracking"),
-                .target(name: "DatadogFlags"),
+                .target(name: "AtatusCore"),
+                .target(name: "AtatusPrivate"),
+                .target(name: "AtatusInternal"),
+                .target(name: "AtatusLogs"),
+                .target(name: "AtatusRUM"),
+                .target(name: "AtatusSessionReplay"),
+                .target(name: "AtatusTrace"),
+                .target(name: "AtatusCrashReporting"),
+                .target(name: "AtatusWebViewTracking"),
+                .target(name: "AtatusFlags"),
             ],
             path: "TestUtilities/Sources",
             swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings
@@ -276,9 +279,9 @@ let package = Package(
     cxxLanguageStandard: .cxx17
 )
 
-// If the `DD_TEST_UTILITIES_ENABLED` development ENV is set, export additional utility packages.
-// To set this ENV for Xcode projects that fetch this package locally, use `open --env DD_TEST_UTILITIES_ENABLED path/to/<project or workspace>`.
-if ProcessInfo.processInfo.environment["DD_TEST_UTILITIES_ENABLED"] != nil {
+// If the `AT_TEST_UTILITIES_ENABLED` development ENV is set, export additional utility packages.
+// To set this ENV for Xcode projects that fetch this package locally, use `open --env AT_TEST_UTILITIES_ENABLED path/to/<project or workspace>`.
+if ProcessInfo.processInfo.environment["AT_TEST_UTILITIES_ENABLED"] != nil {
     package.products.append(
         .library(
             name: "TestUtilities",

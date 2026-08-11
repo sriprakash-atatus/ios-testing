@@ -1,0 +1,44 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
+ */
+
+// ATCHG: Atatus SDK migration - renamed module imports `ddSessionReplay` -> `AtatusSessionReplay`;
+// rebranded the licence header.
+
+#if os(iOS)
+import Foundation
+import UIKit
+import XCTest
+
+@testable import AtatusSessionReplay
+
+class UIImageSessionReplayTests: XCTestCase {
+    func testScaledToApproximateSize_ReturnsOriginalImageData_IfSizeIsSmallerOrEqualToAnticipatedMaxSize() throws {
+        let image: UIImage = .mockRandom(width: 50, height: 50)
+        let imageData = try XCTUnwrap(image.pngData())
+        let scaledData = try XCTUnwrap(image.dd.pngData(maxSize: CGSize(width: 100, height: 100)))
+        XCTAssertEqual(scaledData.count, imageData.count)
+    }
+
+    func testScaledToApproximateSize_ScalesImageToSmallerSize_IfSizeIsLargerThanAnticipatedMaxSize() throws {
+        let image: UIImage = .mockRandom(width: 50, height: 50)
+        let imageData = try XCTUnwrap(image.pngData())
+        let scaledData = try XCTUnwrap(image.dd.pngData(maxSize: CGSize(width: 25, height: 25)))
+        XCTAssertLessThan(scaledData.count, imageData.count)
+    }
+
+    func testDominantColor_ReturnsOpaqueColorForLowWeightPaletteColor() throws {
+        let image = UIGraphicsImageRenderer(size: CGSize(width: 100, height: 100)).image { context in
+            UIColor.white.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: 10, height: 10))
+        }
+
+        let color = try XCTUnwrap(image.dominantColor)
+
+        XCTAssertEqual(color, .white)
+    }
+}
+
+#endif

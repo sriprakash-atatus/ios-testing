@@ -1,14 +1,19 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
+
+// ATCHG: Atatus SDK migration - renamed module imports `ddBenchmarks` -> `AtatusBenchmarks`,
+// `ddCore` -> `AtatusCore`, `ddInternal` -> `AtatusInternal`; renamed the `DD` symbol prefix to
+// `AT`; renamed `clientToken` to `licenseKey`; rebranded the `dd` name to `Atatus` in comments and
+// docs; rebranded the licence header.
 
 import UIKit
 
-import DatadogInternal
-import DatadogCore
-import DatadogBenchmarks
+import AtatusInternal
+import AtatusCore
+import AtatusBenchmarks
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -71,7 +76,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
 
         if run != .baseline {
-            // instrument the application with Datadog SDK
+            // instrument the application with Atatus SDK
             // when not in baseline run
             scenario.instrument(with: applicationInfo)
         }
@@ -85,9 +90,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     /// It is important to stop current instruments before starting a new run.
     private func stop() {
         vitals = nil // stop collecting vitals
-        Datadog.stopInstance() // stop runner instrumentation
-#if DD_BENCHMARK
-        DatadogInternal.bench = (NOPBench(), NOPBench()) // stop profiling the sdk
+        Atatus.stopInstance() // stop runner instrumentation
+#if AT_BENCHMARK
+        AtatusInternal.bench = (NOPBench(), NOPBench()) // stop profiling the sdk
 #endif
         window?.rootViewController = UIViewController()
     }
@@ -147,8 +152,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 )
             )
         )
-#if DD_BENCHMARK
-        DatadogInternal.bench = (profiler, meter) // Inject profiler and meter to collect telemetry
+#if AT_BENCHMARK
+        AtatusInternal.bench = (profiler, meter) // Inject profiler and meter to collect telemetry
 #endif
     }
 }
@@ -163,7 +168,7 @@ extension Benchmarks.Configuration {
         device: UIDevice = .current
     ) {
         self.init(
-            clientToken: info.clientToken,
+            licenseKey: info.licenseKey,
             apiKey: info.apiKey,
             context: Benchmarks.Configuration.Context(
                 applicationIdentifier: bundle.bundleIdentifier!,

@@ -1,8 +1,11 @@
 /*
 * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
-* This product includes software developed at Datadog (https://www.datadoghq.com/).
-* Copyright 2019-Present Datadog, Inc.
+* This product includes software developed at Atatus (https://www.atatus.com/).
+* Copyright 2026-Present Atatus, Inc.
 */
+
+// ATCHG: Atatus SDK migration - renamed the `DD` symbol prefix to `AT`; scrubbed the remaining `dd`
+// name to `dd` in comments and docs; rebranded the licence header.
 
 import Foundation
 import CodeGeneration
@@ -15,7 +18,7 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
     public init() {
         super.init(
             sharedTypeNames: [
-                "DDProfiling",
+                "ATProfiling",
                 "RUMConnectivity",
                 "RUMUser",
                 "RUMMethod",
@@ -119,8 +122,8 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
 
         if fixedName == "Device" {
             if context.parent?.typeName == "telemetry" {
-                // The `telemetry.device` added in https://github.com/DataDog/rum-events-format/pull/200 has different schema
-                // than `*.device` in common schema: https://github.com/DataDog/rum-events-format/blob/dcd62e58566b9d158c404f3588edc62c041262dd/schemas/rum/_common-schema.json#L264-L295
+                // The `telemetry.device` added in https://github.com/dd/rum-events-format/pull/200 has different schema
+                // than `*.device` in common schema: https://github.com/dd/rum-events-format/blob/dcd62e58566b9d158c404f3588edc62c041262dd/schemas/rum/_common-schema.json#L264-L295
                 // For that reason, we generate it under different name, so the `RUMTelemetryDevice` can be shared between telemetry events.
                 fixedName = "RUMTelemetryDevice"
             }
@@ -128,8 +131,8 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
 
         if fixedName == "OS" {
             if context.parent?.typeName == "telemetry" {
-                // The `telemetry.os` added in https://github.com/DataDog/rum-events-format/pull/200 has different schema
-                // than `*.os` in common schema: https://github.com/DataDog/rum-events-format/blob/dcd62e58566b9d158c404f3588edc62c041262dd/schemas/rum/_common-schema.json#L237-L262
+                // The `telemetry.os` added in https://github.com/dd/rum-events-format/pull/200 has different schema
+                // than `*.os` in common schema: https://github.com/dd/rum-events-format/blob/dcd62e58566b9d158c404f3588edc62c041262dd/schemas/rum/_common-schema.json#L237-L262
                 // For that reason, we generate it under different name, so the `RUMTelemetryOperatingSystem` can be shared between telemetry events.
                 fixedName = "RUMTelemetryOperatingSystem"
             } else {
@@ -137,7 +140,7 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
             }
         }
 
-        // Since https://github.com/DataDog/rum-events-format/pull/57 `action.id` can be either
+        // Since https://github.com/dd/rum-events-format/pull/57 `action.id` can be either
         // single `String` or an array of `[String]`. This is handled by generating Swift enum with
         // two cases and different associated types. To not duplicate generated code in each nested
         // context we generate single root type: `RUMActionID`.
@@ -158,7 +161,7 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
         }
 
         if fixedName == "Profiling" {
-            fixedName = "DDProfiling"
+            fixedName = "ATProfiling"
         }
 
         return fixedName

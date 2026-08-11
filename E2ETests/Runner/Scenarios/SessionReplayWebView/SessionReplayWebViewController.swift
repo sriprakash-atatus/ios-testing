@@ -1,12 +1,15 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
+
+// ATCHG: Atatus SDK migration - renamed module imports `ddWebViewTracking` -> `AtatusWebViewTracking`;
+// rebranded the licence header.
 
 import UIKit
 import WebKit
-import DatadogWebViewTracking
+import AtatusWebViewTracking
 
 class SessionReplayWebViewController: UIViewController, WKUIDelegate {
     var webView: WKWebView! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -22,7 +25,7 @@ class SessionReplayWebViewController: UIViewController, WKUIDelegate {
         super.viewDidLoad()
         WebViewTracking.enable(
             webView: webView,
-            hosts: ["datadoghq.dev"]
+            hosts: ["atatus.dev"]
         )
     }
 
@@ -36,34 +39,34 @@ class SessionReplayWebViewController: UIViewController, WKUIDelegate {
 class SessionReplayBasicTextViewController: SessionReplayWebViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
-        load(url: "https://datadoghq.dev/browser-sdk-test-playground/webview-support/#basic-text")
+        load(url: "https://atatus.dev/browser-sdk-test-playground/webview-support/#basic-text")
     }
 }
 
 class SessionReplayImageViewController: SessionReplayWebViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
-        load(url: "https://datadoghq.dev/browser-sdk-test-playground/webview-support/#image")
+        load(url: "https://atatus.dev/browser-sdk-test-playground/webview-support/#image")
     }
 }
 
 class SessionReplayViewPortViewController: SessionReplayWebViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
-        load(url: "https://datadoghq.dev/browser-sdk-test-playground/webview-support/#viewport-unit")
+        load(url: "https://atatus.dev/browser-sdk-test-playground/webview-support/#viewport-unit")
     }
 }
 
 class SessionReplayShadowDOMViewController: SessionReplayWebViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
-        load(url: "https://datadoghq.dev/browser-sdk-test-playground/webview-support/#shadow-dom")
+        load(url: "https://atatus.dev/browser-sdk-test-playground/webview-support/#shadow-dom")
     }
 }
 
 class SessionReplayTimestampViewController: SessionReplayWebViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
-        load(url: "https://datadoghq.dev/browser-sdk-test-playground/webview-support/#click-event")
+        load(url: "https://atatus.dev/browser-sdk-test-playground/webview-support/#click-event")
     }
 }

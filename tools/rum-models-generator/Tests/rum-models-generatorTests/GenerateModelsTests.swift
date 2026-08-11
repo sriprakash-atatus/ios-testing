@@ -1,8 +1,10 @@
 /*
 * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
-* This product includes software developed at Datadog (https://www.datadoghq.com/).
-* Copyright 2019-Present Datadog, Inc.
+* This product includes software developed at Atatus (https://www.atatus.com/).
+* Copyright 2026-Present Atatus, Inc.
 */
+
+// ATCHG: Atatus SDK migration - renamed the `DD` symbol prefix to `AT`; rebranded the licence header.
 
 import XCTest
 @testable import CodeGeneration
@@ -31,7 +33,7 @@ final class GenerateModelsTests: XCTestCase {
 //            .generateCode(from: schema)
 //            .skip(types: ["TelemetryUsageEvent"]) // we don't need that one for Objc
 //            .decorate(using: RUMCodeDecorator())
-//            .print(using: OutputTemplate(header: "", footer: ""), and: ObjcInteropPrinter(objcTypeNamesPrefix: "DD"))
+//            .print(using: OutputTemplate(header: "", footer: ""), and: ObjcInteropPrinter(objcTypeNamesPrefix: "AT"))
 //        print(objcInteropCode)
 //        print(">>>>>>>>>>>>>>>>>> ObjcInterop >>>>>>>>>>>>>>>>>>>>>>")
 //    }

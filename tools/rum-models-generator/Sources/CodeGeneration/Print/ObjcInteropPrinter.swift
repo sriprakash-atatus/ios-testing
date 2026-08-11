@@ -1,8 +1,11 @@
 /*
 * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
-* This product includes software developed at Datadog (https://www.datadoghq.com/).
-* Copyright 2019-Present Datadog, Inc.
+* This product includes software developed at Atatus (https://www.atatus.com/).
+* Copyright 2026-Present Atatus, Inc.
 */
+
+// ATCHG: Atatus SDK migration - renamed `dd*` types to `Atatus*`; renamed the `DD` symbol prefix to
+// `AT`; rebranded the licence header.
 
 import Foundation
 
@@ -25,7 +28,7 @@ private struct AssociatedTypeEnumPropertyIdentity: Hashable {
 /// it prints it's Obj-c interoperability wrapper:
 ///
 ///     @objc
-///     public class DDFoo: NSObject {
+///     public class ATFoo: NSObject {
 ///         internal var foo: Foo
 ///
 ///         internal init(foo: Foo) {
@@ -64,7 +67,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
     /// The prefix used for types exposed to Obj-c.
     private let objcTypeNamesPrefix: String
     /// Overrides for generated `@objc(...)` runtime names.
-    /// Keys are generated type names (e.g. `objc_RUMErrorEventErrorMeta`), values are runtime names (e.g. `DDRUMErrorEventMeta`).
+    /// Keys are generated type names (e.g. `objc_RUMErrorEventErrorMeta`), values are runtime names (e.g. `ATRUMErrorEventMeta`).
     private let objcRuntimeNameOverrides: [String: String]
     /// Overrides for preserving ObjC source compatibility when a schema changes a property into an associated-type enum.
     private static let legacyStringAccessorWrapperPropertyNames: [AssociatedTypeEnumPropertyIdentity: String] = [
@@ -390,8 +393,8 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
 
         // Generate accessor to the referenced wrapper, e.g.:
         // ```
-        // @objc public var bar: DDFooBar? {
-        //     root.swiftModel.bar != nil ? DDFooBar(root: root) : nil
+        // @objc public var bar: ATFooBar? {
+        //     root.swiftModel.bar != nil ? ATFooBar(root: root) : nil
         // }
         // ```
         let swiftProperty = propertyWrapper.bridgedSwiftProperty
@@ -403,13 +406,13 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
             if swiftProperty.isOptional {
                 // The property is optional, so the accessor must be returned only if the wrapped value is `!= nil`, e.g.:
                 // ```
-                // root.swiftModel.bar != nil ? DDFooBar(root: root) : nil
+                // root.swiftModel.bar != nil ? ATFooBar(root: root) : nil
                 // ```
                 writeLine("root.swiftModel.\(propertyWrapper.keyPath) != nil ? \(objcClassName)(root: root) : nil")
             } else {
                 // The property is non-optional, so accessor can be provided without considering `nil` value:
                 // ```
-                // DDFooBar(root: root)
+                // ATFooBar(root: root)
                 // ```
                 writeLine("\(objcClassName)(root: root)")
             }
@@ -422,7 +425,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
 
         // Generate getter and setter for managed enum, e.g.:
         // ```
-        // @objc public var enumeration: DDFooEnumeration {
+        // @objc public var enumeration: ATFooEnumeration {
         //    set { root.swiftModel.enumeration = newValue.toSwift }
         //    get { .init(swift: root.swiftModel.enumeration) }
         // }
@@ -456,7 +459,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         // representation (which is `Int` for all `@objc` enums), e.g.:
         // ```
         // @objc public var options: [Int] {
-        //     root.swiftModel.bar.options.map { DDFooOptions(swift: $0).rawValue }
+        //     root.swiftModel.bar.options.map { ATFooOptions(swift: $0).rawValue }
         // }
         // ```
         let swiftProperty = propertyWrapper.bridgedSwiftProperty
@@ -480,8 +483,8 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
 
         // Generate getter for managed structs array.
         // ```
-        // @objc public var bars: [DDBar] {
-        //     root.swiftModel.bars.map { DDBar(swiftModel: $0) }
+        // @objc public var bars: [ATBar] {
+        //     root.swiftModel.bars.map { ATBar(swiftModel: $0) }
         // }
         // ```
         let swiftProperty = propertyWrapper.bridgedSwiftProperty
@@ -510,8 +513,8 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
 
         // Generate getter for managed associated type enums array.
         // ```
-        // @objc public var statuses: [DDFooStatus] {
-        //     root.swiftModel.statuses.map { DDFooStatus(swiftModel: $0) }
+        // @objc public var statuses: [ATFooStatus] {
+        //     root.swiftModel.statuses.map { ATFooStatus(swiftModel: $0) }
         // }
         // ```
         let swiftProperty = propertyWrapper.bridgedSwiftProperty
@@ -622,8 +625,8 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
     ) throws {
         // Generate accessor to the referenced wrapper, e.g.:
         // ```
-        // @objc public var bar: DDFooBar? {
-        //     root.swiftModel.bar != nil ? DDFooBar(root: root) : nil
+        // @objc public var bar: ATFooBar? {
+        //     root.swiftModel.bar != nil ? ATFooBar(root: root) : nil
         // }
         // ```
         let swiftProperty = propertyWrapper.bridgedSwiftProperty
@@ -634,13 +637,13 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
             if swiftProperty.isOptional {
                 // The property is optional, so the accessor must be returned only if the wrapped value is `!= nil`, e.g.:
                 // ```
-                // root.swiftModel.bar != nil ? DDFooBar(root: root) : nil
+                // root.swiftModel.bar != nil ? ATFooBar(root: root) : nil
                 // ```
                 writeLine("root.swiftModel.\(propertyWrapper.keyPath) != nil ? \(objcClassName)(root: root) : nil")
             } else {
                 // The property is non-optional, so accessor can be provided without considering `nil` value:
                 // ```
-                // DDFooBar(root: root)
+                // ATFooBar(root: root)
                 // ```
                 writeLine("\(objcClassName)(root: root)")
             }
@@ -718,7 +721,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
             // However our SDK bridges `[String: Any]` attributes passed in Objective-C API to their `[String: Encodable]` representation
             // in underlying Swift SDK. This is done with `AnyEncodable` type erasure. To return these attributes back
             // to the user, `AnyEncodable` must be unpacked to its original `Any` value. This is done in `.dd.objCAttributes` extension
-            // defined in `DatadogInternal` module. Here we just emit its invocation:
+            // defined in `AtatusInternal` module. Here we just emit its invocation:
             return optionality + ".dd.objCAttributes"
         case let objcStruct as ObjcInteropNestedClass:
             let transitiveType = objcStruct.parentProperty as? ObjcInteropPropertyWrapperForTransitiveType
@@ -777,7 +780,7 @@ private extension String {
     var objcNaming: String {
         let objcPrefix = "objc_"
         if self.hasPrefix(objcPrefix) {
-            return "DD" + self.dropFirst(objcPrefix.count)
+            return "AT" + self.dropFirst(objcPrefix.count)
         }
         return self
     }

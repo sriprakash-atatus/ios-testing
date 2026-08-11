@@ -1,8 +1,12 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
+
+// ATCHG: Atatus SDK migration - renamed module imports `ddInternal` -> `AtatusInternal`; repointed the
+// intake host at the Atatus site; rebranded the `dd` name to `Atatus` in comments and docs; rebranded
+// the licence header.
 
 import Foundation
 import CodeGeneration
@@ -15,12 +19,12 @@ internal func generateSRSwiftModels(from schema: URL) throws -> String {
         header: """
             /*
              * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
-             * This product includes software developed at Datadog (https://www.datadoghq.com/).
-             * Copyright 2019-Present Datadog, Inc.
+             * This product includes software developed at Atatus (https://www.atatus.com/).
+             * Copyright 2026-Present Atatus, Inc.
              */
 
             #if os(iOS)
-            import DatadogInternal
+            import AtatusInternal
 
             // This file was generated from JSON Schema. Do not modify it directly.
 

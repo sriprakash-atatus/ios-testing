@@ -25,54 +25,54 @@ define_arg "device" "" "Specifies the simulator device for running tests, e.g. '
 check_for_help "$@"
 parse_args "$@"
 
-WORKSPACE="Datadog.xcworkspace"
+WORKSPACE="Atatus.xcworkspace"
 DESTINATION="platform=$platform,name=$device,OS=$os"
 SCHEME=$scheme
 
-# Enables Datadog Test Visibility to trace tests execution
-# Ref.: https://docs.datadoghq.com/tests/setup/swift/
+# Enables Atatus Test Visibility to trace tests execution
+# Ref.: https://docs.atatus.com/tests/setup/swift/
 setup_test_visibility() {
-    export DD_TEST_RUNNER=1
+    export AT_TEST_RUNNER=1
 
     # Base:
-    export DD_API_KEY=$(get_secret $DD_IOS_SECRET__TEST_VISIBILITY_API_KEY)
-    export DD_ENV=$([[ "$CI" = "true" ]] && echo "ci" || echo "local")
-    export DD_SERVICE=dd-sdk-ios
+    export AT_API_KEY=$(get_secret $AT_IOS_SECRET__TEST_VISIBILITY_API_KEY)
+    export AT_ENV=$([[ "$CI" = "true" ]] && echo "ci" || echo "local")
+    export AT_SERVICE=atatus-sdk-ios
     export SRCROOT="$\(SRCROOT\)"
 
     # Auto-instrumentation:
-    export DD_ENABLE_STDOUT_INSTRUMENTATION=0
-    export DD_ENABLE_STDERR_INSTRUMENTATION=0
-    export DD_DISABLE_NETWORK_INSTRUMENTATION=1
-    export DD_DISABLE_RUM_INTEGRATION=1
-    export DD_DISABLE_SOURCE_LOCATION=0
-    # Disabled: contends with some targets' own crash handler (e.g. DatadogCrashReporting's
+    export AT_ENABLE_STDOUT_INSTRUMENTATION=0
+    export AT_ENABLE_STDERR_INSTRUMENTATION=0
+    export AT_DISABLE_NETWORK_INSTRUMENTATION=1
+    export AT_DISABLE_RUM_INTEGRATION=1
+    export AT_DISABLE_SOURCE_LOCATION=0
+    # Disabled: contends with some targets' own crash handler (e.g. AtatusCrashReporting's
     # KSCrash instance) and breaks their tests. Needs per-target opt-in before re-enabling.
-    export DD_DISABLE_CRASH_HANDLER=1
+    export AT_DISABLE_CRASH_HANDLER=1
 
     # Debugging:
-    # - If `DD_TRACE_DEBUG` is enabled, the `dd-sdk-swift-testing` will print extra debug logs.
-    export DD_TRACE_DEBUG=0
+    # - If `AT_TRACE_DEBUG` is enabled, the `dd-sdk-swift-testing` will print extra debug logs.
+    export AT_TRACE_DEBUG=0
 
     # Git metadata:
     # - While `dd-sdk-swift-testing` can read Git metadata from `.git` folder, following info must be overwritten
     # due to our GH → GitLab mirroring configuration (otherwise it will point to GitLab mirror not GH repo).
-    export DD_GIT_REPOSITORY_URL="git@github.com:DataDog/dd-sdk-ios.git"
+    export AT_GIT_REPOSITORY_URL="git@github.com:atatus/atatus-sdk-ios.git"
 
     echo_info "CI Test Visibility setup:"
-    echo "▸ DD_TEST_RUNNER=$DD_TEST_RUNNER"
-    echo "▸ DD_API_KEY=$([[ -n "$DD_API_KEY" ]] && echo '***' || echo '')"
-    echo "▸ DD_ENV=$DD_ENV"
-    echo "▸ DD_SERVICE=$DD_SERVICE"
+    echo "▸ AT_TEST_RUNNER=$AT_TEST_RUNNER"
+    echo "▸ AT_API_KEY=$([[ -n "$AT_API_KEY" ]] && echo '***' || echo '')"
+    echo "▸ AT_ENV=$AT_ENV"
+    echo "▸ AT_SERVICE=$AT_SERVICE"
     echo "▸ SRCROOT=$SRCROOT"
-    echo "▸ DD_ENABLE_STDOUT_INSTRUMENTATION=$DD_ENABLE_STDOUT_INSTRUMENTATION"
-    echo "▸ DD_ENABLE_STDERR_INSTRUMENTATION=$DD_ENABLE_STDERR_INSTRUMENTATION"
-    echo "▸ DD_DISABLE_NETWORK_INSTRUMENTATION=$DD_DISABLE_NETWORK_INSTRUMENTATION"
-    echo "▸ DD_DISABLE_RUM_INTEGRATION=$DD_DISABLE_RUM_INTEGRATION"
-    echo "▸ DD_DISABLE_SOURCE_LOCATION=$DD_DISABLE_SOURCE_LOCATION"
-    echo "▸ DD_DISABLE_CRASH_HANDLER=$DD_DISABLE_CRASH_HANDLER"
-    echo "▸ DD_GIT_REPOSITORY_URL=$DD_GIT_REPOSITORY_URL"
-    echo "▸ DD_TRACE_DEBUG=$DD_TRACE_DEBUG"
+    echo "▸ AT_ENABLE_STDOUT_INSTRUMENTATION=$AT_ENABLE_STDOUT_INSTRUMENTATION"
+    echo "▸ AT_ENABLE_STDERR_INSTRUMENTATION=$AT_ENABLE_STDERR_INSTRUMENTATION"
+    echo "▸ AT_DISABLE_NETWORK_INSTRUMENTATION=$AT_DISABLE_NETWORK_INSTRUMENTATION"
+    echo "▸ AT_DISABLE_RUM_INTEGRATION=$AT_DISABLE_RUM_INTEGRATION"
+    echo "▸ AT_DISABLE_SOURCE_LOCATION=$AT_DISABLE_SOURCE_LOCATION"
+    echo "▸ AT_DISABLE_CRASH_HANDLER=$AT_DISABLE_CRASH_HANDLER"
+    echo "▸ AT_GIT_REPOSITORY_URL=$AT_GIT_REPOSITORY_URL"
+    echo "▸ AT_TRACE_DEBUG=$AT_TRACE_DEBUG"
     echo "▸ GITLAB_CI=$GITLAB_CI"
     echo "▸ CI_PROJECT_DIR=$CI_PROJECT_DIR"
     echo "▸ CI_JOB_STAGE=$CI_JOB_STAGE"

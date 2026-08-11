@@ -1,9 +1,9 @@
 ---
-name: dd-sdk-ios:git-commit
-description: Use when committing changes in dd-sdk-ios. Use when writing commit messages, signing commits, or staging files before a commit.
+name: atatus-sdk-ios:git-commit
+description: Use when committing changes in atatus-sdk-ios. Use when writing commit messages, signing commits, or staging files before a commit.
 ---
 
-# Committing in dd-sdk-ios
+# Committing in atatus-sdk-ios
 
 ## Requirements
 
@@ -19,7 +19,7 @@ description: Use when committing changes in dd-sdk-ios. Use when writing commit 
 **Examples:**
 - `[RUM-1234] Add baggage header merging support`
 - `[FFL-213] Add Feature Flags support`
-- `[RUM-14655] Fix WebView log events attaching incomplete ddTags`
+- `[RUM-14655] Fix WebView log events attaching incomplete atTags`
 
 Third-party contributions skip the prefix.
 

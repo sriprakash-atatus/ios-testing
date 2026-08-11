@@ -1,13 +1,13 @@
 # Global code owners - RUM Mobile Team
 
-* @DataDog/rum-mobile @DataDog/rum-mobile-ios
+* @dd/rum-mobile @dd/rum-mobile-ios
 
 ## Docs
 
-/docs/ @DataDog/documentation @DataDog/rum-mobile 
-*README.md @DataDog/documentation @DataDog/rum-mobile
-*MIGRATION.md @DataDog/documentation
+/docs/ @dd/documentation @dd/rum-mobile 
+*README.md @dd/documentation @dd/rum-mobile
+*MIGRATION.md @dd/documentation
 
 ## Feature Flags
 
-/DatadogFlags/ @DataDog/rum-mobile @DataDog/rum-mobile-ios @DataDog/feature-flagging-and-experimentation-sdk
+/AtatusFlags/ @dd/rum-mobile @dd/rum-mobile-ios @dd/feature-flagging-and-experimentation-sdk

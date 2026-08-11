@@ -1,19 +1,22 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
+
+// ATCHG: Atatus SDK migration - renamed module imports `ddInternal` -> `AtatusInternal`; renamed `dd*`
+// members to `at*`; renamed `com.ddhq.*` identifiers to `com.atatus.*`; rebranded the licence header.
 
 import XCTest
 import ObjectiveC
-import DatadogInternal
+import AtatusInternal
 
 /// An utility header, added to each request by the `ServerMock` and removed while intercepting through `ServerMockProtocol`.
 /// It transmits an unique identifier of the `URLSession` instance obtained from `ServerMock`. It is used for consistency check
 /// installed in `ServerMockProtocol`, to ensure that the request completion is delivered to the right instance of `ServerMock`.
 ///
 /// Added in RUMM-1381 to fix a range of flakiness caused by leaking asynchronous upload tasks.
-private let ddURLSessionUUIDHeaderField = "dd-urlsession-uuid"
+private let atURLSessionUUIDHeaderField = "dd-urlsession-uuid"
 
 #if os(watchOS)
 /// On watchOS, `URLProtocol` subclasses (https://developer.apple.com/documentation/foundation/urlprotocol)
@@ -123,10 +126,10 @@ public class ServerMockProtocol: URLProtocol {
         server = ServerMock.activeInstance
 
         // Get utility header value to match it with an active instance of `ServerMock`
-        let urlSessionUUID = UUID(uuidString: request.allHTTPHeaderFields![ddURLSessionUUIDHeaderField]!)!
+        let urlSessionUUID = UUID(uuidString: request.allHTTPHeaderFields![atURLSessionUUIDHeaderField]!)!
 
         super.init(
-            request: request.removing(httpHeaderField: ddURLSessionUUIDHeaderField), // remove utility header
+            request: request.removing(httpHeaderField: atURLSessionUUIDHeaderField), // remove utility header
             cachedResponse: cachedResponse,
             client: client
         )
@@ -200,7 +203,7 @@ public class ServerMock {
         self.skipIsMainThreadCheck = skipIsMainThreadCheck
         precondition(skipIsMainThreadCheck || Thread.isMainThread, "`ServerMock` should be initialized on the main thread.")
         precondition(ServerMock.activeInstance == nil, "Only one active instance of `ServerMock` is allowed at a time.")
-        self.queue = DispatchQueue(label: "com.datadoghq.ServerMock-\(urlSessionUUID.uuidString)")
+        self.queue = DispatchQueue(label: "com.atatus.ServerMock-\(urlSessionUUID.uuidString)")
 
         ServerMock.activeInstance = self
     }
@@ -251,7 +254,7 @@ public class ServerMock {
         let configuration: URLSessionConfiguration = .ephemeral
         // Tag every request emitted by this session with our UUID. `ServerMockProtocol` uses it
         // for delivery routing; `isMyRequest(_:)` uses it to scope test handlers to this session.
-        configuration.httpAdditionalHeaders = [ddURLSessionUUIDHeaderField: urlSessionUUID.uuidString]
+        configuration.httpAdditionalHeaders = [atURLSessionUUIDHeaderField: urlSessionUUID.uuidString]
 
         #if os(watchOS)
         // On watchOS, `URLProtocol` is non-functional. We swizzle `__NSCFLocalSessionTask._onqueue_resume`
@@ -270,7 +273,7 @@ public class ServerMock {
     /// Test handlers can use this to ignore traffic from foreign URLSessions sharing the
     /// process-global `__NSCFLocalSessionTask.resume` swizzle.
     public func isMyRequest(_ request: URLRequest) -> Bool {
-        return request.value(forHTTPHeaderField: ddURLSessionUUIDHeaderField) == urlSessionUUID.uuidString
+        return request.value(forHTTPHeaderField: atURLSessionUUIDHeaderField) == urlSessionUUID.uuidString
     }
 
     // MARK: - Waiting for total number of requests

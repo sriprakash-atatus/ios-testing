@@ -1,8 +1,10 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
+
+// ATCHG: Atatus SDK migration - renamed the `DD` symbol prefix to `AT`; rebranded the licence header.
 
 import Foundation
 import XCTest
@@ -69,7 +71,7 @@ public class JSONDataMatcher {
             try comparator(thisValue as Any, theirValue as Any, file, line)
         }
 
-        DDAssertDictionariesEqual(thisJSON, theirJSON, file: file, line: line)
+        ATAssertDictionariesEqual(thisJSON, theirJSON, file: file, line: line)
     }
 
     public func assertValue<T: Equatable>(forKey key: String, equals value: T, file: StaticString = #file, line: UInt = #line) {

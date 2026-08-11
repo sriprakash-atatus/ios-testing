@@ -1,8 +1,11 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
+
+// ATCHG: Atatus SDK migration - renamed the `ddsource` / `ddtags` query parameters to `atatus_source` /
+// `atatustags`; rebranded the licence header.
 
 import Foundation
 
@@ -21,14 +24,14 @@ public struct Request {
 }
 
 extension Array where Element == URLQueryItem {
-    /// Returns the `ddtags` query item as a dictionary.
-    /// The `ddtags` query item is expected to be in the format `key:value,key:value`.
-    /// - Returns: The `ddtags` query item as a dictionary.
-    public func ddtags() -> [String: String]? {
-        guard let ddtags = first(where: { $0.name == "ddtags" })?.value else {
+    /// Returns the `atatusTags` query item as a dictionary.
+    /// The `atatusTags` query item is expected to be in the format `key:value,key:value`.
+    /// - Returns: The `atatusTags` query item as a dictionary.
+    public func atatusTags() -> [String: String]? {
+        guard let atatusTags = first(where: { $0.name == "atatusTags" })?.value else {
             return nil
         }
-        return ddtags.split(separator: ",", keyValueSeparator: ":")
+        return atatusTags.split(separator: ",", keyValueSeparator: ":")
     }
 
     /// Returns the value of the first query item with the given name.

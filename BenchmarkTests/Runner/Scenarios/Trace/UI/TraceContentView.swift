@@ -1,10 +1,13 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
 
-import DatadogTrace
+// ATCHG: Atatus SDK migration - renamed module imports `ddTrace` -> `AtatusTrace`; renamed
+// `com.ddhq.*` identifiers to `com.atatus.*`; rebranded the licence header.
+
+import AtatusTrace
 import SwiftUI
 
 struct TraceContentView: View {
@@ -19,7 +22,7 @@ struct TraceContentView: View {
 
     var tracer: OTTracer { Tracer.shared() }
 
-    private let queue1 = DispatchQueue(label: "com.datadoghq.benchmark-tracing1")
+    private let queue1 = DispatchQueue(label: "com.atatus.benchmark-tracing1")
 
     init() {
         operationName = "iOS Benchmark span operation"

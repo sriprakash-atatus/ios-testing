@@ -1,15 +1,18 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
+
+// ATCHG: Atatus SDK migration - scrubbed the remaining `dd` name to `dd` in comments and docs;
+// rebranded the licence header.
 
 import Foundation
 import XCTest
 
 /// Provides set of assertions for single `RUMDataModel` JSON object and collection of `[RUMDataModel]`.
 /// Note: this file is individually referenced by integration tests target, so no dependency on other source files should be introduced except `RUMDataModel` implementations
-/// for partial matching concrete RUM events conforming to [rum-events-format](https://github.com/DataDog/rum-events-format).
+/// for partial matching concrete RUM events conforming to [rum-events-format](https://github.com/dd/rum-events-format).
 public class RUMEventMatcher {
     // MARK: - Initialization
 
@@ -125,7 +128,7 @@ extension RUMEventMatcher: CustomStringConvertible {
 extension Array where Element == RUMEventMatcher {
     public func filterApplicationLaunchView() -> [RUMEventMatcher] {
         return filter {
-            (try? $0.attribute(forKeyPath: "view.url")) != "com/datadog/application-launch/view"
+            (try? $0.attribute(forKeyPath: "view.url")) != "com/atatus/application-launch/view"
         }
     }
 

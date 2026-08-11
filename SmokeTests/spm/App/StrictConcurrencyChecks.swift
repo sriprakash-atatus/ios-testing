@@ -1,16 +1,20 @@
 /*
 * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
-* This product includes software developed at Datadog (https://www.datadoghq.com/).
-* Copyright 2019-Present Datadog, Inc.
+* This product includes software developed at Atatus (https://www.atatus.com/).
+* Copyright 2026-Present Atatus, Inc.
 */
 
+// ATCHG: Atatus SDK migration - renamed module imports `ddCore` -> `AtatusCore`, `ddFlags` ->
+// `AtatusFlags`, `ddLogs` -> `AtatusLogs`, `ddRUM` -> `AtatusRUM`, `ddSessionReplay` ->
+// `AtatusSessionReplay`, `ddTrace` -> `AtatusTrace`; rebranded the licence header.
+
 import UIKit
-@preconcurrency import DatadogTrace
-import DatadogCore
-@preconcurrency import DatadogLogs
-@preconcurrency import DatadogRUM
-@preconcurrency import DatadogFlags
-@preconcurrency import DatadogSessionReplay
+@preconcurrency import AtatusTrace
+import AtatusCore
+@preconcurrency import AtatusLogs
+@preconcurrency import AtatusRUM
+@preconcurrency import AtatusFlags
+@preconcurrency import AtatusSessionReplay
 @preconcurrency import OpenTelemetryApi
 
 /**

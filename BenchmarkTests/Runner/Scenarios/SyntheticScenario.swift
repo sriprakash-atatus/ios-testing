@@ -1,8 +1,11 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
+
+// ATCHG: Atatus SDK migration - rebranded the `dd` name to `Atatus` in comments and docs; rebranded
+// the licence header.
 
 import Foundation
 import UIKit
@@ -103,9 +106,9 @@ internal struct SyntheticScenario: Scenario {
 /// The run specifies the execution context of a benchmark scenrio.
 /// Each execution will collect different type of benchmarking data:
 ///     - The `baseline` run collects various metrics during the scenario execution **without**
-///     the Datadog SDK being initialised.
+///     the Atatus SDK being initialised.
 ///     -  The `instrumented` run collects the same metrics as `baseline` but **with** the
-///     Datadog SDK initialised. Comparing the `baseline` and `instrumented` runs will provide
+///     Atatus SDK initialised. Comparing the `baseline` and `instrumented` runs will provide
 ///     the overhead of the SDK for each metric.
 ///     - The `profiling` run will only collect traces of the SDK internal processes.
 internal enum SyntheticRun: String {

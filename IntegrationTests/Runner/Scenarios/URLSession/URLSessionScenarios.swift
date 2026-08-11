@@ -1,13 +1,17 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
 
+// ATCHG: Atatus SDK migration - renamed module imports `ddCore` -> `AtatusCore`, `ddRUM` ->
+// `AtatusRUM`, `ddTrace` -> `AtatusTrace`; repointed the intake host at the Atatus site; rebranded the
+// licence header.
+
 import Foundation
-import DatadogCore
-import DatadogTrace
-import DatadogRUM
+import AtatusCore
+import AtatusTrace
+import AtatusRUM
 
 /// Base scenario for `URLSession` and `NSURLSession` instrumentation.  It makes
 /// both Swift and Objective-C tests share the same endpoints and SDK configuration.
@@ -71,9 +75,9 @@ class URLSessionBaseScenario: NSObject {
                 return request
             }()
         } else {
-            customGETResourceURL = URL(string: "https://status.datadoghq.com")!
+            customGETResourceURL = URL(string: "https://www.atatus.com/")!
             customPOSTRequest = {
-                var request = URLRequest(url: URL(string: "https://status.datadoghq.com/bad/path")!)
+                var request = URLRequest(url: URL(string: "https://www.atatus.com/")!)
                 request.httpMethod = "POST"
                 request.addValue("dataTaskWithRequest", forHTTPHeaderField: "creation-method")
                 return request

@@ -1,16 +1,20 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
 
+// ATCHG: Atatus SDK migration - renamed module imports `ddCore` -> `AtatusCore`, `ddInternal` ->
+// `AtatusInternal`; renamed the `DD` symbol prefix to `AT`; renamed `dd*` members to `at*`; rebranded the
+// `dd` name to `Atatus` in comments and docs; rebranded the licence header.
+
 import Foundation
-#if !DD_COMPILED_FOR_INTEGRATION_TESTS
+#if !AT_COMPILED_FOR_INTEGRATION_TESTS
 /// This file is compiled both for Unit and Integration tests.
-/// * The Unit Tests target can see `Datadog` by `@testable import DatadogCore`.
-/// * In Integration Tests target we want to compile `Datadog` in "Release" configuration, so testability is not possible.
+/// * The Unit Tests target can see `Atatus` by `@testable import AtatusCore`.
+/// * In Integration Tests target we want to compile `Atatus` in "Release" configuration, so testability is not possible.
 /// This compiler statement gives both targets the visibility of `RUMDataModels.swift` either by import or direct compilation.
-@testable import DatadogInternal
+@testable import AtatusInternal
 #endif
 
 /// An error thrown by the `RUMSessionMatcher` if it spots an inconsistency in tracked RUM Session, e.g. when
@@ -414,7 +418,7 @@ private func validate(device: Device?) throws {
             description: "All RUM events must include device information"
         )
     }
-    #if DD_COMPILED_FOR_INTEGRATION_TESTS
+    #if AT_COMPILED_FOR_INTEGRATION_TESTS
     try strictValidate(device: device)
     #endif
 }
@@ -425,7 +429,7 @@ private func validate(os: OperatingSystem?) throws {
             description: "All RUM events must include OS information"
         )
     }
-    #if DD_COMPILED_FOR_INTEGRATION_TESTS
+    #if AT_COMPILED_FOR_INTEGRATION_TESTS
     try strictValidate(os: os)
     #endif
 }
@@ -536,12 +540,12 @@ extension Array where Element == RUMSessionMatcher.View {
 extension RUMSessionMatcher.View {
     /// Whether this is "application launch" view.
     public func isApplicationLaunchView() -> Bool {
-        return name == "ApplicationLaunch" && path == "com/datadog/application-launch/view"
+        return name == "ApplicationLaunch" && path == "com/atatus/application-launch/view"
     }
 
     /// Whether this is "background" view.
     public func isBackgroundView() -> Bool {
-        return name == "Background" && path == "com/datadog/background/view"
+        return name == "Background" && path == "com/atatus/background/view"
     }
 }
 
@@ -577,7 +581,7 @@ extension RUMSessionMatcher.View {
     public var durationNs: Int64? { viewEvents.last?.view.timeSpent }
 
     /// The duration of this view, in seconds.
-    public var duration: TimeInterval? { durationNs.map { TimeInterval.ddFromNanoseconds( $0) } }
+    public var duration: TimeInterval? { durationNs.map { TimeInterval.atFromNanoseconds( $0) } }
 }
 
 extension RUMSessionMatcher: CustomStringConvertible {
@@ -603,7 +607,7 @@ extension RUMSessionMatcher: CustomStringConvertible {
     }
 
     /// The duration of this session, in seconds.
-    public var duration: TimeInterval? { durationNs.map { TimeInterval.ddFromNanoseconds( $0) } }
+    public var duration: TimeInterval? { durationNs.map { TimeInterval.atFromNanoseconds( $0) } }
 
     /// The application start action.
     public var ttidEvent: RUMVitalAppLaunchEvent? {
@@ -615,7 +619,7 @@ extension RUMSessionMatcher: CustomStringConvertible {
     /// The application startup time (nanoseconds).
     public var timeToInitialDisplay: TimeInterval? {
         if let ttidEvent {
-            return TimeInterval.ddFromNanoseconds(Int64(ttidEvent.vital.duration))
+            return TimeInterval.atFromNanoseconds(Int64(ttidEvent.vital.duration))
         }
         return nil
     }

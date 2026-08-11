@@ -3,8 +3,8 @@
 
 # -----------------------------------------------------------
 # Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
-# This product includes software developed at Datadog (https://www.datadoghq.com/).
-# Copyright 2019-Present Datadog, Inc.
+# This product includes software developed at Atatus (https://www.atatus.com/).
+# Copyright 2019-Present Atatus, Inc.
 # -----------------------------------------------------------
 
 import os
@@ -15,16 +15,16 @@ import traceback
 import subprocess
 from dataclasses import dataclass
 
-SCHEMAS_REPO = 'https://github.com/DataDog/rum-events-format.git'
+SCHEMAS_REPO = 'https://github.com/dd/rum-events-format.git'
 
 # JSON Schema paths (relative to cwd)
 RUM_SCHEMA_PATH = '/rum-events-format/schemas/rum-events-mobile-schema.json'
 SR_SCHEMA_PATH = '/rum-events-format/schemas/session-replay-mobile-schema.json'
 
 # Generated file paths (relative to repository root)
-RUM_SWIFT_GENERATED_FILE_PATH = '/DatadogInternal/Sources/Models/RUM/RUMDataModels.swift'
-RUM_OBJC_GENERATED_FILE_PATH = '/DatadogRUM/Sources/DataModels/RUMDataModels+objc.swift'
-SR_SWIFT_GENERATED_FILE_PATH = '/DatadogSessionReplay/Sources/Models/SRDataModels.swift'
+RUM_SWIFT_GENERATED_FILE_PATH = '/AtatusInternal/Sources/Models/RUM/RUMDataModels.swift'
+RUM_OBJC_GENERATED_FILE_PATH = '/AtatusRUM/Sources/DataModels/RUMDataModels+objc.swift'
+SR_SWIFT_GENERATED_FILE_PATH = '/AtatusSessionReplay/Sources/Models/SRDataModels.swift'
 
 @dataclass
 class Context:
@@ -144,7 +144,7 @@ def generate_code(ctx: Context, language: str, convention: str, json_schema: str
 
     cli_command = f'{ctx.cli_executable_path} generate-{language} --convention {convention} --path "{json_schema}" {skip}'
     code = shell_output(cli_command)
-    code += f'// Generated from https://github.com/DataDog/rum-events-format/tree/{git_sha}'
+    code += f'// Generated from https://github.com/dd/rum-events-format/tree/{git_sha}'
     return code
 
 
@@ -166,7 +166,7 @@ def validate_code(ctx: Context, language: str, convention: str, json_schema: str
         )
         if actual_code != expected_code:
             raise Exception(f'The code in {target_file} does not match models '
-                            f'generated from https://github.com/DataDog/rum-events-format/tree/{git_sha}')
+                            f'generated from https://github.com/dd/rum-events-format/tree/{git_sha}')
 
 
 def generate_rum_models(ctx: Context):

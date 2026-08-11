@@ -1,6 +1,6 @@
 # `*_FEATURE.md` Specification
 
-This document provides guidelines for LLMs updating feature documentation files (`*_FEATURE.md`) in the Datadog iOS SDK repository.
+This document provides guidelines for LLMs updating feature documentation files (`*_FEATURE.md`) in the Atatus iOS SDK repository.
 
 > For the *workflow* around these docs (verification, publishing, the update skill), see the *Feature Docs System* page in Confluence. The canonical update procedure lives in [`.claude/skills/update-feature-docs/SKILL.md`](../.claude/skills/update-feature-docs/SKILL.md).
 
@@ -19,12 +19,12 @@ They are NOT a replacement for customer-facing documentation.
 Each feature module contains a `*_FEATURE.md` file at its root:
 
 ```
-DatadogRUM/RUM_FEATURE.md
-DatadogSessionReplay/SESSION_REPLAY_FEATURE.md
-DatadogTrace/TRACE_FEATURE.md
-DatadogProfiling/PROFILING_FEATURE.md
-DatadogLogs/LOGS_FEATURE.md
-DatadogWebViewTracking/WEBVIEW_FEATURE.md  # (future)
+AtatusRUM/RUM_FEATURE.md
+AtatusSessionReplay/SESSION_REPLAY_FEATURE.md
+AtatusTrace/TRACE_FEATURE.md
+AtatusProfiling/PROFILING_FEATURE.md
+AtatusLogs/LOGS_FEATURE.md
+AtatusWebViewTracking/WEBVIEW_FEATURE.md  # (future)
 ```
 
 ## Frontmatter
@@ -33,7 +33,7 @@ Each feature documentation file must include a YAML frontmatter header at the to
 
 ```markdown
 ---
-last_updated: YYYY-MM-DD
+last_updated: YYYY-MM-AT
 sdk_version: X.Y.Z
 verified_against_commit: <short_commit_hash>
 tracked_files:

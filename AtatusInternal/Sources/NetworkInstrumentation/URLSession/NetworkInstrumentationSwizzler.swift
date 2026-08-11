@@ -1,0 +1,87 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
+ */
+
+// ATCHG: Atatus SDK migration - rebranded the licence header.
+
+import Foundation
+
+/// Swizzles `URLSession*` methods.
+internal final class NetworkInstrumentationSwizzler {
+    let urlSessionSwizzler: URLSessionSwizzler
+    let urlSessionTaskSwizzler: URLSessionTaskSwizzler
+    let urlSessionTaskDelegateSwizzler: URLSessionTaskDelegateSwizzler
+    let urlSessionDataDelegateSwizzler: URLSessionDataDelegateSwizzler
+    let urlSessionTaskStateSwizzler: URLSessionTaskStateSwizzler
+
+    init() {
+        let lock = NSRecursiveLock()
+        urlSessionSwizzler = URLSessionSwizzler(lock: lock)
+        urlSessionTaskSwizzler = URLSessionTaskSwizzler(lock: lock)
+        urlSessionTaskDelegateSwizzler = URLSessionTaskDelegateSwizzler(lock: lock)
+        urlSessionDataDelegateSwizzler = URLSessionDataDelegateSwizzler(lock: lock)
+        urlSessionTaskStateSwizzler = URLSessionTaskStateSwizzler(lock: lock)
+    }
+
+    /// Swizzles `URLSession.dataTask(with:completionHandler:)` methods (with `URL` and `URLRequest`).
+    func swizzle(
+        interceptCompletionHandler: @escaping (URLSessionTask, Data?, Error?) -> Void,
+        didReceive: @escaping (URLSessionTask, Data) -> Void
+    ) throws {
+        try urlSessionSwizzler.swizzle(
+            interceptCompletionHandler: interceptCompletionHandler,
+            didReceive: didReceive
+        )
+    }
+
+    /// Swizzles `URLSessionTask.resume()` method.
+    func swizzle(
+        interceptResume: @escaping (URLSessionTask) -> Void
+    ) throws {
+        try urlSessionTaskSwizzler.swizzle(interceptResume: interceptResume)
+    }
+
+    /// Swizzles methods:
+    /// - `URLSessionTaskDelegate.urlSession(_:task:didFinishCollecting:)`
+    /// - `URLSessionTaskDelegate.urlSession(_:task:didCompleteWithError:)`
+    func swizzle(
+        delegateClass: URLSessionTaskDelegate.Type,
+        interceptDidFinishCollecting: @escaping (URLSession, URLSessionTask, URLSessionTaskMetrics) -> Void,
+        interceptDidCompleteWithError: @escaping (URLSession, URLSessionTask, Error?) -> Void
+    ) throws {
+        try urlSessionTaskDelegateSwizzler.swizzle(
+            delegateClass: delegateClass,
+            interceptDidFinishCollecting: interceptDidFinishCollecting,
+            interceptDidCompleteWithError: interceptDidCompleteWithError
+        )
+    }
+
+    /// Swizzles `URLSessionDataDelegate.urlSession(_:dataTask:didReceive:)` method.
+    func swizzle(
+        delegateClass: URLSessionDataDelegate.Type,
+        interceptDidReceive: @escaping (URLSession, URLSessionDataTask, Data) -> Void
+    ) throws {
+        try urlSessionDataDelegateSwizzler.swizzle(
+            delegateClass: delegateClass,
+            interceptDidReceive: interceptDidReceive
+        )
+    }
+
+    /// Swizzles `URLSessionTask.setState:` method.
+    func swizzle(
+        interceptSetState: @escaping (URLSessionTask, Int) -> Void
+    ) throws {
+        try urlSessionTaskStateSwizzler.swizzle(interceptSetState: interceptSetState)
+    }
+
+    /// Unswizzles all.
+    func unswizzle() {
+        urlSessionSwizzler.unswizzle()
+        urlSessionTaskSwizzler.unswizzle()
+        urlSessionTaskDelegateSwizzler.unswizzle()
+        urlSessionDataDelegateSwizzler.unswizzle()
+        urlSessionTaskStateSwizzler.unswizzle()
+    }
+}

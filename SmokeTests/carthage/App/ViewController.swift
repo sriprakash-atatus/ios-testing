@@ -1,20 +1,27 @@
 /*
 * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
-* This product includes software developed at Datadog (https://www.datadoghq.com/).
-* Copyright 2019-Present Datadog, Inc.
+* This product includes software developed at Atatus (https://www.atatus.com/).
+* Copyright 2026-Present Atatus, Inc.
 */
 
+// ATCHG: Atatus SDK migration - renamed module imports `ddCore` -> `AtatusCore`,
+// `ddCrashReporting` -> `AtatusCrashReporting`, `ddFlags` -> `AtatusFlags`, `ddLogs` ->
+// `AtatusLogs`, `ddProfiling` -> `AtatusProfiling`, `ddRUM` -> `AtatusRUM`,
+// `ddSessionReplay` -> `AtatusSessionReplay`, `ddTrace` -> `AtatusTrace`; renamed `clientToken`
+// to `licenseKey`; rebranded the `dd` name to `Atatus` in comments and docs; rebranded the licence
+// header.
+
 import UIKit
-import DatadogCore
-import DatadogLogs
-import DatadogTrace
-import DatadogRUM
-import DatadogCrashReporting
-import DatadogFlags
-import DatadogProfiling
+import AtatusCore
+import AtatusLogs
+import AtatusTrace
+import AtatusRUM
+import AtatusCrashReporting
+import AtatusFlags
+import AtatusProfiling
 
 #if os(iOS)
-import DatadogSessionReplay
+import AtatusSessionReplay
 #endif
 import OpenTelemetryApi
 
@@ -24,8 +31,8 @@ internal class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        Datadog.initialize(
-            with: Datadog.Configuration(clientToken: "abc", env: "tests"),
+        Atatus.initialize(
+            with: Atatus.Configuration(licenseKey: "abc", env: "tests"),
             trackingConsent: .granted
         )
 

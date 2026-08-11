@@ -1,10 +1,13 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
 
-import DatadogInternal
+// ATCHG: Atatus SDK migration - renamed module imports `ddInternal` -> `AtatusInternal`; renamed the
+// `x-dd-*` trace headers to `x-atatus-*`; rebranded the licence header.
+
+import AtatusInternal
 import HTTPServerMock
 
 protocol URLSessionTestsHelpers {
@@ -19,7 +22,7 @@ protocol URLSessionTestsHelpers {
 
 extension URLSessionTestsHelpers {
     func getTraceID(from request: Request) -> TraceID? {
-        guard let traceIDLoValue = request.httpHeaders["x-datadog-trace-id"] else {
+        guard let traceIDLoValue = request.httpHeaders["x-atatus-trace-id"] else {
             return nil
         }
 
@@ -33,7 +36,7 @@ extension URLSessionTestsHelpers {
     }
 
     func getSpanID(from request: Request) -> SpanID? {
-        guard let spanId = request.httpHeaders["x-datadog-parent-id"] else {
+        guard let spanId = request.httpHeaders["x-atatus-parent-id"] else {
             return nil
         }
         return .init(spanId, representation: .decimal)

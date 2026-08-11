@@ -1,15 +1,17 @@
+// ATCHG: Atatus SDK migration - renamed `dd*` types to `Atatus*`.
+
 // swift-tools-version: 5.9
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
 let package = Package(
-    name: "DatadogBenchmarks",
+    name: "AtatusBenchmarks",
     platforms: [.iOS(.v13), .tvOS(.v13)],
     products: [
         .library(
-            name: "DatadogBenchmarks",
-            targets: ["DatadogBenchmarks"]
+            name: "AtatusBenchmarks",
+            targets: ["AtatusBenchmarks"]
         )
     ],
     dependencies: [
@@ -17,7 +19,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "DatadogBenchmarks",
+            name: "AtatusBenchmarks",
             dependencies: [
                 .product(name: "OpenTelemetryApi", package: "opentelemetry-swift-core"),
                 .product(name: "OpenTelemetrySdk", package: "opentelemetry-swift-core"),

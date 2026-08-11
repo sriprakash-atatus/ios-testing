@@ -1,3 +1,6 @@
+// ATCHG: Atatus SDK migration - renamed `dd*` types to `Atatus*`; rebranded the `dd` name to
+// `Atatus` in comments and docs.
+
 // swift-tools-version: 5.10
 
 import PackageDescription
@@ -18,19 +21,19 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(name: "Datadog", path: ".."),
+        .package(name: "Atatus", path: ".."),
     ],
     targets: [
         .target(
             name: "TestUtilities",
             dependencies: [
-                .product(name: "DatadogCore", package: "Datadog"),
-                .product(name: "DatadogRUM", package: "Datadog"),
-                .product(name: "DatadogLogs",package: "Datadog"),
-                .product(name: "DatadogTrace",package: "Datadog"),
-                .product(name: "DatadogCrashReporting",package: "Datadog"),
-                .product(name: "DatadogSessionReplay", package: "Datadog"),
-                .product(name: "DatadogWebViewTracking",package: "Datadog")
+                .product(name: "AtatusCore", package: "Atatus"),
+                .product(name: "AtatusRUM", package: "Atatus"),
+                .product(name: "AtatusLogs",package: "Atatus"),
+                .product(name: "AtatusTrace",package: "Atatus"),
+                .product(name: "AtatusCrashReporting",package: "Atatus"),
+                .product(name: "AtatusSessionReplay", package: "Atatus"),
+                .product(name: "AtatusWebViewTracking",package: "Atatus")
             ],
             path: ".",
             sources: ["Sources"],

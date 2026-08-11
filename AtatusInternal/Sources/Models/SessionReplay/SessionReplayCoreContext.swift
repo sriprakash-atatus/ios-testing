@@ -1,0 +1,70 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
+ */
+
+// ATCHG: Atatus SDK migration - rebranded the licence header.
+
+import Foundation
+
+/// Context describing Session Replay recording state.
+public enum SessionReplayCoreContext {
+    /// Boolean `has_replay` context.
+    public struct HasReplay: AdditionalContext {
+        public static let key = "has_replay"
+
+        /// The `has_replay` value
+        public let value: Bool
+
+        /// Creates a Context value.
+        ///
+        /// - Parameter value: The `has_replay` value
+        public init(value: Bool) {
+            self.value = value
+        }
+    }
+
+    /// Count of records per RUM View ID.
+    public struct RecordsCount: AdditionalContext {
+        public static let key = "sr_records_count_by_view_id"
+
+        /// The `sr_records_count_by_view_id` value
+        public let value: [String: Int64]
+
+        /// Creates a Context value.
+        ///
+        /// - Parameter value: The `sr_records_count_by_view_id` value
+        public init(value: [String: Int64]) {
+            self.value = value
+        }
+    }
+
+    /// The Session Replay configuration.
+    public struct Configuration: AdditionalContext {
+        public static let key = "sr_configuration"
+
+        /// The sample rate for session replay.
+        public let sampleRate: SampleRate
+        /// Whether session replay recording should be started manually.
+        public let startRecordingManually: Bool
+        /// Session Replay experimental features enabled in the SDK configuration.
+        public let experimentalFeatures: [String]
+
+        /// Creates a Session Replay configuration.
+        ///
+        /// - Parameters:
+        ///   - sampleRate: The sample rate for session replay.
+        ///   - startRecordingManually: Whether session replay recording should be started manually.
+        ///   - experimentalFeatures: Session Replay experimental features enabled in the SDK configuration.
+        public init(
+            sampleRate: SampleRate,
+            startRecordingManually: Bool,
+            experimentalFeatures: [String] = []
+        ) {
+            self.sampleRate = sampleRate
+            self.startRecordingManually = startRecordingManually
+            self.experimentalFeatures = experimentalFeatures
+        }
+    }
+}

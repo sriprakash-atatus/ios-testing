@@ -1,10 +1,14 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
 
-import DatadogInternal
+// ATCHG: Atatus SDK migration - renamed module imports `ddInternal` -> `AtatusInternal`; renamed the
+// `_dd` attribute prefix to `_atatus`; renamed the `x-dd-*` trace headers to `x-atatus-*`; rebranded
+// the licence header.
+
+import AtatusInternal
 import HTTPServerMock
 import TestUtilities
 import XCTest
@@ -160,11 +164,11 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
 
         let firstPartyRequest = firstPartyRequests[0]
         let traceId = try taskWithRequest.traceID() ?? .invalid
-        XCTAssertEqual(firstPartyRequest.httpHeaders["x-datadog-trace-id"], String(traceId.idLo))
-        XCTAssertEqual(firstPartyRequest.httpHeaders["x-datadog-parent-id"], try taskWithRequest.spanID()?.toString(representation: .decimal))
-        XCTAssertEqual(firstPartyRequest.httpHeaders["x-datadog-sampling-priority"], "1")
-        XCTAssertNil(firstPartyRequest.httpHeaders["x-datadog-origin"])
+        XCTAssertEqual(firstPartyRequest.httpHeaders["x-atatus-trace-id"], String(traceId.idLo))
+        XCTAssertEqual(firstPartyRequest.httpHeaders["x-atatus-parent-id"], try taskWithRequest.spanID()?.toString(representation: .decimal))
+        XCTAssertEqual(firstPartyRequest.httpHeaders["x-atatus-sampling-priority"], "1")
+        XCTAssertNil(firstPartyRequest.httpHeaders["x-atatus-origin"])
         let tid = try taskWithRequest.meta.tid()
-        XCTAssertEqual(firstPartyRequest.httpHeaders["x-datadog-tags"], "_dd.p.tid=\(tid),_dd.p.dm=-1")
+        XCTAssertEqual(firstPartyRequest.httpHeaders["x-atatus-tags"], "_atatus.p.tid=\(tid),_atatus.p.dm=-1")
     }
 }

@@ -1,15 +1,18 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
+ * This product includes software developed at Atatus (https://www.atatus.com/).
+ * Copyright 2026-Present Atatus, Inc.
  */
+
+// ATCHG: Atatus SDK migration - renamed `dd*` types to `Atatus*`; rebranded the `dd` name to
+// `Atatus` in comments and docs; rebranded the licence header.
 
 import Foundation
 import XCTest
 
 /*
  Set of general extensions over standard types for writing more readable tests.
- Extensions using Datadog domain objects should be put in `DatadogExtensions.swift`.
+ Extensions using Atatus domain objects should be put in `AtatusExtensions.swift`.
 */
 
 extension Optional {
