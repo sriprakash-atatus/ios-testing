@@ -59,7 +59,8 @@ RUM.enable(
 // 3. Enable Profiling
 Profiling.enable(
     with: Profiling.Configuration(
-        // Custom intake endpoint for profile uploads.
+        // Custom intake endpoint for profile uploads. Expects a full URL and takes
+        // precedence over the core-level `Atatus.Configuration.serverUrl`.
         // Default: nil (uses Atatus intake at /api/v2/profile)
         customEndpoint: nil,
 
@@ -154,7 +155,7 @@ flowchart TD
 ## Configuration Categories
 
 ### Upload
-- **`customEndpoint`**: Optional replacement URL for profile uploads. Default: `nil`, which uses the Atatus site endpoint plus `/api/v2/profile`.
+- **`customEndpoint`**: Optional replacement URL for profile uploads. Default: `nil`, which uses the core-level intake endpoint (`Atatus.Configuration.serverUrl` when set, the Atatus site endpoint otherwise) plus `/api/v2/profile`.
 
 ### Sampling
 - **Application launch**: `applicationLaunchSampleRate` default is `5.0`. The value is stored in the profiling UserDefaults suite for the native app-launch path and takes effect on the next process launch. If multiple SDK instances set it, the native side uses the lowest sample rate.

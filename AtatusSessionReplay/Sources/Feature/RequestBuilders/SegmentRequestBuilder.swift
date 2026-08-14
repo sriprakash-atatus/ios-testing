@@ -60,7 +60,10 @@ internal struct SegmentRequestBuilder: FeatureRequestBuilder {
 
         let builder = URLRequestBuilder(
             url: url(with: context),
-            queryItems: execution.retryQueryItems,
+            // ATCHG: Added the Atatus identification query items, matching AtatusRUM's and
+            // AtatusLogs' `RequestBuilder`.
+            queryItems: atatusIdentificationQueryItems(with: context) + execution.retryQueryItems,
+            // ATCHG: End
             headers: [
                 .contentTypeHeader(contentType: .multipartFormData(boundary: multipart.boundary)),
                 .userAgentHeader(
@@ -110,8 +113,33 @@ internal struct SegmentRequestBuilder: FeatureRequestBuilder {
     }
 
     private func url(with context: AtatusContext) -> URL {
-        customUploadURL ?? context.site.endpoint.appendingPathComponent("api/v2/replay")
+        // ATCHG: Atatus Session Replay intake path, matching `v1/ios/rum` in AtatusRUM. Built from
+        // `intakeEndpoint` so a custom `serverUrl` is honoured, as on Android.
+        customUploadURL ?? context.intakeEndpoint.appendingPathComponent(atatusSessionReplayIntakePath)
+        // ATCHG: End
     }
 }
+
+// ATCHG: Session Replay uploads carry the same identification query items that AtatusRUM's and
+// AtatusLogs' `RequestBuilder`s add (Android: `RumRequestFactory.buildUrl` /
+// `LogsRequestFactory.buildUrl`), so RUM, Logs and Session Replay all reach the intake with the
+// same URL parameters. Shared with `ResourceRequestBuilder`; declared here rather than in its own
+// file because `Atatus.xcodeproj` references Session Replay sources individually.
+internal func atatusIdentificationQueryItems(
+    with context: AtatusContext
+) -> [URLRequestBuilder.QueryItem] {
+    return [
+        .atatusSource(source: context.source),
+        .licenseKey(licenseKey: context.licenseKey),
+        .agentName(agentName: AgentInfo.agentName),
+        .agentVersion(agentVersion: AgentInfo.agentVersion),
+        .appName(appName: context.appName ?? "")
+    ]
+}
+
+/// Atatus Session Replay intake path, matching `v1/ios/rum` in AtatusRUM and `v1/ios/logs` in
+/// AtatusLogs.
+internal let atatusSessionReplayIntakePath = "v1/ios/replay"
+// ATCHG: End
 
 #endif

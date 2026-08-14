@@ -91,6 +91,9 @@ internal struct RequestBuilder: FeatureRequestBuilder {
     }
 
     private func url(with context: AtatusContext) -> URL {
-        customUploadURL ?? context.site.endpoint.appendingPathComponent("api/v2/profile")
+        // ATCHG: Built from `intakeEndpoint` so a custom `serverUrl` is honoured, matching
+        // `ProfilingRequestFactory.buildUrl` on Android.
+        customUploadURL ?? context.intakeEndpoint.appendingPathComponent("api/v2/profile")
+        // ATCHG: End
     }
 }

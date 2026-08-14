@@ -71,6 +71,21 @@ extension Atatus {
         /// Default value is `.atatus`. // ATCHG: single Atatus site replaces the dd regions
         public var site: AtatusSite
 
+        // ATCHG: Added `serverUrl`, matching `Configuration.Builder.setServerUrl()` in the Atatus
+        // Android agent, so an on-premise intake, a proxy or a local tunnel can be targeted.
+        /// Sends all the data to a custom intake instead of the ``site`` one.
+        ///
+        /// The value must be a base url without any path (e.g. `https://rum.example.com`); each
+        /// feature appends its own path to it (`v1/ios/rum`, `v1/ios/logs`, `v1/ios/spans`,
+        /// `v1/ios/replay`). Trailing slashes are ignored.
+        ///
+        /// A feature level custom intake url (e.g. `RUM.Configuration.customEndpoint`) expects a
+        /// full url and takes precedence over this value.
+        ///
+        /// `nil` by default, meaning the ``site`` intake is used.
+        public var serverUrl: String?
+        // ATCHG: End
+
         /// The service name associated with data send to Atatus.
         ///
         /// Default value is set to application bundle identifier.
@@ -139,6 +154,10 @@ extension Atatus {
         ///
         ///   - site:                       Atatus site endpoint, default value is `.atatus`.
         ///
+        ///   - serverUrl:                  ATCHG: A custom intake base url (no path) replacing the `site` one for
+        ///                                 every feature, e.g. `https://rum.example.com`. Each feature appends
+        ///                                 its own path to it. `nil` by default, meaning the `site` intake is used.
+        ///
         ///   - service:                    The service name associated with data send to Atatus.
         ///                                 Default value is set to application bundle identifier.
         ///
@@ -178,6 +197,7 @@ extension Atatus {
             licenseKey: String,
             env: String,
             site: AtatusSite = .atatus, // ATCHG: default site is the Atatus intake
+            serverUrl: String? = nil, // ATCHG: no custom intake by default, the site endpoint is used
             service: String? = nil,
             version: String? = nil,
             bundle: Bundle = .main,
@@ -192,6 +212,7 @@ extension Atatus {
             self.licenseKey = licenseKey
             self.env = env
             self.site = site
+            self.serverUrl = serverUrl // ATCHG: custom intake base url
             self.service = service
             self.version = version
             self.bundle = bundle

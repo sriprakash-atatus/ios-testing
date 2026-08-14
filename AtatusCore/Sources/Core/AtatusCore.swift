@@ -492,6 +492,7 @@ extension AtatusContextProvider {
     /// Creates a core context provider with the given configuration,
     convenience init(
         site: AtatusSite,
+        serverUrl: String?, // ATCHG: Added the custom intake base url, overriding the site one when set
         licenseKey: String,
         service: String,
         env: String,
@@ -530,6 +531,7 @@ extension AtatusContextProvider {
 
         let context = AtatusContext(
             site: site,
+            serverUrl: serverUrl, // ATCHG: Added the custom intake base url
             licenseKey: licenseKey,
             service: service,
             env: env,

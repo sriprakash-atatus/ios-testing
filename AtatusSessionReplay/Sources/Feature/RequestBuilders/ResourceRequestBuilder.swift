@@ -47,7 +47,10 @@ internal struct ResourceRequestBuilder: FeatureRequestBuilder {
 
         let builder = URLRequestBuilder(
             url: url(with: context),
-            queryItems: execution.retryQueryItems,
+            // ATCHG: Added the Atatus identification query items, matching AtatusRUM's and
+            // AtatusLogs' `RequestBuilder`.
+            queryItems: atatusIdentificationQueryItems(with: context) + execution.retryQueryItems,
+            // ATCHG: End
             headers: [
                 .contentTypeHeader(contentType: .multipartFormData(boundary: multipart.boundary)),
                 .userAgentHeader(
@@ -86,7 +89,10 @@ internal struct ResourceRequestBuilder: FeatureRequestBuilder {
     }
 
     private func url(with context: AtatusContext) -> URL {
-        customUploadURL ?? context.site.endpoint.appendingPathComponent("api/v2/replay")
+        // ATCHG: Atatus Session Replay intake path, matching `v1/ios/rum` in AtatusRUM. Built from
+        // `intakeEndpoint` so a custom `serverUrl` is honoured, as on Android.
+        customUploadURL ?? context.intakeEndpoint.appendingPathComponent(atatusSessionReplayIntakePath)
+        // ATCHG: End
     }
 }
 #endif

@@ -179,6 +179,18 @@ public final class objc_Configuration: NSObject {
         set { sdkConfiguration.site = newValue.sdkSite }
     }
 
+    // ATCHG: Exposed `serverUrl` to Objective-C so the cross-platform agents can reach the custom
+    // intake option added for parity with `Configuration.Builder.setServerUrl()` on Android.
+    /// Sends all the data to a custom intake instead of the `site` one.
+    ///
+    /// The value must be a base url without any path (e.g. `https://rum.example.com`); each
+    /// feature appends its own path to it. `nil` by default, meaning the `site` intake is used.
+    public var serverUrl: String? {
+        get { sdkConfiguration.serverUrl }
+        set { sdkConfiguration.serverUrl = newValue }
+    }
+    // ATCHG: End
+
     /// The service name associated with data send to Atatus.
     ///
     /// Default value is set to application bundle identifier.

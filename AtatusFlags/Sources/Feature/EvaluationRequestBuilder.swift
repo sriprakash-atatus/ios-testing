@@ -59,7 +59,10 @@ internal struct EvaluationRequestBuilder: FeatureRequestBuilder {
     }
 
     private func url(with context: AtatusContext) -> URL {
-        customIntakeURL ?? context.site.endpoint.appendingPathComponent("api/v2/flagevaluation")
+        // ATCHG: Built from `intakeEndpoint` so a custom `serverUrl` is honoured, matching
+        // `EvaluationsRequestFactory.create` on Android.
+        customIntakeURL ?? context.intakeEndpoint.appendingPathComponent("api/v2/flagevaluation")
+        // ATCHG: End
     }
 
     private func buildEvaluationContext(from context: AtatusContext) -> EvaluationContext {

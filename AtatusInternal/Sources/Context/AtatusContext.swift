@@ -19,6 +19,14 @@ public struct AtatusContext {
     /// `set(logsEndpoint:)`, `set(tracesEndpoint:)` and `set(rumEndpoint:)`.
     public let site: AtatusSite
 
+    // ATCHG: Added `serverUrl`, matching `AtatusContext.serverUrl` in the Atatus Android agent.
+    /// A custom intake base url (no path) overriding the ``site`` one when set.
+    ///
+    /// Set through `Atatus.Configuration.serverUrl`. Use ``intakeEndpoint`` rather than reading
+    /// this directly — it applies the fallbacks.
+    public let serverUrl: String?
+    // ATCHG: End
+
     /// The client token allowing for data uploads to [Atatus Site](https://www.atatus.com/docs/).
     public let licenseKey: String
 
@@ -142,6 +150,7 @@ public struct AtatusContext {
     // swiftlint:disable function_default_parameter_at_end
     public init(
         site: AtatusSite,
+        serverUrl: String? = nil, // ATCHG: Added the custom intake base url, `nil` unless configured
         licenseKey: String,
         service: String,
         env: String,
@@ -174,6 +183,7 @@ public struct AtatusContext {
         additionalContext: [String: AdditionalContext] = [:]
     ) {
         self.site = site
+        self.serverUrl = serverUrl // ATCHG: Added the custom intake base url
         self.licenseKey = licenseKey
         self.service = service.sanitizedToDDTags()
         self.env = env.sanitizedToDDTags()
@@ -216,6 +226,21 @@ public struct AtatusContext {
         return result
     }
 }
+
+// ATCHG: Added `intakeEndpoint` so every feature resolves its base url the same way, matching
+// `val AtatusContext.intakeEndpoint` in the Atatus Android agent.
+extension AtatusContext {
+    /// The base url all intake requests are built from: the custom ``serverUrl`` when one was
+    /// configured through `Atatus.Configuration.serverUrl`, the ``site`` intake endpoint otherwise.
+    /// Never has a trailing slash.
+    ///
+    /// Features append their own path to it, e.g. `v1/ios/rum`, `v1/ios/logs`, `v1/ios/spans`,
+    /// `v1/ios/replay`. A feature level custom intake url takes precedence over this value.
+    public var intakeEndpoint: URL {
+        AtatusSite.intakeEndpoint(serverUrl: serverUrl, site: site)
+    }
+}
+// ATCHG: End
 
 /// Defines an additional context value type associated to a key.
 public protocol AdditionalContext {

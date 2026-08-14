@@ -19,7 +19,6 @@ internal struct Environment {
 
     struct InfoPlistKey {
         static let licenseKey      = "AtatusClientToken"
-        static let rumApplicationID = "RUMApplicationID"
 
         static let customLogsURL    = "CustomLogsURL"
         static let customTraceURL   = "CustomTraceURL"

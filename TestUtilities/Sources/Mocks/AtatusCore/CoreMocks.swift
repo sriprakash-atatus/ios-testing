@@ -28,6 +28,7 @@ extension Atatus.Configuration: AnyMockable {
         licenseKey: String = .mockAny(),
         env: String = .mockAny(),
         site: AtatusSite = .atatus,
+        serverUrl: String? = nil, // ATCHG: Added the custom intake base url
         service: String? = .mockAny(),
         bundle: Bundle = .main,
         batchSize: BatchSize = .medium,
@@ -40,6 +41,7 @@ extension Atatus.Configuration: AnyMockable {
             licenseKey: licenseKey,
             env: env,
             site: site,
+            serverUrl: serverUrl, // ATCHG: Added the custom intake base url
             service: service,
             bundle: bundle,
             batchSize: batchSize,

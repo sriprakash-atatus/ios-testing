@@ -16,6 +16,7 @@ extension AtatusContext: AnyMockable, RandomMockable {
 
     public static func mockWith(
         site: AtatusSite = .mockAny(),
+        serverUrl: String? = nil, // ATCHG: Added the custom intake base url
         licenseKey: String = .mockAny(),
         service: String = .mockAny(),
         env: String = .mockAny(),
@@ -49,6 +50,7 @@ extension AtatusContext: AnyMockable, RandomMockable {
     ) -> AtatusContext {
         var context = AtatusContext(
             site: site,
+            serverUrl: serverUrl, // ATCHG: Added the custom intake base url
             licenseKey: licenseKey,
             service: service,
             env: env,

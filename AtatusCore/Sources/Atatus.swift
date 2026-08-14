@@ -316,7 +316,10 @@ public enum Atatus {
         // matching the `AgentHeartbeatScheduler.start()` / `LogsHeartbeatScheduler.start()` calls
         // at the end of `Atatus.initialize` in the Atatus Android agent.
         let heartbeatConfiguration = HeartbeatConfiguration(
-            endpoint: configuration.site.endpoint,
+            // ATCHG: Resolve the intake base url the same way the request builders do — the custom
+            // `serverUrl` when configured, the site endpoint otherwise — matching the
+            // `Configuration.intakeEndpoint` extension used by the heartbeats on Android.
+            endpoint: AtatusSite.intakeEndpoint(serverUrl: configuration.serverUrl, site: configuration.site),
             licenseKey: configuration.licenseKey,
             appName: configuration.additionalConfiguration[CrossPlatformAttributes.appName] as? String ?? "",
             source: configuration.additionalConfiguration[CrossPlatformAttributes.atatusSource] as? String ?? "ios"
@@ -447,6 +450,7 @@ extension AtatusCore {
             encryption: configuration.encryption,
             contextProvider: AtatusContextProvider(
                 site: configuration.site,
+                serverUrl: configuration.serverUrl, // ATCHG: Added the custom intake base url
                 licenseKey: configuration.licenseKey,
                 service: service,
                 env: configuration.env,

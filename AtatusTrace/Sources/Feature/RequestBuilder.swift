@@ -64,7 +64,9 @@ internal struct TracingRequestBuilder: FeatureRequestBuilder {
 
     func url(with context: AtatusContext) -> URL {
         // ATCHG: Atatus spans intake path, matching `/v1/android/spans` in Android's `TracesRequestFactory`.
-        customIntakeURL ?? context.site.endpoint.appendingPathComponent("v1/ios/spans")
+        // ATCHG: Built from `intakeEndpoint` so a custom `serverUrl` is honoured, as on Android.
+        customIntakeURL ?? context.intakeEndpoint.appendingPathComponent("v1/ios/spans")
+        // ATCHG: End
         // ATCHG: End
     }
 }

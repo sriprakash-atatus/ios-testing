@@ -38,6 +38,112 @@ class AtatusSiteTests: XCTestCase {
         AtatusSite.serverUrl = ""
         XCTAssertEqual(AtatusSite.atatus.endpoint.absoluteString, "https://mo-rx.atatus.com")
     }
+
+    // MARK: - intakeEndpoint(serverUrl:site:)
+
+    func testIntakeEndpointUsesTheSiteEndpointWhenNoServerUrlIsSet() {
+        XCTAssertEqual(
+            AtatusSite.intakeEndpoint(serverUrl: nil, site: .atatus).absoluteString,
+            "https://mo-rx.atatus.com"
+        )
+    }
+
+    func testIntakeEndpointUsesTheCustomServerUrl() {
+        XCTAssertEqual(
+            AtatusSite.intakeEndpoint(serverUrl: "https://rum.example.com", site: .atatus).absoluteString,
+            "https://rum.example.com"
+        )
+    }
+
+    func testIntakeEndpointDropsTrailingSlashesFromTheCustomServerUrl() {
+        XCTAssertEqual(
+            AtatusSite.intakeEndpoint(serverUrl: "https://rum.example.com//", site: .atatus).absoluteString,
+            "https://rum.example.com"
+        )
+    }
+
+    func testIntakeEndpointFallsBackToTheSiteEndpointOnBlankServerUrl() {
+        for blank in ["", "   ", "\n"] {
+            XCTAssertEqual(
+                AtatusSite.intakeEndpoint(serverUrl: blank, site: .atatus).absoluteString,
+                "https://mo-rx.atatus.com",
+                "\"\(blank)\" should be ignored"
+            )
+        }
+    }
+
+    func testIntakeEndpointFallsBackToTheSiteEndpointOnMalformedServerUrl() {
+        for malformed in ["not a url", "rum.example.com", "https://"] {
+            XCTAssertEqual(
+                AtatusSite.intakeEndpoint(serverUrl: malformed, site: .atatus).absoluteString,
+                "https://mo-rx.atatus.com",
+                "\"\(malformed)\" should be ignored"
+            )
+        }
+    }
+
+    func testCustomServerUrlTakesPrecedenceOverTheGlobalOverride() {
+        AtatusSite.serverUrl = "https://global.ngrok.io"
+        XCTAssertEqual(
+            AtatusSite.intakeEndpoint(serverUrl: "https://rum.example.com", site: .atatus).absoluteString,
+            "https://rum.example.com"
+        )
+    }
+
+    func testIntakeEndpointFallsBackToTheGlobalOverrideWhenNoCustomServerUrlIsSet() {
+        AtatusSite.serverUrl = "https://global.ngrok.io"
+        XCTAssertEqual(
+            AtatusSite.intakeEndpoint(serverUrl: nil, site: .atatus).absoluteString,
+            "https://global.ngrok.io"
+        )
+    }
+}
+
+// MARK: - AtatusContext.intakeEndpoint
+
+// ATCHG: Mirrors `AtatusContextTest` in the Atatus Android agent, which covers the same three
+// cases for the `AtatusContext.intakeEndpoint` extension.
+class AtatusContextIntakeEndpointTests: XCTestCase {
+    override func tearDown() {
+        AtatusSite.serverUrl = nil
+        super.tearDown()
+    }
+
+    func testItUsesTheSiteEndpointWhenNoServerUrlIsSet() {
+        let context = AtatusContext.mockWith(site: .atatus, serverUrl: nil)
+        XCTAssertEqual(context.intakeEndpoint, AtatusSite.atatus.endpoint)
+    }
+
+    func testItUsesTheCustomServerUrl() {
+        let context = AtatusContext.mockWith(site: .atatus, serverUrl: "https://rum.example.com")
+        XCTAssertEqual(context.intakeEndpoint.absoluteString, "https://rum.example.com")
+    }
+
+    func testItUsesTheSiteEndpointOnBlankServerUrl() {
+        let context = AtatusContext.mockWith(site: .atatus, serverUrl: "   ")
+        XCTAssertEqual(context.intakeEndpoint, AtatusSite.atatus.endpoint)
+    }
+
+    func testFeaturePathsAreAppendedToTheCustomServerUrl() {
+        let context = AtatusContext.mockWith(site: .atatus, serverUrl: "https://rum.example.com/")
+
+        XCTAssertEqual(
+            context.intakeEndpoint.appendingPathComponent("v1/ios/rum").absoluteString,
+            "https://rum.example.com/v1/ios/rum"
+        )
+        XCTAssertEqual(
+            context.intakeEndpoint.appendingPathComponent("v1/ios/logs").absoluteString,
+            "https://rum.example.com/v1/ios/logs"
+        )
+        XCTAssertEqual(
+            context.intakeEndpoint.appendingPathComponent("v1/ios/spans").absoluteString,
+            "https://rum.example.com/v1/ios/spans"
+        )
+        XCTAssertEqual(
+            context.intakeEndpoint.appendingPathComponent("v1/ios/replay").absoluteString,
+            "https://rum.example.com/v1/ios/replay"
+        )
+    }
 }
 
 // MARK: - AgentInfo

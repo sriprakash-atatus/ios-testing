@@ -37,12 +37,62 @@ extension AtatusSite {
 
     /// The intake endpoint URL.
     public var endpoint: URL {
-        // ATCHG: Resolve `serverUrl` first so config-driven endpoints win over the default host.
-        if let serverUrl = AtatusSite.serverUrl, let overrideURL = URL(string: serverUrl) {
+        // ATCHG: Resolve the global `serverUrl` first so config-driven endpoints win over the default host.
+        if let overrideURL = AtatusSite.normalizedServerURL(AtatusSite.serverUrl) {
             return overrideURL
         }
         // ATCHG: End
         // swiftlint:disable:next force_unwrapping
         return URL(string: "https://\(intakeHostName)")!
     }
+
+    // ATCHG: Added the intake base url resolution shared by every feature, matching
+    // `val AtatusContext.intakeEndpoint` in the Atatus Android agent
+    // (`atatus-sdk-android-core/src/main/kotlin/com/atatus/android/api/context/AtatusContext.kt`).
+    /// Resolves the base url every intake request is built from.
+    ///
+    /// Precedence, highest first:
+    /// 1. `serverUrl` — the per-instance custom intake set through `Atatus.Configuration.serverUrl`.
+    /// 2. ``AtatusSite/serverUrl`` — the global override, defaulting to the `ATATUS_SERVER_URL`
+    ///    environment variable.
+    /// 3. The site's default intake host.
+    ///
+    /// A `serverUrl` that is blank, or that does not parse into an absolute url with a scheme and a
+    /// host, is ignored and the next option is used.
+    ///
+    /// - Parameters:
+    ///   - serverUrl: The custom intake base url, if one was configured.
+    ///   - site: The site to fall back to.
+    /// - Returns: The base url, never with a trailing slash. Features append their own path to it.
+    public static func intakeEndpoint(serverUrl: String?, site: AtatusSite) -> URL {
+        normalizedServerURL(serverUrl) ?? site.endpoint
+    }
+
+    /// Parses a custom intake base url, rejecting the values that cannot serve as one.
+    ///
+    /// Trailing slashes are dropped so that appending a feature path does not produce a double
+    /// slash, mirroring the `serverUrl?.trimEnd('/')` normalisation done by
+    /// `Configuration.Builder.setServerUrl` on Android.
+    internal static func normalizedServerURL(_ serverUrl: String?) -> URL? {
+        guard let serverUrl = serverUrl else {
+            return nil
+        }
+
+        var base = serverUrl.trimmingCharacters(in: .whitespacesAndNewlines)
+        while base.hasSuffix("/") {
+            base.removeLast()
+        }
+
+        guard
+            !base.isEmpty,
+            let url = URL(string: base),
+            url.scheme != nil,
+            url.host != nil
+        else {
+            return nil
+        }
+
+        return url
+    }
+    // ATCHG: End
 }

@@ -320,13 +320,13 @@ templates:
 	@$(ECHO_TITLE) "make templates"
 	./tools/xcode-templates/install-xcode-templates.sh
 
-# Generate data models from https://github.com/dd/rum-events-format
+# Generate data models from https://github.com/atatus/rum-events-format
 models-generate:
 	@$(call require_param,PRODUCT) # 'rum' or 'sr'
 	@$(call require_param,GIT_REF)
 	@$(ECHO_TITLE) "make models-generate PRODUCT='$(PRODUCT)' GIT_REF='$(GIT_REF)'"
 	./tools/rum-models-generator/run.py generate $(PRODUCT) --git_ref=$(GIT_REF) --skip_objc $(SKIP_OBJC_TYPES)
-# Validate data models against https://github.com/dd/rum-events-format
+# Validate data models against https://github.com/atatus/rum-events-format
 models-verify:
 	@$(call require_param,PRODUCT) # 'rum' or 'sr'
 	@$(ECHO_TITLE) "make models-verify PRODUCT='$(PRODUCT)'"

@@ -155,8 +155,9 @@ RUM.enable(
             print("Session \(sessionId) started, sampled out: \(isDiscarded)")
         },
         
-        // Custom RUM intake endpoint
-        // Default: nil (uses Atatus intake)
+        // Custom RUM intake endpoint. Expects a full URL and takes precedence
+        // over the core-level `Atatus.Configuration.serverUrl`.
+        // Default: nil (uses Atatus intake, `<serverUrl or site>/v1/ios/rum`)
         customEndpoint: nil,
         
         // Track anonymous user ID across sessions

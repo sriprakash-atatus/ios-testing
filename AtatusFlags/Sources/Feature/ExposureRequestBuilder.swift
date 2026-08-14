@@ -48,6 +48,9 @@ internal struct ExposureRequestBuilder: FeatureRequestBuilder {
     }
 
     private func url(with context: AtatusContext) -> URL {
-        customIntakeURL ?? context.site.endpoint.appendingPathComponent("api/v2/exposures")
+        // ATCHG: Built from `intakeEndpoint` so a custom `serverUrl` is honoured, matching
+        // `ExposuresRequestFactory.create` on Android.
+        customIntakeURL ?? context.intakeEndpoint.appendingPathComponent("api/v2/exposures")
+        // ATCHG: End
     }
 }

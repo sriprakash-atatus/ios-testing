@@ -84,8 +84,9 @@ SessionReplay.enable(
         // If false, call SessionReplay.startRecording() manually
         startRecordingImmediately: true,
         
-        // Custom endpoint for replay data
-        // Default: nil (uses Atatus intake)
+        // Custom endpoint for replay data. Expects a full URL and takes
+        // precedence over the core-level `Atatus.Configuration.serverUrl`.
+        // Default: nil (uses Atatus intake, `<serverUrl or site>/v1/ios/replay`)
         customEndpoint: nil,
         
         // Feature flags for experimental features

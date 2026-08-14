@@ -123,8 +123,9 @@ Trace.enable(
             return modified
         },
 
-        // Custom intake endpoint for spans
-        // Default: nil (uses Atatus intake)
+        // Custom intake endpoint for spans. Expects a full URL and takes
+        // precedence over the core-level `Atatus.Configuration.serverUrl`.
+        // Default: nil (uses Atatus intake, `<serverUrl or site>/v1/ios/spans`)
         customEndpoint: nil
     )
 )
