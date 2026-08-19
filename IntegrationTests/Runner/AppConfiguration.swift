@@ -99,7 +99,12 @@ extension AppConfiguration {
         //
         // Open the gate only when logs are mocked. When the app reports to a real intake the real
         // heartbeat still decides, so this does not mask the production behaviour.
+        //
+        // The scheduler is also stopped: `Atatus.initialize()` starts the heartbeat timer with
+        // `deadline: .now()`, so its async response can arrive after `setLogsAllowed(true)` and
+        // overwrite it back to `false`. Stopping the scheduler cancels that in-flight request.
         if Environment.serverMockConfiguration()?.logsEndpoint != nil {
+            LogsHeartbeatScheduler.shared.stop()
             LogsHeartbeatScheduler.setLogsAllowed(true)
         }
 
