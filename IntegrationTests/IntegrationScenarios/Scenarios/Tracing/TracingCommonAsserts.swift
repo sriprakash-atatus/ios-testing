@@ -40,10 +40,10 @@ extension TracingCommonAsserts {
 
             // Example path here: `/36882784-420B-494F-910D-CBAC5897A309`
             XCTAssertFalse(request.path.isEmpty)
-            XCTAssertNil(request.queryItems)
+            assertAtatusIdentificationQueryItems(in: request, file: file, line: line)
 
-            let atatusTags = request.queryItems?.atatusTags()
-            XCTAssertNil(atatusTags)
+            // Span tags travel in the payload, not in `atatustags`.
+            XCTAssertNil(request.queryItems?.atatusTags(), file: file, line: line)
 
             XCTAssertEqual(request.httpHeaders["Content-Type"], "text/plain;charset=UTF-8", file: file, line: line)
             XCTAssertEqual(request.httpHeaders["User-Agent"]?.matches(regex: userAgentRegex), true, file: file, line: line)

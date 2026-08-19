@@ -28,9 +28,7 @@ extension RUMCommonAsserts {
 
             // Example path here: `/36882784-420B-494F-910D-CBAC5897A309?atatus_source=ios`
             XCTAssertNotNil(request.path, file: file, line: line)
-            XCTAssertNotNil(request.queryItems)
-            XCTAssertEqual(request.queryItems!.count, 1)
-            XCTAssertEqual(request.queryItems?.value(name: "atatusSource"), "ios", file: file, line: line)
+            assertAtatusIdentificationQueryItems(in: request, file: file, line: line)
 
             XCTAssertEqual(request.httpHeaders["Content-Type"], "text/plain;charset=UTF-8", file: file, line: line)
             XCTAssertEqual(request.httpHeaders["User-Agent"]?.matches(regex: userAgentRegex), true, file: file, line: line)

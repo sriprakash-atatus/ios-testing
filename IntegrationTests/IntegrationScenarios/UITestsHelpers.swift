@@ -9,6 +9,7 @@
 // Atatus equivalents; rebranded the licence header.
 
 import AtatusInternal
+import HTTPServerMock
 import TestUtilities
 import XCTest
 
@@ -125,4 +126,25 @@ extension XCUIElement {
 /// This is an oportunity to associate additional logs to UI test execution.
 func sendCIAppLog(_ value: CustomStringConvertible) {
     print(value)
+}
+
+// ATCHG: Every intake upload carries the Atatus identification query items added by
+// `URLRequestBuilder.QueryItem`, matching the Atatus Android agent's request factories.
+/// Asserts the identification query items that the agent puts on every intake request.
+func assertAtatusIdentificationQueryItems(
+    in request: HTTPServerMock.Request,
+    file: StaticString = #file,
+    line: UInt = #line
+) {
+    guard let queryItems = request.queryItems else {
+        XCTFail("Request to \(request.path) carries no query items", file: file, line: line)
+        return
+    }
+
+    XCTAssertEqual(queryItems.count, 5, "Expected the 5 Atatus identification query items", file: file, line: line)
+    XCTAssertEqual(queryItems.value(name: "atatus_source"), "ios", file: file, line: line)
+    XCTAssertEqual(queryItems.value(name: "license_key"), "ui-tests-client-token", file: file, line: line)
+    XCTAssertEqual(queryItems.value(name: "agent_name"), "Atatus iOS Agent", file: file, line: line)
+    XCTAssertEqual(queryItems.value(name: "agent_version")?.matches(regex: semverRegex), true, file: file, line: line)
+    XCTAssertNotNil(queryItems.value(name: "app_name"), "`app_name` must be sent, even when empty", file: file, line: line)
 }

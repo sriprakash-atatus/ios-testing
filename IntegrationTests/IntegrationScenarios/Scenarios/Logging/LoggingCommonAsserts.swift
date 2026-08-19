@@ -28,9 +28,7 @@ extension LoggingCommonAsserts {
 
             // Example path here: `/36882784-420B-494F-910D-CBAC5897A309?atatus_source=ios`
             XCTAssertNotNil(request.path, file: file, line: line)
-            XCTAssertNotNil(request.queryItems)
-            XCTAssertEqual(request.queryItems!.count, 1)
-            XCTAssertEqual(request.queryItems?.value(name: "atatusSource"), "ios", file: file, line: line)
+            assertAtatusIdentificationQueryItems(in: request, file: file, line: line)
 
             let atatusTags = request.queryItems?.atatusTags()
             XCTAssertNil(atatusTags, file: file, line: line)

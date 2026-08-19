@@ -15,6 +15,7 @@ import AtatusLogs
 import AtatusTrace
 import AtatusRUM
 import AtatusCrashReporting
+@_spi(Internal) import AtatusInternal
 
 var logger: LoggerProtocol?
 var rumMonitor: RUMMonitorProtocol { RUMMonitor.shared() }
@@ -89,6 +90,18 @@ extension AppConfiguration {
         )
 
         appConfiguration.testScenario?.configureFeatures()
+
+        // ATCHG: `LogsHeartbeatScheduler.isLogsAllowed` defaults to `false`, so the Logs feature
+        // holds every batch back until the logs heartbeat answers `allowAgent: true`. That
+        // heartbeat talks to the real Atatus backend, which the UI tests deliberately never reach:
+        // they point each product at the local mock intake using a placeholder license key, so the
+        // heartbeat always answers `false` and no log is ever uploaded.
+        //
+        // Open the gate only when logs are mocked. When the app reports to a real intake the real
+        // heartbeat still decides, so this does not mask the production behaviour.
+        if Environment.serverMockConfiguration()?.logsEndpoint != nil {
+            LogsHeartbeatScheduler.setLogsAllowed(true)
+        }
 
         // Set user information
         Atatus.setUserInfo(id: "abcd-1234", name: "foo", email: "foo@example.com", extraInfo: ["key-extraUserInfo": "value-extraUserInfo"])
