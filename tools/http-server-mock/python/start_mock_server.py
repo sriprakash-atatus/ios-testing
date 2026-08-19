@@ -45,7 +45,20 @@ class HTTPMockServer(BaseHTTPRequestHandler):
         """
         self.__route([
             (r"/inspect$", self.__GET_inspect),
+            (r".*/agent-heartbeat", self.__GET_heartbeat),
+            (r".*/heart-beat", self.__GET_heartbeat),
         ])
+
+    def __GET_heartbeat(self, parameters):
+        """
+        GET /.../agent-heartbeat or /.../heart-beat
+
+        The iOS agent gates Logs uploads behind a heartbeat: LogsHeartbeatScheduler.isLogsAllowed
+        defaults to false and the Logs RequestBuilder skips every batch until the heartbeat
+        answers {"allowAgent": true}. Without this route the mock intake returns 404, the gate
+        never opens, and log upload assertions time out.
+        """
+        return json.dumps({"allowAgent": True}).encode("utf-8")
 
     def do_DELETE(self):
         """
