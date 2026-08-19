@@ -92,6 +92,17 @@ internal struct Environment {
         static let testScenarioClassName = "AT_TEST_SCENARIO_CLASS_NAME"
         static let serverMockConfiguration = "AT_TEST_SERVER_MOCK_CONFIGURATION"
         static let urlSessionSetup = "AT_TEST_URL_SESSION_SETUP"
+
+        // ATCHG: Credentials read from the environment so a CI job can point this app at a real
+        // Atatus intake without any key being committed. Unset in the UI tests, which assert the
+        // placeholders in `Constants` on the recorded intake requests.
+        static let licenseKey = "AT_TEST_LICENSE_KEY"
+        static let rumApplicationID = "AT_TEST_RUM_APPLICATION_ID"
+        static let service = "AT_TEST_SERVICE"
+        static let env = "AT_TEST_ENV"
+        /// A first party URL the app requests once, to exercise network tracing and trace
+        /// propagation against a real backend. Skipped when unset.
+        static let tracedRequestURL = "AT_TEST_TRACED_REQUEST_URL"
     }
     /// Launch arguments shared between UITests and Example targets.
     struct Argument {
@@ -103,9 +114,17 @@ internal struct Environment {
     struct Constants {
         /// The name of the view indicating the end of RUM session in RUM-related `TestScenarios`.
         static let rumSessionEndViewName = "RUMSessionEndView"
+
+        // ATCHG: Defaults used when the matching `Variable` is not set. The UI tests assert these
+        // exact values, so they must not change.
+        static let defaultLicenseKey = "ui-tests-client-token"
+        static let defaultRUMApplicationID = "rum-application-id"
+        static let defaultService = "ui-tests-service-name"
+        static let defaultEnv = "integration"
     }
     struct InfoPlistKey {
         static let licenseKey      = "AtatusClientToken"
+        static let rumApplicationID = "RUMApplicationID"
 
         static let customLogsURL    = "CustomLogsURL"
         static let customTraceURL   = "CustomTraceURL"
@@ -150,6 +169,44 @@ internal struct Environment {
         }
         return nil
     }
+
+    // ATCHG: Credentials, environment-overridable.
+
+    /// The license key the SDK is initialized with.
+    static func licenseKey() -> String {
+        nonEmptyValue(of: Variable.licenseKey) ?? Constants.defaultLicenseKey
+    }
+
+    /// The RUM application ID that RUM-enabling scenarios use.
+    static func rumApplicationID() -> String {
+        nonEmptyValue(of: Variable.rumApplicationID) ?? Constants.defaultRUMApplicationID
+    }
+
+    /// The `service` reported to the intake.
+    static func service() -> String {
+        nonEmptyValue(of: Variable.service) ?? Constants.defaultService
+    }
+
+    /// The `env` reported to the intake.
+    static func env() -> String {
+        nonEmptyValue(of: Variable.env) ?? Constants.defaultEnv
+    }
+
+    /// A first party URL to request once, or `nil` to skip the traced request.
+    static func tracedRequestURL() -> URL? {
+        nonEmptyValue(of: Variable.tracedRequestURL).flatMap { URL(string: $0) }
+    }
+
+    /// Reads an ENV variable, treating a blank value the same as an absent one — CI runners
+    /// routinely export unset secrets as empty strings.
+    private static func nonEmptyValue(of variable: String) -> String? {
+        guard let value = ProcessInfo.processInfo.environment[variable] else {
+            return nil
+        }
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
+    }
+    // ATCHG: End
 
     // MARK: - Info.plist
 

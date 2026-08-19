@@ -1,0 +1,426 @@
+name: iOS Agent Test
+
+# End-to-end validation of the Atatus iOS agent on a GitHub-hosted macOS runner:
+#
+#   GitHub Actions → macOS runner → iOS Simulator → iOS sample app → Atatus iOS agent
+#                  → RUM + Logs + Traces → Atatus intake → screenshots + logs + test results
+#
+# The sample app is `IntegrationTests/Runner` ("Integration Tests Runner.app"), the app the
+# repository's existing XCUITest suite drives. It integrates the agent through CocoaPods with the
+# SDK modules resolved from this working copy (`IntegrationTests/Podfile` uses `:path => '..'`),
+# so what runs here is the agent on this branch, not a published release.
+#
+# The job has two phases, deliberately kept separate because they prove different things:
+#
+#   1. Verified locally — every product reports to the repository's own `http-server-mock` intake.
+#      The recorded payloads are read back and asserted by the XCUITest suite. Hermetic, and needs
+#      no credentials.
+#   2. Reported to Atatus — the same app reports to a real intake through `ATATUS_SERVER_URL`,
+#      which `AtatusSite.serverUrl` already reads. Delivery is judged on the intake's HTTP
+#      response codes, which the agent logs. Whether the data then appears in the Atatus UI is
+#      NOT verified here and must be checked by a human.
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_plan:
+        description: "XCTest plan to run against the agent"
+        type: choice
+        default: AtatusAgentValidation
+        options:
+          - AtatusAgentValidation
+          - Default
+          - RUM
+          - NetworkInstrumentation
+      simulator_device:
+        description: "Simulator device name (blank = newest available iPhone)"
+        type: string
+        default: ""
+      simulator_os:
+        description: "Simulator iOS version (blank = newest available runtime)"
+        type: string
+        default: ""
+      xcode_version:
+        description: "Xcode version, e.g. 16.4 (blank = runner default)"
+        type: string
+        default: ""
+      send_to_atatus:
+        description: "Also report to the Atatus intake (needs the ATATUS_LICENSE_KEY secret)"
+        type: boolean
+        default: true
+  pull_request:
+    paths:
+      - "Atatus*/**"
+      - "IntegrationTests/**"
+      - "TestUtilities/**"
+      - "tools/http-server-mock/**"
+      - ".github/workflows/ios-agent-test.yml"
+      - ".github/scripts/**"
+  push:
+    branches: [master, develop]
+    paths:
+      - "Atatus*/**"
+      - "IntegrationTests/**"
+      - "TestUtilities/**"
+      - "tools/http-server-mock/**"
+      - ".github/workflows/ios-agent-test.yml"
+      - ".github/scripts/**"
+
+concurrency:
+  group: ios-agent-test-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  agent-test:
+    name: iOS Simulator agent test
+    runs-on: macos-latest
+    timeout-minutes: 120
+
+    env:
+      TEST_PLAN: ${{ inputs.test_plan || 'AtatusAgentValidation' }}
+      WORKSPACE: IntegrationTests/IntegrationTests.xcworkspace
+      APP_SCHEME: Runner iOS
+      TEST_SCHEME: IntegrationScenarios
+      APP_BUNDLE_ID: com.atatusqh.Example
+      DERIVED_DATA: ${{ github.workspace }}/.build/DerivedData
+      BUNDLE_PATH: ${{ github.workspace }}/.build/bundle
+      ARTIFACTS_DIR: ${{ github.workspace }}/artifacts/ios-agent-test
+      # The intake the Atatus phase reports to. `AtatusSite.serverUrl` already reads this variable,
+      # so no endpoint is hardcoded in app or agent code. Override with an `ATATUS_SERVER_URL`
+      # repository variable to point somewhere else.
+      ATATUS_SERVER_URL: ${{ vars.ATATUS_SERVER_URL || 'https://demo.atatus.com' }}
+      AT_TEST_SERVICE: ${{ vars.ATATUS_SERVICE || 'ios-agent-test' }}
+      AT_TEST_ENV: ${{ vars.ATATUS_ENV || 'ci' }}
+      # Optional first party URL the demo scenario requests once, to exercise network tracing and
+      # traceparent propagation against a real backend. Left blank, that request is skipped.
+      AT_TEST_TRACED_REQUEST_URL: ${{ vars.ATATUS_TRACED_REQUEST_URL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        env:
+          REQUESTED_XCODE: ${{ inputs.xcode_version }}
+        run: |
+          set -euo pipefail
+          echo "Xcode versions installed on this runner:"
+          ls -d /Applications/Xcode*.app
+
+          requested="${REQUESTED_XCODE:-}"
+          if [ -n "$requested" ]; then
+            xcode_app="/Applications/Xcode_${requested}.app"
+            if [ ! -d "$xcode_app" ]; then
+              echo "::error::Xcode $requested is not installed on this runner (see the list above)."
+              exit 1
+            fi
+            sudo xcode-select -s "$xcode_app/Contents/Developer"
+          fi
+
+          xcodebuild -version
+          swift --version
+
+      - name: Set up artifact directories
+        run: mkdir -p "$ARTIFACTS_DIR"/{screenshots,logs,intake,ResultBundles}
+
+      - name: List available iOS Simulators
+        run: |
+          set -euo pipefail
+          xcrun simctl list runtimes | tee "$ARTIFACTS_DIR/logs/simulator-runtimes.txt"
+          xcrun simctl list devices available | tee "$ARTIFACTS_DIR/logs/simulator-devices.txt"
+
+      - name: Select iPhone Simulator
+        env:
+          REQUESTED_DEVICE: ${{ inputs.simulator_device }}
+          REQUESTED_OS: ${{ inputs.simulator_os }}
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/pick_simulator.py \
+            --device "${REQUESTED_DEVICE:-}" \
+            --runtime "${REQUESTED_OS:-}" \
+            | tee -a "$GITHUB_ENV"
+
+      - name: Boot iPhone Simulator
+        run: |
+          set -euo pipefail
+          echo "Booting $SIMULATOR_NAME (iOS $SIMULATOR_OS) — $SIMULATOR_UDID"
+          # `boot` fails when the device is already booted, which is not an error for us.
+          xcrun simctl boot "$SIMULATOR_UDID" || true
+          if ! xcrun simctl bootstatus "$SIMULATOR_UDID" -b; then
+            echo "::error::The iOS Simulator failed to boot."
+            exit 1
+          fi
+          # Deterministic status bar, so screenshots diff cleanly between runs.
+          xcrun simctl status_bar "$SIMULATOR_UDID" override \
+            --time "09:41" --batteryState charged --batteryLevel 100 || true
+          xcrun simctl list devices booted
+
+      - name: Prepare repository
+        run: |
+          set -euo pipefail
+          make clean repo-setup ENV=ci
+
+      - name: Configure Atatus credentials
+        env:
+          ATATUS_LICENSE_KEY: ${{ secrets.ATATUS_LICENSE_KEY }}
+          ATATUS_RUM_APPLICATION_ID: ${{ secrets.ATATUS_RUM_APPLICATION_ID }}
+        run: |
+          set -euo pipefail
+          # Phase 1 runs against the local mock intake and needs no credentials. Phase 2 needs a
+          # real license key. When configured, the values are written to the git-ignored
+          # `Atatus.local.xcconfig` that `xcconfigs/Atatus.xcconfig` already includes, which is the
+          # repository's own mechanism for supplying them. Nothing is ever hardcoded.
+          if [ -n "${ATATUS_LICENSE_KEY:-}" ]; then
+            echo "HAS_ATATUS_CREDENTIALS=true" >> "$GITHUB_ENV"
+          else
+            echo "HAS_ATATUS_CREDENTIALS=false" >> "$GITHUB_ENV"
+            echo "::warning::ATATUS_LICENSE_KEY is not configured, so the phase that reports to $ATATUS_SERVER_URL will be skipped. Local validation against the mock intake still runs."
+          fi
+
+          if [ -z "${ATATUS_LICENSE_KEY:-}" ] && [ -z "${ATATUS_RUM_APPLICATION_ID:-}" ]; then
+            echo "No Atatus secrets configured — running fully against the local mock intake."
+            exit 0
+          fi
+
+          for value in "${ATATUS_LICENSE_KEY:-}" "${ATATUS_RUM_APPLICATION_ID:-}"; do
+            case "$value" in
+              *//*)
+                echo "::error::Atatus secrets must not contain '//' — xcconfig treats it as a comment."
+                exit 1
+                ;;
+            esac
+          done
+
+          config="// Generated by .github/workflows/ios-agent-test.yml — do not commit."
+          if [ -n "${ATATUS_LICENSE_KEY:-}" ]; then
+            config="$config
+          ATATUS_LICENSE_KEY=${ATATUS_LICENSE_KEY}
+          ATATUS_CLIENT_TOKEN=${ATATUS_LICENSE_KEY}"
+          fi
+          if [ -n "${ATATUS_RUM_APPLICATION_ID:-}" ]; then
+            config="$config
+          RUM_APPLICATION_ID=${ATATUS_RUM_APPLICATION_ID}"
+          fi
+          printf '%s\n' "$config" | sed 's/^ *//' > xcconfigs/Atatus.local.xcconfig
+          echo "Wrote xcconfigs/Atatus.local.xcconfig ($(wc -l < xcconfigs/Atatus.local.xcconfig) lines, values masked)."
+
+      - name: Resolve mock intake address
+        run: |
+          set -euo pipefail
+          ./tools/config/generate-http-server-mock-config.sh
+          address="$(sed -n 's/^MOCK_SERVER_ADDRESS=//p' xcconfigs/MockServerAddress.local.xcconfig)"
+          if [ -z "$address" ]; then
+            echo "::error::Could not resolve the mock intake address."
+            exit 1
+          fi
+          echo "MOCK_SERVER_URL=http://$address" >> "$GITHUB_ENV"
+          echo "Mock intake will run on http://$address"
+
+      - name: Install CocoaPods dependencies
+        run: |
+          set -euo pipefail
+          make ui-test-podinstall
+
+      - name: Build sample app for iphonesimulator
+        run: |
+          set -euo pipefail
+          xcodebuild build \
+            -workspace "$WORKSPACE" \
+            -scheme "$APP_SCHEME" \
+            -configuration Debug \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_UDID" \
+            -derivedDataPath "$DERIVED_DATA" \
+            2>&1 | tee "$ARTIFACTS_DIR/logs/xcodebuild-app.log" | { command -v xcbeautify >/dev/null && xcbeautify || cat; }
+
+          app_path="$DERIVED_DATA/Build/Products/Debug-iphonesimulator/Integration Tests Runner.app"
+          if [ ! -d "$app_path" ]; then
+            echo "::error::Sample app was not produced at $app_path."
+            exit 1
+          fi
+          echo "APP_PATH=$app_path" >> "$GITHUB_ENV"
+          echo "Built $app_path"
+
+      - name: Build UI test bundle
+        run: |
+          set -euo pipefail
+          xcodebuild build-for-testing \
+            -workspace "$WORKSPACE" \
+            -scheme "$TEST_SCHEME" \
+            -testPlan "$TEST_PLAN" \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_UDID" \
+            -derivedDataPath "$DERIVED_DATA" \
+            2>&1 | tee "$ARTIFACTS_DIR/logs/xcodebuild-build-for-testing.log" | { command -v xcbeautify >/dev/null && xcbeautify || cat; }
+
+      - name: Start mock intake server
+        run: |
+          set -euo pipefail
+          # `start_mock_server.py` kills any process whose command line contains its own file name,
+          # so it is copied under a neutral name before being started here. That keeps this instance
+          # alive for the whole job and makes it the single owner of port 8000: the scheme's test
+          # pre-action, which starts the same server, then finds the port taken and steps aside
+          # instead of restarting the intake (and wiping its history) midway through the run.
+          intake_dir="$RUNNER_TEMP/mock-intake"
+          mkdir -p "$intake_dir"
+          cp tools/http-server-mock/python/server_address.py "$intake_dir/"
+          cp tools/http-server-mock/python/start_mock_server.py "$intake_dir/mock_intake_server.py"
+
+          nohup python3 "$intake_dir/mock_intake_server.py" \
+            > "$ARTIFACTS_DIR/logs/mock-intake.log" 2>&1 &
+          echo "MOCK_SERVER_PID=$!" >> "$GITHUB_ENV"
+
+          for _ in $(seq 1 30); do
+            if curl -sf "$MOCK_SERVER_URL/inspect" >/dev/null; then
+              echo "Mock intake is reachable on $MOCK_SERVER_URL"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::Mock intake did not become reachable on $MOCK_SERVER_URL."
+          cat "$ARTIFACTS_DIR/logs/mock-intake.log" || true
+          exit 1
+
+      - name: Install sample app into the Simulator
+        run: |
+          set -euo pipefail
+          xcrun simctl install "$SIMULATOR_UDID" "$APP_PATH"
+          # Not piped into grep: `grep -q` exits early, and the resulting SIGPIPE on `listapps`
+          # would trip `pipefail` and report a false negative.
+          installed="$(xcrun simctl listapps "$SIMULATOR_UDID")"
+          if ! printf '%s' "$installed" | grep -q "$APP_BUNDLE_ID"; then
+            echo "::error::$APP_BUNDLE_ID is not installed in the Simulator after 'simctl install'."
+            exit 1
+          fi
+          echo "Installed $APP_BUNDLE_ID"
+
+      # Phase 1a: launch the app directly (no XCTest). This is the explicit gate on the app
+      # launching, the agent initializing, and the agent flushing data to an intake.
+      - name: Launch app — verify agent initializes and reports RUM
+        run: |
+          .github/scripts/simulator-agent-run.sh \
+            --mode mock \
+            --label rum \
+            --scenario RUMManualInstrumentationScenario \
+            --expect rum
+
+      - name: Launch app — verify agent reports Logs and Traces
+        run: |
+          .github/scripts/simulator-agent-run.sh \
+            --mode mock \
+            --label logs-traces \
+            --scenario TracingManualInstrumentationScenario \
+            --expect traces --expect logs
+
+      # Phase 1b: the XCUITest suite. Real taps and real requests drive the app, and every
+      # assertion runs against the payloads the agent actually uploaded.
+      - name: Run Atatus agent XCUITest suite
+        run: |
+          set -euo pipefail
+          result_bundle="$ARTIFACTS_DIR/ResultBundles/IntegrationScenarios-$TEST_PLAN.xcresult"
+          rm -rf "$result_bundle"
+          xcodebuild test-without-building \
+            -workspace "$WORKSPACE" \
+            -scheme "$TEST_SCHEME" \
+            -testPlan "$TEST_PLAN" \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_UDID" \
+            -derivedDataPath "$DERIVED_DATA" \
+            -resultBundlePath "$result_bundle" \
+            2>&1 | tee "$ARTIFACTS_DIR/logs/xcodebuild-test.log" | { command -v xcbeautify >/dev/null && xcbeautify || cat; }
+
+      # Phase 2: report to a real Atatus intake. The payloads cannot be read back from CI, so
+      # delivery is judged on the intake's HTTP response codes, which the agent logs at .debug
+      # verbosity. Whether the data then appears in the Atatus UI is NOT verified here.
+      - name: Report RUM, Logs and Traces to Atatus
+        if: env.HAS_ATATUS_CREDENTIALS == 'true' && (github.event_name != 'workflow_dispatch' || inputs.send_to_atatus)
+        env:
+          AT_TEST_LICENSE_KEY: ${{ secrets.ATATUS_LICENSE_KEY }}
+          AT_TEST_RUM_APPLICATION_ID: ${{ secrets.ATATUS_RUM_APPLICATION_ID }}
+        run: |
+          set -euo pipefail
+          # Fresh install, so this run reports a new session rather than resuming the mock one.
+          xcrun simctl uninstall "$SIMULATOR_UDID" "$APP_BUNDLE_ID" || true
+          xcrun simctl install "$SIMULATOR_UDID" "$APP_PATH"
+
+          .github/scripts/simulator-agent-run.sh \
+            --mode demo \
+            --label atatus-demo \
+            --scenario AtatusDemoScenario \
+            --expect rum --expect logs --expect traces
+
+      - name: Capture final Simulator screenshot
+        if: always()
+        run: |
+          if [ -n "${SIMULATOR_UDID:-}" ]; then
+            xcrun simctl io "$SIMULATOR_UDID" screenshot --type=png \
+              "$ARTIFACTS_DIR/screenshots/final.png" || true
+          fi
+
+      - name: Collect Simulator and application logs
+        if: always()
+        run: |
+          set -uo pipefail
+          if [ -n "${SIMULATOR_UDID:-}" ]; then
+            xcrun simctl spawn "$SIMULATOR_UDID" log show --last 60m --style syslog \
+              --predicate 'subsystem == "atatus-sdk-ios"' \
+              > "$ARTIFACTS_DIR/logs/agent-oslog-full.log" 2>&1 || true
+            xcrun simctl spawn "$SIMULATOR_UDID" log show --last 60m --style syslog \
+              --predicate 'processImagePath CONTAINS "Integration Tests Runner"' \
+              > "$ARTIFACTS_DIR/logs/sample-app.log" 2>&1 || true
+          fi
+
+          # Crash reports for the sample app, if the agent or the app brought it down.
+          crash_dir="$HOME/Library/Logs/DiagnosticReports"
+          if [ -d "$crash_dir" ]; then
+            mkdir -p "$ARTIFACTS_DIR/logs/crashes"
+            find "$crash_dir" -name "*Integration Tests Runner*" -exec cp {} "$ARTIFACTS_DIR/logs/crashes/" \; 2>/dev/null || true
+          fi
+
+          # Everything the agent uploaded to the mock intake, headers and bodies decoded.
+          if [ -n "${MOCK_SERVER_URL:-}" ]; then
+            python3 .github/scripts/mock_intake.py --server "$MOCK_SERVER_URL" dump \
+              --output "$ARTIFACTS_DIR/intake/recorded-requests-final.json" || true
+          fi
+
+      - name: Summarize run
+        if: always()
+        run: |
+          {
+            echo "### iOS agent test"
+            echo ""
+            echo "| Item | Value |"
+            echo "| --- | --- |"
+            echo "| Sample app | Integration Tests Runner.app (\`$APP_BUNDLE_ID\`) |"
+            echo "| Simulator | ${SIMULATOR_NAME:-unknown} (iOS ${SIMULATOR_OS:-unknown}) |"
+            echo "| Xcode | $(xcodebuild -version | head -1) |"
+            echo "| Test plan | \`$TEST_PLAN\` |"
+            echo "| Atatus intake | \`${ATATUS_SERVER_URL}\` |"
+            echo "| Reported to Atatus | ${HAS_ATATUS_CREDENTIALS:-false} |"
+            echo "| Service / env | \`${AT_TEST_SERVICE}\` / \`${AT_TEST_ENV}\` |"
+            echo ""
+            echo "**Verified locally** — RUM, Logs and Traces payloads were read back from the mock"
+            echo "intake and asserted by the XCUITest suite."
+            echo ""
+            echo "**Reported to Atatus** — judged on intake HTTP response codes only. Visibility in"
+            echo "the Atatus UI is not verified by this workflow and must be checked by a human."
+            echo ""
+            echo "Screenshots, logs and results are attached as the \`ios-agent-test\` artifact."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload screenshots, logs and test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-agent-test
+          path: ${{ env.ARTIFACTS_DIR }}
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Shut down Simulator
+        if: always()
+        run: |
+          kill "${MOCK_SERVER_PID:-0}" 2>/dev/null || true
+          pkill -f mock_intake_server.py 2>/dev/null || true
+          pkill -f start_mock_server.py 2>/dev/null || true
+          xcrun simctl shutdown "${SIMULATOR_UDID:-booted}" 2>/dev/null || true

@@ -182,6 +182,9 @@
          <TestPlanReference
             reference = "container:xctestplans/NetworkInstrumentation.xctestplan">
          </TestPlanReference>
+         <TestPlanReference
+            reference = "container:xctestplans/AtatusAgentValidation.xctestplan">
+         </TestPlanReference>
       </TestPlans>
    </TestAction>
    <LaunchAction

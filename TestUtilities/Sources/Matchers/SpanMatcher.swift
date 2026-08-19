@@ -100,6 +100,15 @@ public class SpanMatcher {
         return .init(idHi: idHi, idLo: traceID.idLo)
     }
 
+    /// The raw `trace_id` string, exactly as it was encoded in the payload.
+    ///
+    /// `traceID()` normalizes both the current and the legacy encoding, so it cannot tell them
+    /// apart. Use this when asserting the wire format itself, e.g. that the full 128-bit ID is
+    /// reported as 32 hexadecimal characters.
+    public func traceIDString() throws -> String {
+        try attribute(forKeyPath: "trace_id")
+    }
+
     public func spanID() throws -> SpanID? {
         let spanId: String = try attribute(forKeyPath: "span_id")
         return .init(spanId, representation: .hexadecimal)

@@ -41,7 +41,8 @@
         "TracingURLSessionScenarioTests\/testTracingURLSessionScenario_delegateWithAdditionalFirstyPartyHosts()",
         "TracingURLSessionScenarioTests\/testTracingURLSessionScenario_directWithGlobalFirstPartyHosts()",
         "TracingURLSessionScenarioTests\/testTracingURLSessionScenario_inheritance()",
-        "TracingURLSessionScenarioTests\/testTracingURLSessionScenario_legacyWithAdditionalFirstyPartyHosts()"
+        "TracingURLSessionScenarioTests\/testTracingURLSessionScenario_legacyWithAdditionalFirstyPartyHosts()",
+        "TracingURLSessionScenarioTests\/testTracingURLSessionScenario_reportsFull128BitTraceIDMatchingTraceparent()"
       ],
       "target" : {
         "containerPath" : "container:IntegrationTests.xcodeproj",

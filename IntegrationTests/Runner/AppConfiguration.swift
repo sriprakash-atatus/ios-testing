@@ -56,10 +56,12 @@ struct UITestsAppConfiguration: AppConfiguration {
     }
 
     func sdkConfiguration() -> Atatus.Configuration {
+        // ATCHG: Read from the environment, falling back to the UI-test placeholders the
+        // integration assertions expect, so the same app can also report to a real intake.
         var configuration = Atatus.Configuration(
-            licenseKey: "ui-tests-client-token",
-            env: "integration",
-            service: "ui-tests-service-name",
+            licenseKey: Environment.licenseKey(),
+            env: Environment.env(),
+            service: Environment.service(),
             batchSize: .small,
             uploadFrequency: .frequent
         )

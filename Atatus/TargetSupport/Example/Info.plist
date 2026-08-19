@@ -39,6 +39,8 @@
 	<string>Location updates are used to test SDK support for tracking events while the app is in background. (always)</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Location updates are used to test SDK support for tracking events while the app is in background. (when in use)</string>
+	<key>RUMApplicationID</key>
+	<string>$(RUM_APPLICATION_ID)</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>

@@ -1,0 +1,38 @@
+{
+  "configurations": [
+    {
+      "id": "7C3A1F02-4E45-4F0E-9D2E-1B0D4C8A6E11",
+      "name": "Configuration",
+      "options": {}
+    }
+  ],
+  "defaultOptions": {
+    "targetForVariableExpansion": {
+      "containerPath": "container:IntegrationTests.xcodeproj",
+      "identifier": "61441C2924616F1D003D8BB8",
+      "name": "IntegrationScenarios"
+    }
+  },
+  "testTargets": [
+    {
+      "selectedTests": [
+        "LoggingScenarioTests/testLoggingScenario()",
+        "RUMManualInstrumentationScenarioTests/testRUMManualInstrumentationScenario()",
+        "RUMTapActionScenarioTests/testRUMTapActionScenario()",
+        "RUMNavigationControllerScenarioTests/testRUMNavigationControllerScenario()",
+        "RUMStopSessionScenarioTests/testRUMStopSessionScenario()",
+        "RUMResourcesScenarioTests/testRUMURLSessionResourcesScenario_delegateUsingFeatureFirstPartyHosts()",
+        "RUMResourceActiveSpanAugmentationTests/testSampled()",
+        "TracingManualInstrumentationScenarioTests/testTracingManualInstrumentationScenario()",
+        "TracingURLSessionScenarioTests/testTracingURLSessionScenario_delegateUsingFeatureFirstPartyHosts()",
+        "TracingURLSessionScenarioTests/testTracingURLSessionScenario_reportsFull128BitTraceIDMatchingTraceparent()"
+      ],
+      "target": {
+        "containerPath": "container:IntegrationTests.xcodeproj",
+        "identifier": "61441C2924616F1D003D8BB8",
+        "name": "IntegrationScenarios"
+      }
+    }
+  ],
+  "version": 1
+}
