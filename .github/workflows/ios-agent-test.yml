@@ -91,7 +91,7 @@ jobs:
       # The intake the Atatus phase reports to. `AtatusSite.serverUrl` already reads this variable,
       # so no endpoint is hardcoded in app or agent code. Override with an `ATATUS_SERVER_URL`
       # repository variable to point somewhere else.
-      ATATUS_SERVER_URL: ${{ vars.ATATUS_SERVER_URL || 'https://demo.atatus.com' }}
+      ATATUS_SERVER_URL: ${{ vars.ATATUS_SERVER_URL || 'https://wrought-author-whinny.ngrok-free.dev' }}
       AT_TEST_SERVICE: ${{ vars.ATATUS_SERVICE || 'ios-agent-test' }}
       AT_TEST_ENV: ${{ vars.ATATUS_ENV || 'ci' }}
       # Optional first party URL the demo scenario requests once, to exercise network tracing and
