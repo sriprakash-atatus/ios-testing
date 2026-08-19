@@ -76,7 +76,7 @@ class TracerTests: XCTestCase {
         {
           "spans": [
             {
-              "trace_id": "64",
+              "trace_id": "000000000000000a0000000000000064",
               "span_id": "64",
               "parent_id": "0",
               "name": "operation",

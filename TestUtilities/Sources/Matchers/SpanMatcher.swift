@@ -82,13 +82,22 @@ public class SpanMatcher {
     // MARK: - Attributes matching
 
     public func traceID() throws -> TraceID? {
-        let idLoStr: String = try attribute(forKeyPath: "trace_id")
-        let idLo = UInt64(idLoStr, radix: 16) ?? UInt64(0)
+        // ATCHG: `trace_id` now carries the full 128-bit ID. `.hexadecimal` parses both that
+        // 32-character form and the legacy low-64-bits-only form, where the high half lived
+        // solely in `meta._atatus.p.tid`.
+        let traceIDStr: String = try attribute(forKeyPath: "trace_id")
+        guard let traceID = TraceID(traceIDStr, representation: .hexadecimal) else {
+            return nil
+        }
+
+        guard traceID.idHi == TraceID.invalidId else {
+            return traceID
+        }
 
         let idHiStr: String = try meta.tid()
         let idHi = UInt64(idHiStr, radix: 16) ?? UInt64(0)
 
-        return .init(idHi: idHi, idLo: idLo)
+        return .init(idHi: idHi, idLo: traceID.idLo)
     }
 
     public func spanID() throws -> SpanID? {

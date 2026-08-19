@@ -186,7 +186,12 @@ internal struct SpanEventEncoder {
 
     func encode(_ span: SpanEvent, to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: StaticCodingKeys.self)
-        try container.encode(span.traceID.idLoHex, forKey: .traceID)
+        // ATCHG: Report the full 128-bit trace ID, zero-padded to 32 characters, so it matches
+        // byte-for-byte what `W3CHTTPHeadersWriter` puts in `traceparent` and what backend agents
+        // report for the same trace. Encoding only `idLoHex` here made the mobile span and the
+        // backend span carry different `trace_id` strings, so they were indexed as two traces.
+        // The high 64 bits stay in `meta._atatus.p.tid` for backwards compatibility.
+        try container.encode(String(span.traceID, representation: .hexadecimal32Chars), forKey: .traceID)
         try container.encode(String(span.spanID, representation: .hexadecimal), forKey: .spanID)
 
         let parentSpanID = span.parentID ?? SpanID.invalid // 0 is a reserved ID for a root span (ref: ATTracer.java#L600)
