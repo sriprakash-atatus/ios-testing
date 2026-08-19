@@ -73,8 +73,10 @@ public class objc_LogEvent: NSObject {
         swiftModel.buildId
     }
 
+    // ATCHG: `LogEvent.variant` was renamed to `appName`. The Objective-C property keeps its
+    // original name, which `api-surface-objc` records as public API.
     public var variant: String? {
-        swiftModel.variant
+        swiftModel.appName
     }
 
     public var dd: objc_LogEventDd {
