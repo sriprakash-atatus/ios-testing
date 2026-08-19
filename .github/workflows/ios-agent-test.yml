@@ -420,7 +420,11 @@ jobs:
       - name: Shut down Simulator
         if: always()
         run: |
-          kill "${MOCK_SERVER_PID:-0}" 2>/dev/null || true
+          # Guarded: an unset MOCK_SERVER_PID would make this `kill 0`, which signals the whole
+          # process group — including this step's own shell.
+          if [ -n "${MOCK_SERVER_PID:-}" ] && [ "${MOCK_SERVER_PID}" -gt 0 ] 2>/dev/null; then
+            kill "$MOCK_SERVER_PID" 2>/dev/null || true
+          fi
           pkill -f mock_intake_server.py 2>/dev/null || true
           pkill -f start_mock_server.py 2>/dev/null || true
           xcrun simctl shutdown "${SIMULATOR_UDID:-booted}" 2>/dev/null || true
