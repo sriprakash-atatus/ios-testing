@@ -348,7 +348,7 @@ jobs:
             --mode demo \
             --label atatus-demo \
             --scenario AtatusDemoScenario \
-            --expect rum --expect logs --expect traces
+            --expect rum --expect logs --expect traces --expect replay
 
       - name: Capture final Simulator screenshot
         if: always()

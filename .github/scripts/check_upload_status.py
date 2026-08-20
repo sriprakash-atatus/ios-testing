@@ -19,7 +19,7 @@ import sys
 
 # The `featureName` each product reports itself as (`Feature.rum`, `LogsFeature.name`,
 # `TraceFeature.name`).
-FEATURE_NAMES = {"rum": "rum", "logs": "logging", "traces": "tracing"}
+FEATURE_NAMES = {"rum": "rum", "logs": "logging", "traces": "tracing", "replay": "session-replay"}
 
 ACCEPTED = re.compile(r"→ \((?P<feature>[\w-]+)\) accepted[^\[]*(?P<detail>\[[^\]]*\]?)")
 REJECTED = re.compile(r"→ \((?P<feature>[\w-]+)\) not delivered[^\[]*(?P<detail>\[[^\]]*\]?)")

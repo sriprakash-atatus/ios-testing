@@ -32,7 +32,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 UPLOAD_TIMEOUT="${AGENT_UPLOAD_TIMEOUT:-180}"
-DEMO_SETTLE_SECONDS="${AGENT_DEMO_SETTLE_SECONDS:-60}"
+DEMO_SETTLE_SECONDS="${AGENT_DEMO_SETTLE_SECONDS:-120}"
 
 LABEL=""
 SCENARIO=""
@@ -82,7 +82,8 @@ if [[ "$MODE" == "mock" ]]; then
             rum)    CONFIG_ARGS+=(--rum "$session_id") ;;
             logs)   CONFIG_ARGS+=(--logs "$session_id") ;;
             traces) CONFIG_ARGS+=(--traces "$session_id") ;;
-            *) echo "::error::Unknown product '$product' (expected one of: rum, logs, traces)"; exit 1 ;;
+            replay) CONFIG_ARGS+=(--session-replay "$session_id") ;;
+            *) echo "::error::Unknown product '$product' (expected: rum, logs, traces, replay)"; exit 1 ;;
         esac
         SESSION_LABELS+=("$product")
         SESSION_IDS+=("$session_id")

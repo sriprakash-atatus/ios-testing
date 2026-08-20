@@ -12,6 +12,7 @@ import AtatusCore
 import AtatusLogs
 import AtatusRUM
 import AtatusTrace
+import AtatusSessionReplay
 
 protocol TestScenario: AnyObject {
     /// The name of the storyboard containing this scenario.
@@ -95,6 +96,16 @@ final class AtatusDemoScenario: TestScenario {
             )
         }
         Trace.enable(with: trace)
+
+        // Session Replay records the screen and rides on the RUM session, so it has to be enabled
+        // after RUM. Masking is dialled down to the least the SDK allows so the recording is
+        // actually readable in a replay viewer: only sensitive inputs are masked, images are shown,
+        // and touches are drawn.
+        var replay = SessionReplay.Configuration(replaySampleRate: 100)
+        replay.textAndInputPrivacyLevel = .maskSensitiveInputs
+        replay.imagePrivacyLevel = .maskNone
+        replay.touchPrivacyLevel = .show
+        SessionReplay.enable(with: replay)
 
         // Let the first RUM view start before layering the rest on top of it.
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
