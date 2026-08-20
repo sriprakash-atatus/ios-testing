@@ -93,6 +93,10 @@ if [[ "$MODE" == "mock" ]]; then
         python3 "$SCRIPT_DIR/mock_intake.py" --server "$MOCK_SERVER_URL" config "${CONFIG_ARGS[@]}"
     )"
     CHILD_ENV+=("SIMCTL_CHILD_AT_TEST_SERVER_MOCK_CONFIGURATION=$SERVER_MOCK_CONFIGURATION")
+    # `customEndpoint` only redirects feature uploads. The logs heartbeat the agent polls on start
+    # is built from `AtatusSite.serverUrl`, which the SDK reads from ATATUS_SERVER_URL — without
+    # this it goes to the production intake, answers `allowAgent: false`, and no log is uploaded.
+    CHILD_ENV+=("SIMCTL_CHILD_ATATUS_SERVER_URL=$MOCK_SERVER_URL")
 else
     # No server-mock configuration: with no `customEndpoint`, every feature falls back to
     # `AtatusSite.serverUrl`, which the agent reads from `ATATUS_SERVER_URL`.

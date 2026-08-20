@@ -52,6 +52,16 @@ class ExampleApplication: XCUIApplication {
             variables[Environment.Variable.urlSessionSetup] = urlSessionSetup.toEnvironmentValue
         }
 
+        // ATCHG: Point the agent's intake at the mock server. `customEndpoint` only redirects
+        // feature uploads; the logs heartbeat the SDK polls on start is built from
+        // `AtatusSite.serverUrl`, which it reads from this variable. Left unset, that heartbeat
+        // goes to the production intake, answers `allowAgent: false` for the UI-test placeholder
+        // license key, and the Logs feature holds every batch back.
+        if let address = Bundle(for: IntegrationTests.self)
+            .object(forInfoDictionaryKey: "MockServerAddress") as? String {
+            variables["ATATUS_SERVER_URL"] = "http://\(address)"
+        }
+
         launchEnvironment = variables
 
         super.launch()
