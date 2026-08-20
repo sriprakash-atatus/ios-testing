@@ -322,8 +322,11 @@ jobs:
       # Phase 2: report to a real Atatus intake. The payloads cannot be read back from CI, so
       # delivery is judged on the intake's HTTP response codes, which the agent logs at .debug
       # verbosity. Whether the data then appears in the Atatus UI is NOT verified here.
+      # Runs even when the XCUITest suite failed: reporting to a real intake is a separate
+      # question from whether every payload assertion holds, and a single failing assertion should
+      # not stop the intake from being exercised. Skipped if the build never produced an app.
       - name: Report RUM, Logs and Traces to Atatus
-        if: env.HAS_ATATUS_CREDENTIALS == 'true' && (github.event_name != 'workflow_dispatch' || inputs.send_to_atatus)
+        if: ${{ !cancelled() && env.APP_PATH != '' && env.HAS_ATATUS_CREDENTIALS == 'true' && (github.event_name != 'workflow_dispatch' || inputs.send_to_atatus) }}
         env:
           AT_TEST_LICENSE_KEY: ${{ secrets.ATATUS_LICENSE_KEY }}
         run: |
