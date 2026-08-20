@@ -48,6 +48,10 @@ on:
         description: "Also report to the Atatus intake (needs the ATATUS_LICENSE_KEY secret)"
         type: boolean
         default: true
+      local_validation:
+        description: "Run the mock-intake validation (launch gates + XCUITest suite)"
+        type: boolean
+        default: true
   pull_request:
     paths:
       - "Atatus*/**"
@@ -81,6 +85,8 @@ jobs:
 
     env:
       TEST_PLAN: ${{ inputs.test_plan || 'AtatusAgentValidation' }}
+      # Blank on push/PR, so local validation stays on by default there.
+      RUN_LOCAL_VALIDATION: ${{ github.event_name != 'workflow_dispatch' || inputs.local_validation }}
       WORKSPACE: IntegrationTests/IntegrationTests.xcworkspace
       APP_SCHEME: Runner iOS
       TEST_SCHEME: IntegrationScenarios
@@ -288,6 +294,7 @@ jobs:
       # Phase 1a: launch the app directly (no XCTest). This is the explicit gate on the app
       # launching, the agent initializing, and the agent flushing data to an intake.
       - name: Launch app — verify agent initializes and reports RUM
+        if: env.RUN_LOCAL_VALIDATION == 'true'
         run: |
           .github/scripts/simulator-agent-run.sh \
             --mode mock \
@@ -296,6 +303,7 @@ jobs:
             --expect rum
 
       - name: Launch app — verify agent reports Logs and Traces
+        if: env.RUN_LOCAL_VALIDATION == 'true'
         run: |
           .github/scripts/simulator-agent-run.sh \
             --mode mock \
@@ -306,6 +314,7 @@ jobs:
       # Phase 1b: the XCUITest suite. Real taps and real requests drive the app, and every
       # assertion runs against the payloads the agent actually uploaded.
       - name: Run Atatus agent XCUITest suite
+        if: env.RUN_LOCAL_VALIDATION == 'true'
         run: |
           set -euo pipefail
           result_bundle="$ARTIFACTS_DIR/ResultBundles/IntegrationScenarios-$TEST_PLAN.xcresult"
