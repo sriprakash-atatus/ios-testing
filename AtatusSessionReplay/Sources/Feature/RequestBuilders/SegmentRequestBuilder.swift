@@ -137,9 +137,12 @@ internal func atatusIdentificationQueryItems(
     ]
 }
 
-/// Atatus Session Replay intake path, matching `v1/ios/rum` in AtatusRUM and `v1/ios/logs` in
-/// AtatusLogs.
-internal let atatusSessionReplayIntakePath = "v1/ios/replay"
+/// Atatus Session Replay intake path, matching `v1/android/rum` in AtatusRUM and
+/// `v1/android/logs` in AtatusLogs.
+///
+/// On `v1/android/*` for the same reason as those: the intake serves only the Android paths and
+/// answers 401 on `v1/ios/replay`. Revert alongside them once the backend serves the iOS paths.
+internal let atatusSessionReplayIntakePath = "v1/android/replay"
 // ATCHG: End
 
 #endif

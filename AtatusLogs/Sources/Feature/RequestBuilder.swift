@@ -81,7 +81,7 @@ internal struct RequestBuilder: FeatureRequestBuilder {
     private func url(with context: AtatusContext) -> URL {
         // ATCHG: Atatus logs intake path, matching `/v1/android/logs` in Android's `LogsRequestFactory`.
         // ATCHG: Built from `intakeEndpoint` so a custom `serverUrl` is honoured, as on Android.
-        customIntakeURL ?? context.intakeEndpoint.appendingPathComponent("v1/ios/logs")
+        customIntakeURL ?? context.intakeEndpoint.appendingPathComponent("v1/android/logs")
         // ATCHG: End
         // ATCHG: End
     }

@@ -175,7 +175,7 @@ class LogsTests: XCTestCase {
 }
 
 // ATCHG: Tests covering the Atatus changes ported from the Android agent's `LogsRequestFactory`:
-// the `/v1/ios/logs` intake path, the agent identification headers and query parameters, and the
+// the `/v1/android/logs` intake path, the agent identification headers and query parameters, and the
 // logs heartbeat gate.
 class AtatusLogsRequestBuilderTests: XCTestCase {
     private let mockEvents: [Event] = [.init(data: "{}".utf8Data)]
@@ -198,7 +198,7 @@ class AtatusLogsRequestBuilderTests: XCTestCase {
         let request = try builder.request(for: mockEvents, with: .mockWith(site: .atatus), execution: .mockAny())
 
         // Then
-        XCTAssertEqual(request.url?.absoluteStringWithoutQuery, "https://mo-rx.atatus.com/v1/ios/logs")
+        XCTAssertEqual(request.url?.absoluteStringWithoutQuery, "https://mo-rx.atatus.com/v1/android/logs")
     }
 
     func testItSetsTheAtatusQueryParametersAndHeaders() throws {

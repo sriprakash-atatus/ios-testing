@@ -75,7 +75,7 @@ internal struct RequestBuilder: FeatureRequestBuilder {
     private func url(with context: AtatusContext) -> URL {
         // ATCHG: Atatus RUM intake path, matching `/v1/android/rum` in Android's `RumRequestFactory`.
         // Built from `intakeEndpoint` so a custom `serverUrl` is honoured, as on Android.
-        customIntakeURL ?? context.intakeEndpoint.appendingPathComponent("v1/ios/rum")
+        customIntakeURL ?? context.intakeEndpoint.appendingPathComponent("v1/android/rum")
         // ATCHG: End
     }
 }

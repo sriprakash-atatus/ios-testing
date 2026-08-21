@@ -38,10 +38,17 @@ public struct HeartbeatConfiguration {
 
 /// Performs a single heartbeat request against a given path.
 public enum AgentHeartbeat {
+    // ATCHG: On `v1/android/*` rather than `v1/ios/*`. The intake serves only the Android paths;
+    // the iOS ones answer 401, which the agent reads as `allowAgent: false` and responds to by
+    // disabling itself seconds after launch — so every product then looks like it produced no data.
+    // Revert both to `v1/ios/*` once the backend serves them, together with the feature intake paths
+    // in each product's `RequestBuilder` and `atatusSessionReplayIntakePath`.
+
     /// The path of the agent heartbeat, matching `/v1/android/agent-heartbeat` on Android.
-    public static let agentHeartbeatPath = "v1/ios/agent-heartbeat"
+    public static let agentHeartbeatPath = "v1/android/agent-heartbeat"
     /// The path of the logs heartbeat, matching `/v1/android/log/heart-beat` on Android.
-    public static let logsHeartbeatPath = "v1/ios/log/heart-beat"
+    public static let logsHeartbeatPath = "v1/android/log/heart-beat"
+    // ATCHG: End
 
     /// Timeout applied to heartbeat requests, matching the 5s connect/read timeouts on Android.
     internal static let timeout: TimeInterval = 5

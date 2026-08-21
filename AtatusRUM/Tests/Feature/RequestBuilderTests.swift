@@ -53,7 +53,7 @@ class RequestBuilderTests: XCTestCase {
 
         // Then
         // ATCHG: single Atatus intake host replaces the nine dd region endpoints
-        XCTAssertEqual(url(for: .atatus), "https://mo-rx.atatus.com/v1/ios/rum")
+        XCTAssertEqual(url(for: .atatus), "https://mo-rx.atatus.com/v1/android/rum")
     }
 
     func testItSetsCustomIntakeURL() throws {

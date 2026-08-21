@@ -284,7 +284,7 @@ class AgentHeartbeatTests: XCTestCase {
 
         // Then
         let components = try XCTUnwrap(URLComponents(url: url, resolvingAgainstBaseURL: false))
-        XCTAssertEqual(components.path, "/v1/ios/agent-heartbeat")
+        XCTAssertEqual(components.path, "/v1/android/agent-heartbeat")
         let query = (components.queryItems ?? []).reduce(into: [String: String]()) { $0[$1.name] = $1.value }
         XCTAssertEqual(query["atatus_source"], "ios")
         XCTAssertEqual(query["license_key"], "license-abc")
@@ -300,7 +300,7 @@ class AgentHeartbeatTests: XCTestCase {
         )
 
         // Then
-        XCTAssertEqual(URLComponents(url: url, resolvingAgainstBaseURL: false)?.path, "/v1/ios/log/heart-beat")
+        XCTAssertEqual(URLComponents(url: url, resolvingAgainstBaseURL: false)?.path, "/v1/android/log/heart-beat")
     }
 
     func testItSkipsTheHeartbeatWhenTheLicenseKeyIsBlank() {
