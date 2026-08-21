@@ -375,49 +375,83 @@ jobs:
             --scenario AtatusEcommerceScenario \
             --expect rum --expect replay
 
-      # Reads back what the agent actually put in its RUM resources. The trace linkage lives in the
-      # payload, not in the response code, so this is the only place CI can see whether the resource
-      # carries the ids the backend needs to materialize the client span from.
-      - name: Inspect trace ids on the recorded RUM resources
+      # Proves the two halves of the distributed trace carry the *same* ids.
+      #
+      # This is the one run where both sides are observable at once: the agent reports to the local
+      # mock intake, so its RUM resources can be read back, while the shop's own requests still go to
+      # the real backend, which records the `traceparent` it received. If a resource's trace id is
+      # not among the ones the backend saw, the two sides are describing different traces and the
+      # Atatus UI will show them separately no matter how healthy each half looks on its own.
+      - name: Correlate RUM resource trace ids with the backend
         if: env.RUN_LOCAL_VALIDATION == 'true'
         run: |
           set -euo pipefail
           dump="$ARTIFACTS_DIR/intake/recorded-requests-ecommerce.json"
           [ -f "$dump" ] || { echo "::warning::No recorded intake dump at $dump."; exit 0; }
 
-          python3 - "$dump" <<'PY'
-          import json, sys
+          backend="$ARTIFACTS_DIR/intake/store-traceparents-mock.json"
+          if [ -n "${AT_TEST_STORE_API_URL:-}" ]; then
+            curl -s --max-time 30 -H 'ngrok-skip-browser-warning: 1' \
+              "$AT_TEST_STORE_API_URL/api/store/traceparents" -o "$backend" || true
+          fi
 
-          def walk(node):
-              """The dump nests decoded bodies differently per product; find every RUM event."""
-              if isinstance(node, dict):
-                  if node.get("type") == "resource" or "resource" in node:
-                      yield node
-                  for value in node.values():
-                      yield from walk(value)
-              elif isinstance(node, list):
-                  for item in node:
-                      yield from walk(item)
+          python3 - "$dump" "$backend" <<'PY'
+          import json, os, sys
 
-          events = [e for e in walk(json.load(open(sys.argv[1]))) if isinstance(e.get("resource"), dict)]
-          if not events:
-              print("::warning::No RUM resource events found in the dump.")
+          # Each recorded request's `body` is a list of strings, one JSON event per line.
+          events = []
+          for request in json.load(open(sys.argv[1])):
+              for raw in request.get("body", []):
+                  for line in str(raw).splitlines():
+                      line = line.strip()
+                      if line:
+                          try:
+                              events.append(json.loads(line))
+                          except ValueError:
+                              pass
+
+          resources = [e for e in events
+                       if isinstance(e, dict) and e.get("type") == "resource"
+                       and isinstance(e.get("resource"), dict)]
+          if not resources:
+              print("::warning::No RUM resource events in the dump — nothing to correlate.")
               sys.exit(0)
 
-          linked = 0
-          for event in events:
-              resource = event["resource"]
-              url = resource.get("url", "?")
-              trace_id = resource.get("trace_id") or event.get("_dd", {}).get("trace_id")
-              span_id = resource.get("span_id") or event.get("_dd", {}).get("span_id")
-              linked += bool(trace_id and span_id)
-              print(f"  {resource.get('method','?'):6} {url[:60]:60} trace_id={trace_id} span_id={span_id}")
+          # The ids live under `_atatus`, not on the resource object itself.
+          mobile = {}
+          for event in resources:
+              at = event.get("_atatus") or {}
+              trace_id, span_id = at.get("trace_id"), at.get("span_id")
+              url = str(event["resource"].get("url", "?"))
+              print(f"  {event['resource'].get('method','?'):6} {url[:56]:56} "
+                    f"trace_id={trace_id} span_id={span_id}")
+              if trace_id:
+                  mobile[trace_id] = url
 
-          print(f"{linked}/{len(events)} resource(s) carry both trace_id and span_id.")
+          linked = len(mobile)
+          print(f"{linked}/{len(resources)} resource(s) carry a trace id.")
           if linked == 0:
-              print("::warning::No RUM resource carries trace ids. The backend has nothing to "
-                    "materialize the mobile client span from, so the backend transaction will "
-                    "appear as its own trace with no mobile parent.")
+              print("::error::No RUM resource carries a trace id, so the backend has nothing to "
+                    "materialize the mobile client span from and its transaction will stand alone.")
+              sys.exit(1)
+
+          backend_path = sys.argv[2]
+          if not os.path.exists(backend_path) or os.path.getsize(backend_path) == 0:
+              print("::warning::The backend's traceparents were not readable, so the ids could not "
+                    "be correlated. The mobile half is well-formed.")
+              sys.exit(0)
+
+          seen = set(json.load(open(backend_path)).get("traceIds", []))
+          matched = [t for t in mobile if t in seen]
+          print(f"\nBackend recorded {len(seen)} trace id(s); "
+                f"{len(matched)}/{linked} mobile trace id(s) match one.")
+          if not matched:
+              print("::error::No mobile trace id appears among the ones the backend received. The "
+                    "two halves are describing different traces, which is exactly what 'the "
+                    "distributed trace does not show up' looks like.")
+              sys.exit(1)
+          for trace_id in matched:
+              print(f"  ✅ {trace_id}  ({mobile[trace_id][:60]})")
           PY
 
       # Phase 1b: the XCUITest suite. Real taps and real requests drive the app, and every
