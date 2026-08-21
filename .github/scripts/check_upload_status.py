@@ -72,11 +72,21 @@ def main():
             print(f"    {detail}")
 
     if agent_disabled:
+        # `allowAgent: false` is also what the agent concludes when the heartbeat never got a usable
+        # answer, so the response codes below are the tiebreaker: a 4xx is the intake refusing this
+        # request, a 5xx is the intake not being there to answer it.
+        codes = {RESPONSE_CODE.search(d).group("code")
+                 for details in refused.values() for d in details
+                 if RESPONSE_CODE.search(d)}
+        if any(code.startswith("5") for code in codes):
+            cause = (f"the intake is failing or unreachable (saw {', '.join(sorted(codes))}) — this "
+                     "is an outage on the intake side, not a problem with the agent or the key")
+        else:
+            cause = ("the intake did not accept this agent — check the license key is valid for this "
+                     "site, and that `app_name` is not empty")
         print(
-            "::error::The agent disabled itself: its heartbeat answered `allowAgent: false`. That is "
-            "what a license key the intake does not accept looks like — check the key is valid for "
-            "this site and is a mobile/RUM key, not an APM one. Everything below is a consequence of "
-            "this, not an independent failure."
+            f"::error::The agent disabled itself: its heartbeat answered `allowAgent: false`, "
+            f"because {cause}. Everything below is a consequence of this, not an independent failure."
         )
 
     failures = []
