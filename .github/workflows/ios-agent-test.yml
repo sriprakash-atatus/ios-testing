@@ -10,6 +10,21 @@ name: iOS Agent Test
 # SDK modules resolved from this working copy (`IntegrationTests/Podfile` uses `:path => '..'`),
 # so what runs here is the agent on this branch, not a published release.
 #
+# Two of its scenarios exist for this job, and they test different things.
+#
+#   `AtatusDemoScenario`      calls the SDK's manual APIs — one of everything the agent can report.
+#   `AtatusEcommerceScenario` calls none of them. It runs the app's e-commerce feature, a shop that
+#                             walks its own funnel (catalog → product → cart → checkout → order)
+#                             making real requests to a store backend. Everything reported comes
+#                             from auto-instrumentation: RUM views from the screens appearing,
+#                             resources and network spans from the shop's own requests (including a
+#                             first payment attempt that genuinely fails), mobile vitals, app hangs,
+#                             and a Session Replay recording. It is the scenario that answers "does
+#                             the agent report a real app correctly?" rather than "does each SDK
+#                             method work?".
+#
+# Neither needs a test runner: both drive themselves from `simctl launch`.
+#
 # The job has two phases, deliberately kept separate because they prove different things:
 #
 #   1. Verified locally — every product reports to the repository's own `http-server-mock` intake.
@@ -97,12 +112,16 @@ jobs:
       # The intake the Atatus phase reports to. `AtatusSite.serverUrl` already reads this variable,
       # so no endpoint is hardcoded in app or agent code. Override with an `ATATUS_SERVER_URL`
       # repository variable to point somewhere else.
-      ATATUS_SERVER_URL: ${{ vars.ATATUS_SERVER_URL || 'https://wrought-author-whinny.ngrok-free.dev' }}
+      ATATUS_SERVER_URL: ${{ vars.ATATUS_SERVER_URL || 'https://atatus.lazydev.fun' }}
       AT_TEST_SERVICE: ${{ vars.ATATUS_SERVICE || 'ios-agent-test' }}
-      AT_TEST_ENV: ${{ vars.ATATUS_ENV || 'ci' }}
+      AT_TEST_ENV: ${{ vars.ATATUS_ENV || 'session-replay' }}
       # Optional first party URL the demo scenario requests once, to exercise network tracing and
       # traceparent propagation against a real backend. Left blank, that request is skipped.
       AT_TEST_TRACED_REQUEST_URL: ${{ vars.ATATUS_TRACED_REQUEST_URL }}
+      # Backend the e-commerce scenario's store calls. Its requests are what RUM and Trace
+      # auto-instrumentation capture. Override with an `ATATUS_STORE_API_URL` repository variable to
+      # keep the traffic inside your own network.
+      AT_TEST_STORE_API_URL: ${{ vars.ATATUS_STORE_API_URL || 'https://fakestoreapi.com' }}
 
     steps:
       - name: Checkout
@@ -311,6 +330,17 @@ jobs:
             --scenario TracingManualInstrumentationScenario \
             --expect traces --expect logs
 
+      # No `--expect logs`: the e-commerce app calls no SDK method by hand, and the Logs product has
+      # no auto-capture, so it has no logs to report. The step above is the one that gates Logs.
+      - name: Launch app — verify the e-commerce app reports auto-captured data
+        if: env.RUN_LOCAL_VALIDATION == 'true'
+        run: |
+          .github/scripts/simulator-agent-run.sh \
+            --mode mock \
+            --label ecommerce \
+            --scenario AtatusEcommerceScenario \
+            --expect rum --expect traces --expect replay
+
       # Phase 1b: the XCUITest suite. Real taps and real requests drive the app, and every
       # assertion runs against the payloads the agent actually uploaded.
       - name: Run Atatus agent XCUITest suite
@@ -349,6 +379,24 @@ jobs:
             --label atatus-demo \
             --scenario AtatusDemoScenario \
             --expect rum --expect logs --expect traces --expect replay
+
+      # The same real intake, driven by the e-commerce app rather than by one-of-everything calls.
+      # Installed fresh again so the funnel reports its own RUM session, which is what makes the
+      # run readable as a shopping journey in the Atatus UI.
+      - name: Report the e-commerce funnel to Atatus
+        if: ${{ !cancelled() && env.APP_PATH != '' && env.HAS_ATATUS_CREDENTIALS == 'true' && (github.event_name != 'workflow_dispatch' || inputs.send_to_atatus) }}
+        env:
+          AT_TEST_LICENSE_KEY: ${{ secrets.ATATUS_LICENSE_KEY }}
+        run: |
+          set -euo pipefail
+          xcrun simctl uninstall "$SIMULATOR_UDID" "$APP_BUNDLE_ID" || true
+          xcrun simctl install "$SIMULATOR_UDID" "$APP_PATH"
+
+          .github/scripts/simulator-agent-run.sh \
+            --mode demo \
+            --label atatus-ecommerce \
+            --scenario AtatusEcommerceScenario \
+            --expect rum --expect traces --expect replay
 
       - name: Capture final Simulator screenshot
         if: always()
@@ -393,6 +441,7 @@ jobs:
             echo "| Item | Value |"
             echo "| --- | --- |"
             echo "| Sample app | Integration Tests Runner.app (\`$APP_BUNDLE_ID\`) |"
+            echo "| Scenarios | \`AtatusDemoScenario\`, \`AtatusEcommerceScenario\` (e-commerce funnel) |"
             echo "| Simulator | ${SIMULATOR_NAME:-unknown} (iOS ${SIMULATOR_OS:-unknown}) |"
             echo "| Xcode | $(xcodebuild -version | head -1) |"
             echo "| Test plan | \`$TEST_PLAN\` |"

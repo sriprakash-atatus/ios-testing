@@ -103,6 +103,10 @@ internal struct Environment {
         /// A first party URL the app requests once, to exercise network tracing and trace
         /// propagation against a real backend. Skipped when unset.
         static let tracedRequestURL = "AT_TEST_TRACED_REQUEST_URL"
+        /// Base URL of the backend the e-commerce scenario's store talks to. Its requests are what
+        /// RUM and Trace auto-instrumentation capture, so pointing this elsewhere is how a run keeps
+        /// its traffic inside its own network.
+        static let storeAPIURL = "AT_TEST_STORE_API_URL"
     }
     /// Launch arguments shared between UITests and Example targets.
     struct Argument {
@@ -121,6 +125,9 @@ internal struct Environment {
         static let defaultRUMApplicationID = "rum-application-id"
         static let defaultService = "ui-tests-service-name"
         static let defaultEnv = "integration"
+        /// A public catalogue API, so the e-commerce scenario makes the requests a shop actually
+        /// makes. Overridden with `AT_TEST_STORE_API_URL`.
+        static let defaultStoreAPIURL = URL(string: "https://fakestoreapi.com")!
     }
     struct InfoPlistKey {
         static let licenseKey      = "AtatusClientToken"
@@ -195,6 +202,11 @@ internal struct Environment {
     /// A first party URL to request once, or `nil` to skip the traced request.
     static func tracedRequestURL() -> URL? {
         nonEmptyValue(of: Variable.tracedRequestURL).flatMap { URL(string: $0) }
+    }
+
+    /// The backend the e-commerce scenario's store calls.
+    static func storeAPIURL() -> URL {
+        nonEmptyValue(of: Variable.storeAPIURL).flatMap { URL(string: $0) } ?? Constants.defaultStoreAPIURL
     }
 
     /// Reads an ENV variable, treating a blank value the same as an absent one — CI runners

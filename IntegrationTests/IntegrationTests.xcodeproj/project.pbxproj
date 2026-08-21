@@ -131,6 +131,16 @@
 		D2FCA7532B4D84EE0014DC87 /* CustomURLSessionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FCA7522B4D84EE0014DC87 /* CustomURLSessionDelegate.swift */; };
 		D2FCA7552B4D87110014DC87 /* StopCoreScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FCA7542B4D87110014DC87 /* StopCoreScenarioTests.swift */; };
 		D2FCA7582B4DA8720014DC87 /* CSRootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FCA7572B4DA8720014DC87 /* CSRootViewController.swift */; };
+		EC0000000000000000000004 /* EcommerceScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC0000000000000000000003 /* EcommerceScenarios.swift */; };
+		EC0000000000000000000006 /* ECStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC0000000000000000000005 /* ECStore.swift */; };
+		EC0000000000000000000008 /* ECStoreAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC0000000000000000000007 /* ECStoreAPI.swift */; };
+		EC000000000000000000000A /* ECStoreNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC0000000000000000000009 /* ECStoreNavigationController.swift */; };
+		EC000000000000000000000C /* ECProductListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC000000000000000000000B /* ECProductListViewController.swift */; };
+		EC000000000000000000000E /* ECProductDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC000000000000000000000D /* ECProductDetailViewController.swift */; };
+		EC0000000000000000000010 /* ECCartViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC000000000000000000000F /* ECCartViewController.swift */; };
+		EC0000000000000000000012 /* ECCheckoutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC0000000000000000000011 /* ECCheckoutViewController.swift */; };
+		EC0000000000000000000014 /* ECOrderConfirmationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC0000000000000000000013 /* ECOrderConfirmationViewController.swift */; };
+		EC0000000000000000000016 /* AtatusEcommerceScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EC0000000000000000000015 /* AtatusEcommerceScenario.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -303,6 +313,16 @@
 		E6057106F868E6C529F89BE9 /* Pods-Runner iOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner iOS.release.xcconfig"; path = "Target Support Files/Pods-Runner iOS/Pods-Runner iOS.release.xcconfig"; sourceTree = "<group>"; };
 		E93021D28790F380B3C63C4B /* libPods-Runner iOS-IntegrationScenarios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Runner iOS-IntegrationScenarios.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F428192CAACD145A1C5C7C51 /* Pods-Runner iOS-IntegrationScenarios.integration.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner iOS-IntegrationScenarios.integration.xcconfig"; path = "Target Support Files/Pods-Runner iOS-IntegrationScenarios/Pods-Runner iOS-IntegrationScenarios.integration.xcconfig"; sourceTree = "<group>"; };
+		EC0000000000000000000003 /* EcommerceScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EcommerceScenarios.swift; sourceTree = "<group>"; };
+		EC0000000000000000000005 /* ECStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ECStore.swift; sourceTree = "<group>"; };
+		EC0000000000000000000007 /* ECStoreAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ECStoreAPI.swift; sourceTree = "<group>"; };
+		EC0000000000000000000009 /* ECStoreNavigationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ECStoreNavigationController.swift; sourceTree = "<group>"; };
+		EC000000000000000000000B /* ECProductListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ECProductListViewController.swift; sourceTree = "<group>"; };
+		EC000000000000000000000D /* ECProductDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ECProductDetailViewController.swift; sourceTree = "<group>"; };
+		EC000000000000000000000F /* ECCartViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ECCartViewController.swift; sourceTree = "<group>"; };
+		EC0000000000000000000011 /* ECCheckoutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ECCheckoutViewController.swift; sourceTree = "<group>"; };
+		EC0000000000000000000013 /* ECOrderConfirmationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ECOrderConfirmationViewController.swift; sourceTree = "<group>"; };
+		EC0000000000000000000015 /* AtatusEcommerceScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = AtatusEcommerceScenario.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -503,6 +523,7 @@
 				61337036250F84F100236D58 /* RUM */,
 				09CD7F092F5EE2FF00501E79 /* RUM+TraceScenarios */,
 				612C136E2A9CF8AB0086B5D1 /* SessionReplay */,
+				EC0000000000000000000001 /* Ecommerce */,
 				6111542325C992D9007C84C9 /* CrashReporting */,
 				611EA12B2580F40E00BC0E56 /* TrackingConsent */,
 				6164AE7D252B4CE2000D78C4 /* URLSession */,
@@ -887,6 +908,31 @@
 			path = Core;
 			sourceTree = "<group>";
 		};
+		EC0000000000000000000001 /* Ecommerce */ = {
+			isa = PBXGroup;
+			children = (
+				EC0000000000000000000003 /* EcommerceScenarios.swift */,
+				EC0000000000000000000002 /* Store */,
+			);
+			path = Ecommerce;
+			sourceTree = "<group>";
+		};
+		EC0000000000000000000002 /* Store */ = {
+			isa = PBXGroup;
+			children = (
+				EC0000000000000000000015 /* AtatusEcommerceScenario.storyboard */,
+				EC0000000000000000000005 /* ECStore.swift */,
+				EC0000000000000000000007 /* ECStoreAPI.swift */,
+				EC0000000000000000000009 /* ECStoreNavigationController.swift */,
+				EC000000000000000000000B /* ECProductListViewController.swift */,
+				EC000000000000000000000D /* ECProductDetailViewController.swift */,
+				EC000000000000000000000F /* ECCartViewController.swift */,
+				EC0000000000000000000011 /* ECCheckoutViewController.swift */,
+				EC0000000000000000000013 /* ECOrderConfirmationViewController.swift */,
+			);
+			path = Store;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -980,6 +1026,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EC0000000000000000000016 /* AtatusEcommerceScenario.storyboard in Resources */,
 				61337032250F82AE00236D58 /* LoggingManualInstrumentationScenario.storyboard in Resources */,
 				612D8F6925AEE68F000E2E09 /* RUMScrubbingScenario.storyboard in Resources */,
 				964537F02DCBB7EF00C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootViewScenario.storyboard in Resources */,
@@ -1104,6 +1151,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EC0000000000000000000004 /* EcommerceScenarios.swift in Sources */,
+				EC0000000000000000000006 /* ECStore.swift in Sources */,
+				EC0000000000000000000008 /* ECStoreAPI.swift in Sources */,
+				EC000000000000000000000A /* ECStoreNavigationController.swift in Sources */,
+				EC000000000000000000000C /* ECProductListViewController.swift in Sources */,
+				EC000000000000000000000E /* ECProductDetailViewController.swift in Sources */,
+				EC0000000000000000000010 /* ECCartViewController.swift in Sources */,
+				EC0000000000000000000012 /* ECCheckoutViewController.swift in Sources */,
+				EC0000000000000000000014 /* ECOrderConfirmationViewController.swift in Sources */,
 				0904FAB92EE82C5200ED9A22 /* RUMAlertRootViewController.swift in Sources */,
 				D2FCA7532B4D84EE0014DC87 /* CustomURLSessionDelegate.swift in Sources */,
 				D2F5BB382718331800BDE2A4 /* SwiftUIRootViewController.swift in Sources */,

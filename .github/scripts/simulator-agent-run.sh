@@ -27,6 +27,9 @@
 # Optional environment, forwarded to the app process in demo mode:
 #   ATATUS_SERVER_URL, AT_TEST_LICENSE_KEY, AT_TEST_RUM_APPLICATION_ID,
 #   AT_TEST_SERVICE, AT_TEST_ENV, AT_TEST_TRACED_REQUEST_URL
+#
+# Optional environment, forwarded in both modes:
+#   AT_TEST_STORE_API_URL   backend the e-commerce scenario's store calls
 
 set -euo pipefail
 
@@ -68,6 +71,13 @@ echo "::group::Run sample app scenario '$SCENARIO' ($LABEL, $MODE mode)"
 
 # Environment handed to the app process. `simctl` forwards anything prefixed with SIMCTL_CHILD_.
 declare -a CHILD_ENV=("SIMCTL_CHILD_AT_TEST_SCENARIO_CLASS_NAME=$SCENARIO")
+
+# The e-commerce scenario's store calls this backend. Its requests are what RUM and Trace
+# auto-instrumentation capture, so it is forwarded in both modes; unset, the app uses its default.
+if [[ -n "${AT_TEST_STORE_API_URL:-}" ]]; then
+    CHILD_ENV+=("SIMCTL_CHILD_AT_TEST_STORE_API_URL=$AT_TEST_STORE_API_URL")
+fi
+
 declare -a SESSION_LABELS=()
 declare -a SESSION_IDS=()
 
