@@ -416,6 +416,13 @@ jobs:
       # The same real intake, driven by the e-commerce app rather than by one-of-everything calls.
       # Installed fresh again so the funnel reports its own RUM session, which is what makes the
       # run readable as a shopping journey in the Atatus UI.
+      #
+      # No `--expect traces`, for the same kind of reason as `--expect logs`. With RUM enabled, a
+      # first-party request is reported as a RUM resource carrying the trace and span ids — the
+      # resource *is* the client span, and no separate span payload is uploaded for it. The Trace
+      # product only produces its own payloads from manual `Tracer` calls, which this app makes
+      # none of. Trace stays enabled (a real app would have it), and the distributed trace is
+      # verified directly by the step below instead.
       - name: Report the e-commerce funnel to Atatus
         if: ${{ !cancelled() && env.APP_PATH != '' && env.HAS_ATATUS_CREDENTIALS == 'true' && (github.event_name != 'workflow_dispatch' || inputs.send_to_atatus) }}
         env:
@@ -425,11 +432,56 @@ jobs:
           xcrun simctl uninstall "$SIMULATOR_UDID" "$APP_BUNDLE_ID" || true
           xcrun simctl install "$SIMULATOR_UDID" "$APP_PATH"
 
+          # Clear what the backend recorded, so the check below only sees this run's requests.
+          if [ -n "${AT_TEST_STORE_API_URL:-}" ]; then
+            curl -s -X DELETE --max-time 30 -H 'ngrok-skip-browser-warning: 1' \
+              "$AT_TEST_STORE_API_URL/api/store/traceparents" >/dev/null || true
+          fi
+
           .github/scripts/simulator-agent-run.sh \
             --mode demo \
             --label atatus-ecommerce \
             --scenario AtatusEcommerceScenario \
-            --expect rum --expect traces --expect replay
+            --expect rum --expect replay
+
+      # The mobile half of a distributed trace is invisible from the app side: the agent reports a
+      # resource whether or not it actually put `traceparent` on the wire. This asks the backend
+      # that received the shop's requests, which is the only place propagation can be observed.
+      - name: Verify the app propagated trace headers to the backend
+        if: ${{ !cancelled() && env.APP_PATH != '' && env.AT_TEST_STORE_API_URL != '' && env.HAS_ATATUS_CREDENTIALS == 'true' && (github.event_name != 'workflow_dispatch' || inputs.send_to_atatus) }}
+        run: |
+          set -euo pipefail
+          report="$ARTIFACTS_DIR/intake/store-traceparents.json"
+          curl -s --max-time 30 -H 'ngrok-skip-browser-warning: 1' \
+            "$AT_TEST_STORE_API_URL/api/store/traceparents" -o "$report"
+          cat "$report"
+
+          python3 - "$report" <<'PY'
+          import json, sys
+
+          report = json.load(open(sys.argv[1]))
+          requests = report.get("requests", 0)
+          traced = report.get("withTraceparent", 0)
+          trace_ids = report.get("traceIds", [])
+
+          if requests == 0:
+              print("::error::The backend received no requests from the shop at all — the funnel "
+                    "never reached it, so nothing about the distributed trace can be concluded.")
+              sys.exit(1)
+
+          print(f"Backend received {requests} request(s), {traced} carrying a traceparent.")
+          for entry in report.get("received", []):
+              print(f"  {entry['method']:6} {entry['path']:34} {entry.get('traceparent') or '(none)'}")
+
+          if traced == 0:
+              print(f"::error::None of the {requests} request(s) carried a `traceparent`. The agent "
+                    "did not propagate trace headers, so the backend spans cannot join the mobile "
+                    "trace. Check `firstPartyHostsTracing` covers the store's host.")
+              sys.exit(1)
+
+          print(f"✅ Trace headers propagated on {traced}/{requests} request(s); "
+                f"trace ids seen: {', '.join(trace_ids)}")
+          PY
 
       - name: Capture final Simulator screenshot
         if: always()
