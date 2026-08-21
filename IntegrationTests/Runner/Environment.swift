@@ -206,17 +206,12 @@ internal struct Environment {
 
     /// The backend the e-commerce scenario's store calls.
     ///
-    /// Falls back to `ATATUS_SERVER_URL` — the same Node server serves the store APIs and the
-    /// agent's intake, so one URL usually configures both. `AT_TEST_STORE_API_URL` splits them
-    /// apart when they differ, which is what CI does when the agent reports to a mock intake.
+    /// Deliberately unrelated to `ATATUS_SERVER_URL`: that is where telemetry is *reported*, while
+    /// this is an application backend the app *calls*. They are different hosts — the agent reports
+    /// to the Atatus intake, the shop calls the Node server that serves `/api/store/*` — and it is
+    /// the shop's calls to this one, traced on both sides, that make the distributed trace.
     static func storeAPIURL() -> URL {
-        let candidates = [Variable.storeAPIURL, "ATATUS_SERVER_URL"]
-        for variable in candidates {
-            if let url = nonEmptyValue(of: variable).flatMap({ URL(string: $0) }) {
-                return url
-            }
-        }
-        return Constants.defaultStoreAPIURL
+        nonEmptyValue(of: Variable.storeAPIURL).flatMap { URL(string: $0) } ?? Constants.defaultStoreAPIURL
     }
 
     /// Reads an ENV variable, treating a blank value the same as an absent one — CI runners

@@ -121,13 +121,18 @@ jobs:
       # Optional first party URL the demo scenario requests once, to exercise network tracing and
       # traceparent propagation against a real backend. Left blank, that request is skipped.
       AT_TEST_TRACED_REQUEST_URL: ${{ vars.ATATUS_TRACED_REQUEST_URL }}
-      # Backend the e-commerce scenario's store calls: the Node server that serves `/api/store/*` and
-      # runs the Atatus Node APM agent. Set explicitly rather than left to the app's fallback, because
-      # in the mock phase `ATATUS_SERVER_URL` points at the local mock intake, which serves no store
-      # routes. Keeping them separate means the agent reports to the mock intake while the shop's own
-      # traffic still reaches the real backend, so the mobile → backend distributed trace is produced
-      # in both phases.
-      AT_TEST_STORE_API_URL: ${{ vars.ATATUS_STORE_API_URL || vars.ATATUS_SERVER_URL || 'https://wrought-author-whinny.ngrok-free.dev' }}
+      # Backend the e-commerce scenario's store calls — NOT an intake, and deliberately not
+      # `ATATUS_SERVER_URL`. This is the local Node server (`local server/server.js`), which serves
+      # `/api/store/*` and runs the Atatus Node APM agent under the same license key. The app's calls
+      # to it are what produce the mobile → backend distributed trace: the iOS agent records each as
+      # a RUM resource and client span and propagates `traceparent`, the Node agent records the same
+      # request as a server transaction, and both land in the install `ATATUS_SERVER_URL` points at.
+      #
+      # A GitHub-hosted runner cannot reach a laptop, so this has to be a public address for the
+      # local server — an ngrok tunnel to port 3000. Set the `ATATUS_STORE_API_URL` repository
+      # variable to it. Left unset, the store calls fail and the funnel still reports everything
+      # except the backend half of the trace; the step below says so rather than failing the run.
+      AT_TEST_STORE_API_URL: ${{ vars.ATATUS_STORE_API_URL }}
 
     steps:
       - name: Checkout
@@ -227,6 +232,28 @@ jobs:
           ATATUS_CLIENT_TOKEN=${ATATUS_LICENSE_KEY}"
           printf '%s\n' "$config" | sed 's/^ *//' > xcconfigs/Atatus.local.xcconfig
           echo "Wrote xcconfigs/Atatus.local.xcconfig ($(wc -l < xcconfigs/Atatus.local.xcconfig) lines, values masked)."
+
+      # The backend half of the distributed trace depends on this being reachable from the runner.
+      # Checked up front and reported, rather than left to show up as unexplained 404s in the
+      # e-commerce run: a dead tunnel still lets the funnel report RUM, Traces and Session Replay, so
+      # the run would otherwise look fine while producing no backend APM data at all.
+      - name: Check the store backend is reachable
+        run: |
+          set -uo pipefail
+          if [ -z "${AT_TEST_STORE_API_URL:-}" ]; then
+            echo "::warning::ATATUS_STORE_API_URL is not set, so the e-commerce app has no backend to call. It will still report RUM, Traces and Session Replay, but no mobile → backend distributed trace is produced. Point it at a public address for 'local server/server.js' (an ngrok tunnel to port 3000)."
+            exit 0
+          fi
+
+          probe="$AT_TEST_STORE_API_URL/api/store/products?limit=1"
+          status="$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 \
+            -H 'ngrok-skip-browser-warning: 1' "$probe" || echo 000)"
+
+          if [ "$status" = "200" ]; then
+            echo "Store backend is reachable: $AT_TEST_STORE_API_URL (HTTP $status)"
+          else
+            echo "::warning::The store backend at $AT_TEST_STORE_API_URL answered HTTP $status for /api/store/products. The e-commerce funnel will still run and report, but its backend calls will fail, so no mobile → backend distributed trace is produced. Check that 'local server/server.js' is running and the tunnel is up."
+          fi
 
       - name: Resolve mock intake address
         run: |
