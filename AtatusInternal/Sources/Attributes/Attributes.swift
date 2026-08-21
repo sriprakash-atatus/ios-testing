@@ -122,13 +122,19 @@ public struct CrossPlatformAttributes {
     /// Span ID passed from CP SDK. Used in RUM resources created by cross platform SDK.
     /// When cross-platform SDK injects tracing headers to intercepted resource, we pass tracing information through this attribute
     /// and send it within the RUM resource, so the RUM backend can issue corresponding APM span on behalf of the mobile app.
-    /// Expects `String` value.
+    ///
+    /// Expects a `String` holding the id in the same representation the `traceparent` header carries: 16 lower-case
+    /// hex characters. The RUM resource *is* the client span for a cross-platform app - no separate span payload is
+    /// uploaded for it - so this id has to string-match the id the receiving service records as its parent, and that
+    /// one comes from `traceparent`. A decimal id is still accepted for agents predating this contract.
     public static let spanID = "_atatus.span_id"
 
     /// Parent span ID passed from CP SDK. Used in RUM resources created by cross platform SDK.
     /// When cross-platform SDK injects tracing headers to intercepted resource, we pass tracing information through this attribute
     /// and send it within the RUM resource, so the RUM backend can issue corresponding APM span on behalf of the mobile app.
-    /// Expects `String` value.
+    ///
+    /// Expects a `String` in the same representation as ``spanID``: 16 lower-case hex characters, decimal accepted
+    /// for backwards compatibility. An all-zero id means "no parent" and is ignored.
     public static let parentSpanID = "_atatus.parent_span_id"
 
     /// Trace sample rate applied to RUM resources created by cross platform SDK.
@@ -190,6 +196,23 @@ public struct CrossPlatformAttributes {
     /// Indicates whether the resource was served from the device's local cache, captured from native URLSession interception.
     /// Expects `Bool` value.
     public static let localCacheHit = "_atatus.local_cache_hit"
+
+    /// Span kind passed from CP SDK. Used in RUM resources created by cross platform SDK.
+    ///
+    /// Every resource the agent reports is an outgoing request, so this is always `client` - including for the first
+    /// span of a trace. It is re-published on the event under the flat `span.kind` key, which is what the rest of
+    /// Atatus uses (`Tracer.Tags.kind` / `OTTags.spanKind`) and what the backend reads to decide a span's kind.
+    /// Leaving it under its `_atatus.` name would leave the canonical kind unset and the span would fall back to
+    /// `server` in the trace view while the copy showed up separately as a custom attribute.
+    /// Expects `String` value.
+    public static let spanKind = "_atatus.span.kind"
+
+    /// Resource duration, in **nanoseconds**, as measured by a cross platform SDK.
+    ///
+    /// Cross-platform SDKs observe the request on their own side of the platform channel, so they know how long it
+    /// actually took; the duration derived here spans the two channel hops instead. When this attribute is present it
+    /// overrides ``RUMResourceEvent/Resource/duration``. Expects an `Int` value.
+    public static let resourceDuration = "_atatus.resource.duration"
 }
 
 /// HTTP header names used to pass GraphQL metadata from the application to the SDK.

@@ -141,8 +141,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.request)
         XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), provider.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(event.dd.traceId, "64")
-        XCTAssertEqual(event.dd.spanId, "200")
+        XCTAssertEqual(event.dd.traceId, "00000000000000000000000000000064")
+        XCTAssertEqual(event.dd.spanId, "00000000000000c8")
         XCTAssertEqual(event.dd.rulePsr, 0.42)
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.service, "test-service")
@@ -225,8 +225,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.download)
         XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), provider.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(event.dd.traceId, "64")
-        XCTAssertEqual(event.dd.spanId, "200")
+        XCTAssertEqual(event.dd.traceId, "00000000000000000000000000000064")
+        XCTAssertEqual(event.dd.spanId, "00000000000000c8")
         XCTAssertEqual(event.dd.rulePsr, 0.42)
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.service, "test-service")
@@ -311,8 +311,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.download)
         XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), provider.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(event.dd.traceId, "64")
-        XCTAssertEqual(event.dd.spanId, "200")
+        XCTAssertEqual(event.dd.traceId, "00000000000000000000000000000064")
+        XCTAssertEqual(event.dd.spanId, "00000000000000c8")
         XCTAssertEqual(event.dd.rulePsr, 0.42)
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.service, "test-service")
@@ -352,8 +352,8 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
-        XCTAssertEqual(event.dd.traceId, "64")
-        XCTAssertEqual(event.dd.spanId, "200")
+        XCTAssertEqual(event.dd.traceId, "00000000000000000000000000000064")
+        XCTAssertEqual(event.dd.spanId, "00000000000000c8")
         XCTAssertEqual(event.dd.rulePsr, 0.42)
         XCTAssertNil(event.resource.encodedBodySize)
         XCTAssertNil(event.resource.decodedBodySize)
@@ -2183,9 +2183,9 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
-        XCTAssertEqual(event.dd.traceId, "64") // hex of 100 (idLo: 100)
-        XCTAssertEqual(event.dd.spanId, "200")
-        XCTAssertEqual(event.dd.parentSpanId, "300")
+        XCTAssertEqual(event.dd.traceId, "00000000000000000000000000000064") // 100 (idLo), zero-padded to 32 characters
+        XCTAssertEqual(event.dd.spanId, "00000000000000c8")
+        XCTAssertEqual(event.dd.parentSpanId, "000000000000012c")
         XCTAssertEqual(event.dd.rulePsr, 0.42)
     }
 
@@ -2462,11 +2462,11 @@ class RUMResourceScopeTests: XCTestCase {
             )
         )
 
-        // Then - traceId is stored as-is (hex string), spanId is stored as-is (decimal string)
+        // Then - all three ids are reported the way `traceparent` carries them: hex, zero-padded
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
-        XCTAssertEqual(event.dd.traceId, "1a2b3c")
-        XCTAssertEqual(event.dd.spanId, "12345678901")
-        XCTAssertEqual(event.dd.parentSpanId, "9999")
+        XCTAssertEqual(event.dd.traceId, "000000000000000000000000001a2b3c")
+        XCTAssertEqual(event.dd.spanId, "0000012345678901")
+        XCTAssertEqual(event.dd.parentSpanId, "0000000000009999")
         XCTAssertEqual(event.dd.rulePsr, 0.5)
     }
 
@@ -2616,8 +2616,450 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then - cross-platform attributes take precedence over spanContext
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
-        XCTAssertEqual(event.dd.traceId, "aabbcc")
-        XCTAssertEqual(event.dd.spanId, "42")
+        XCTAssertEqual(event.dd.traceId, "00000000000000000000000000aabbcc")
+        XCTAssertEqual(event.dd.spanId, "0000000000000042")
         XCTAssertEqual(event.dd.rulePsr, 0.9)
+    }
+
+    // MARK: - Cross-platform tracing attributes
+
+    /// The ids a cross-platform agent sends are the ones it put in `traceparent`, so what comes out here has to be
+    /// the same strings. `1c41579cae7cbfb6` is unparseable as decimal, which used to drop the span id from the event.
+    func testGivenCrossPlatformHexTraceIDs_whenResourceLoadingEnds_itReportsThemAsSentInTraceparent() throws {
+        // Given
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            startTime: currentTime,
+            url: "https://foo.com/resource/1",
+            httpMethod: .get,
+            spanContext: nil
+        )
+        currentTime.addTimeInterval(2)
+
+        // When - the three fields of `00-6a86d89c0000000089d16661acbbcefc-1c41579cae7cbfb6-01`
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/resource/1",
+                    time: currentTime,
+                    attributes: [
+                        CrossPlatformAttributes.traceID: "6a86d89c0000000089d16661acbbcefc",
+                        CrossPlatformAttributes.spanID: "1c41579cae7cbfb6",
+                        CrossPlatformAttributes.parentSpanID: "4e4c600ffa5eca2b",
+                        CrossPlatformAttributes.rulePSR: 1.0
+                    ],
+                    kind: .xhr,
+                    httpStatusCode: 200,
+                    size: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        XCTAssertEqual(event.dd.traceId, "6a86d89c0000000089d16661acbbcefc")
+        XCTAssertEqual(event.dd.spanId, "1c41579cae7cbfb6")
+        XCTAssertEqual(event.dd.parentSpanId, "4e4c600ffa5eca2b")
+        XCTAssertEqual(event.dd.rulePsr, 1.0)
+    }
+
+    /// Same contract on the error path, which builds its own `dd` block.
+    func testGivenCrossPlatformHexTraceIDs_whenResourceLoadingEndsWithError_itReportsThemAsSentInTraceparent() throws {
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            spanContext: nil
+        )
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceWithErrorCommand(
+                    resourceKey: "/resource/1",
+                    time: .mockDecember15th2019At10AMUTC(),
+                    error: ErrorMock("network issue"),
+                    source: .network,
+                    httpStatusCode: 500,
+                    globalAttributes: [:],
+                    attributes: [
+                        CrossPlatformAttributes.traceID: "6a86d89c0000000089d16661acbbcefc",
+                        CrossPlatformAttributes.spanID: "1c41579cae7cbfb6",
+                        CrossPlatformAttributes.parentSpanID: "4e4c600ffa5eca2b"
+                    ]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
+        XCTAssertEqual(event.dd.traceId, "6a86d89c0000000089d16661acbbcefc")
+        XCTAssertEqual(event.dd.spanId, "1c41579cae7cbfb6")
+        XCTAssertEqual(event.dd.parentSpanId, "4e4c600ffa5eca2b")
+    }
+
+    /// Short ids are zero-padded to the width `traceparent` uses, otherwise they would not string-match the
+    /// `parent_id` the receiving service records.
+    func testGivenShortCrossPlatformTraceIDs_whenResourceLoadingEnds_itZeroPadsThem() throws {
+        // Given
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            startTime: currentTime,
+            spanContext: nil
+        )
+        currentTime.addTimeInterval(2)
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/resource/1",
+                    time: currentTime,
+                    attributes: [
+                        CrossPlatformAttributes.traceID: "abc",
+                        CrossPlatformAttributes.spanID: "def"
+                    ],
+                    kind: .xhr,
+                    httpStatusCode: 200,
+                    size: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        XCTAssertEqual(event.dd.traceId, "00000000000000000000000000000abc")
+        XCTAssertEqual(event.dd.spanId, "0000000000000def")
+    }
+
+    /// An all-zero parent is how a cross-platform agent spells "no parent". Reporting it would give a root span a
+    /// parent that no span in the trace can satisfy.
+    func testGivenZeroCrossPlatformParentSpanID_whenResourceLoadingEnds_itReportsNoParent() throws {
+        // Given
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            startTime: currentTime,
+            spanContext: nil
+        )
+        currentTime.addTimeInterval(2)
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/resource/1",
+                    time: currentTime,
+                    attributes: [
+                        CrossPlatformAttributes.spanID: "1c41579cae7cbfb6",
+                        CrossPlatformAttributes.parentSpanID: "0000000000000000"
+                    ],
+                    kind: .xhr,
+                    httpStatusCode: 200,
+                    size: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        XCTAssertEqual(event.dd.spanId, "1c41579cae7cbfb6")
+        XCTAssertNil(event.dd.parentSpanId)
+    }
+
+    /// Agents predating the hex contract sent decimal. A value that overflows 64 bits when read as hex but fits when
+    /// read as decimal can only be the older form, so it must still be accepted.
+    func testGivenDecimalOnlyCrossPlatformSpanID_whenResourceLoadingEnds_itStillDecodesIt() throws {
+        // Given
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            startTime: currentTime,
+            spanContext: nil
+        )
+        currentTime.addTimeInterval(2)
+
+        // When - 20 digits: valid as decimal (UInt64.max), far too wide to be a 64-bit hex id
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/resource/1",
+                    time: currentTime,
+                    attributes: [CrossPlatformAttributes.spanID: "18446744073709551615"],
+                    kind: .xhr,
+                    httpStatusCode: 200,
+                    size: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        XCTAssertEqual(event.dd.spanId, "ffffffffffffffff")
+    }
+
+    // MARK: - Cross-platform span kind
+
+    func testGivenCrossPlatformSpanKind_whenResourceLoadingEnds_itIsReportedUnderTheFlatKey() throws {
+        // Given
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            startTime: currentTime,
+            spanContext: nil
+        )
+        currentTime.addTimeInterval(2)
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/resource/1",
+                    time: currentTime,
+                    attributes: [CrossPlatformAttributes.spanKind: "client"],
+                    kind: .xhr,
+                    httpStatusCode: 200,
+                    size: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then - under `span.kind`, and no longer under its `_atatus.` name
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        let contextInfo = try XCTUnwrap(event.context?.contextInfo)
+        XCTAssertEqual(contextInfo["span.kind"] as? String, "client")
+        XCTAssertNil(contextInfo[CrossPlatformAttributes.spanKind])
+    }
+
+    // MARK: - Cross-platform resource duration
+
+    func testGivenCrossPlatformResourceDuration_whenResourceLoadingEnds_itOverridesTheMeasuredDuration() throws {
+        // Given
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            startTime: currentTime,
+            spanContext: nil
+        )
+        currentTime.addTimeInterval(2) // 2s across the platform channel
+
+        // When - the cross-platform SDK measured 1.45s on its own side
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/resource/1",
+                    time: currentTime,
+                    attributes: [CrossPlatformAttributes.resourceDuration: Int64(1_450_000_000)],
+                    kind: .xhr,
+                    httpStatusCode: 200,
+                    size: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        XCTAssertEqual(event.resource.duration, 1_450_000_000)
+        let contextInfo = try XCTUnwrap(event.context?.contextInfo)
+        XCTAssertNil(contextInfo[CrossPlatformAttributes.resourceDuration])
+    }
+
+    /// Sub-millisecond requests are the ones a millisecond-quantised measurement rounds away to 0 or 1.
+    func testGivenSubMillisecondCrossPlatformResourceDuration_whenResourceLoadingEnds_itIsReportedExactly() throws {
+        // Given
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            startTime: currentTime,
+            spanContext: nil
+        )
+        currentTime.addTimeInterval(2)
+
+        // When - 400µs
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/resource/1",
+                    time: currentTime,
+                    attributes: [CrossPlatformAttributes.resourceDuration: Int64(400_000)],
+                    kind: .xhr,
+                    httpStatusCode: 200,
+                    size: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        XCTAssertEqual(event.resource.duration, 400_000)
+    }
+
+    /// 200s in nanoseconds does not fit in 32 bits - it must not be truncated on the way through.
+    func testGivenCrossPlatformResourceDurationWiderThan32Bits_whenResourceLoadingEnds_itIsReportedExactly() throws {
+        // Given
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            startTime: currentTime,
+            spanContext: nil
+        )
+        currentTime.addTimeInterval(2)
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/resource/1",
+                    time: currentTime,
+                    attributes: [CrossPlatformAttributes.resourceDuration: Int64(200_000_000_000)],
+                    kind: .xhr,
+                    httpStatusCode: 200,
+                    size: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        XCTAssertEqual(event.resource.duration, 200_000_000_000)
+    }
+
+    /// The platform channel picks the integer width from the value's magnitude, so a narrow `Int` has to work too.
+    func testGivenCrossPlatformResourceDurationAsInt_whenResourceLoadingEnds_itIsReportedExactly() throws {
+        // Given
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            startTime: currentTime,
+            spanContext: nil
+        )
+        currentTime.addTimeInterval(2)
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/resource/1",
+                    time: currentTime,
+                    attributes: [CrossPlatformAttributes.resourceDuration: 250_000_000],
+                    kind: .xhr,
+                    httpStatusCode: 200,
+                    size: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        XCTAssertEqual(event.resource.duration, 250_000_000)
+    }
+
+    /// A native app sends no such attribute - the measured duration has to keep working.
+    func testGivenNoCrossPlatformResourceDuration_whenResourceLoadingEnds_itUsesTheMeasuredDuration() throws {
+        // Given
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            startTime: currentTime,
+            spanContext: nil
+        )
+        currentTime.addTimeInterval(2)
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/resource/1",
+                    time: currentTime,
+                    attributes: [:],
+                    kind: .xhr,
+                    httpStatusCode: 200,
+                    size: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        XCTAssertEqual(event.resource.duration, 2_000_000_000)
+    }
+
+    /// A non-positive duration is not a measurement - fall back rather than emit it.
+    func testGivenZeroCrossPlatformResourceDuration_whenResourceLoadingEnds_itUsesTheMeasuredDuration() throws {
+        // Given
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            startTime: currentTime,
+            spanContext: nil
+        )
+        currentTime.addTimeInterval(2)
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/resource/1",
+                    time: currentTime,
+                    attributes: [CrossPlatformAttributes.resourceDuration: Int64(0)],
+                    kind: .xhr,
+                    httpStatusCode: 200,
+                    size: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        XCTAssertEqual(event.resource.duration, 2_000_000_000)
     }
 }

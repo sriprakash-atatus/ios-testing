@@ -2,6 +2,9 @@
 
 - [FEATURE] Add an experimental Core Animation recording pipeline for Session Replay, available through the `compositionTreeRecording` feature flag. See [#3127][]
 - [IMPROVEMENT] Forward `local_cache_hit` signal on RUM resources [#3074][]
+- [FIX] Read cross-platform `_atatus.span_id` / `_atatus.parent_span_id` as hexadecimal, and report all RUM resource trace IDs in the representation `traceparent` carries. A hex span ID failed to parse as decimal and was dropped from the event, so cross-platform apps produced a trace with no client span.
+- [FIX] Zero-pad `span_id` and a non-root `parent_id` to 16 characters in the span payload, so they match the IDs a receiving service reads from `traceparent`.
+- [IMPROVEMENT] Honour `_atatus.span.kind` and `_atatus.resource.duration` sent by cross-platform SDKs on RUM resources.
 
 # 3.15.0 / 05-08-2026
 

@@ -192,10 +192,22 @@ internal struct SpanEventEncoder {
         // backend span carry different `trace_id` strings, so they were indexed as two traces.
         // The high 64 bits stay in `meta._atatus.p.tid` for backwards compatibility.
         try container.encode(String(span.traceID, representation: .hexadecimal32Chars), forKey: .traceID)
-        try container.encode(String(span.spanID, representation: .hexadecimal), forKey: .spanID)
+        // ATCHG: Zero-pad the span IDs to 16 characters for the same reason as the trace ID above.
+        // `.hexadecimal` drops leading zeros, so a span whose ID is below 2^60 - one in eight, given
+        // the generator's `1...2^63-1` range - was reported here with fewer than 16 characters while
+        // `traceparent` carried the padded form. The receiving service records that padded string as
+        // its `parent_id`, so the two no longer matched and the mobile span dropped out of the trace.
+        try container.encode(String(span.spanID, representation: .hexadecimal16Chars), forKey: .spanID)
 
-        let parentSpanID = span.parentID ?? SpanID.invalid // 0 is a reserved ID for a root span (ref: ATTracer.java#L600)
-        try container.encode(String(parentSpanID, representation: .hexadecimal), forKey: .parentID)
+        // ATCHG: A real parent is padded for the same reason as `span_id`; a root span keeps the bare "0" it has
+        // always been encoded with, since that is the value a consumer looks for to recognise the root and it never
+        // has to match anything in a `traceparent`.
+        if let parentID = span.parentID {
+            try container.encode(String(parentID, representation: .hexadecimal16Chars), forKey: .parentID)
+        } else {
+            // 0 is a reserved ID for a root span (ref: ATTracer.java#L600)
+            try container.encode(String(SpanID.invalid, representation: .hexadecimal), forKey: .parentID)
+        }
 
         try container.encode(span.operationName, forKey: .operationName)
         try container.encode(span.serviceName, forKey: .serviceName)

@@ -128,6 +128,9 @@ internal class RUMResourceScope: RUMScope {
         // Trace context from cross-platform attributes or spanContext fallback
         let traceContext = extractTraceAttributes()
 
+        // Span kind from cross-platform attributes, moved onto the canonical `span.kind` key
+        promoteSpanKind()
+
         // GraphQL attributes from cross-platform attributes
         let graphql = extractGraphQL()
 
@@ -147,6 +150,11 @@ internal class RUMResourceScope: RUMScope {
             resourceDuration = command.time.timeIntervalSince(resourceLoadingStartTime)
             size = command.size
         }
+
+        // Resolved here rather than inline below: `context:` is passed before `resource:` in the event's
+        // argument list and Swift evaluates arguments in source order, so an inline call would merge
+        // `attributes` into `contextInfo` before the duration key was consumed, duplicating it as custom context.
+        let reportedDuration = resolveReportedDuration(resourceDuration)
 
         let encodedBodySize = resourceMetrics?.responseBodySize?.encoded
         let decodedBodySize = resourceMetrics?.responseBodySize?.decoded
@@ -180,14 +188,14 @@ internal class RUMResourceScope: RUMScope {
                     sessionSampleRate: Double(dependencies.samplingRate)
                 ),
                 discarded: nil,
-                parentSpanId: traceContext.parentSpanID?.toString(representation: .decimal),
+                parentSpanId: traceContext.parentSpanID?.toString(representation: .hexadecimal16Chars),
                 rulePsr: traceContext.samplingRate,
                 session: .init(
                     plan: .plan1,
                     sessionPrecondition: parent.context.sessionPrecondition
                 ),
-                spanId: traceContext.spanID?.toString(representation: .decimal),
-                traceId: traceContext.traceID?.toString(representation: .hexadecimal)
+                spanId: traceContext.spanID?.toString(representation: .hexadecimal16Chars),
+                traceId: traceContext.traceID?.toString(representation: .hexadecimal32Chars)
             ),
             account: .init(context: context),
             action: parent.context.activeUserActionID.map { rumUUID in
@@ -227,7 +235,7 @@ internal class RUMResourceScope: RUMScope {
                         start: metric.start.timeIntervalSince(resourceStartTime).dd.toInt64Nanoseconds
                     )
                 },
-                duration: resolveResourceDuration(resourceDuration),
+                duration: reportedDuration,
                 encodedBodySize: encodedBodySize,
                 firstByte: resourceMetrics?.firstByte.map { metric in
                     .init(
@@ -304,6 +312,9 @@ internal class RUMResourceScope: RUMScope {
         // Trace context from cross-platform attributes or spanContext fallback
         let traceContext = extractTraceAttributes()
 
+        // Span kind from cross-platform attributes, moved onto the canonical `span.kind` key
+        promoteSpanKind()
+
         // GraphQL attributes from cross-platform attributes
         let graphql = extractGraphQL()
 
@@ -312,11 +323,11 @@ internal class RUMResourceScope: RUMScope {
             dd: .init(
                 browserSdkVersion: nil,
                 configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.samplingRate)),
-                parentSpanId: traceContext.parentSpanID?.toString(representation: .decimal),
+                parentSpanId: traceContext.parentSpanID?.toString(representation: .hexadecimal16Chars),
                 rulePsr: traceContext.samplingRate,
                 session: .init(plan: .plan1, sessionPrecondition: parent.context.sessionPrecondition),
-                spanId: traceContext.spanID?.toString(representation: .decimal),
-                traceId: traceContext.traceID?.toString(representation: .hexadecimal)
+                spanId: traceContext.spanID?.toString(representation: .hexadecimal16Chars),
+                traceId: traceContext.traceID?.toString(representation: .hexadecimal32Chars)
             ),
             account: .init(context: context),
             action: parent.context.activeUserActionID.map { rumUUID in
@@ -466,21 +477,88 @@ internal class RUMResourceScope: RUMScope {
     /// Extracts trace attributes from `self.attributes`, consuming them via `removeValue`.
     /// Must be called at most once per event send — repeated calls return nil for consumed keys.
     private func extractTraceAttributes() -> (traceID: TraceID?, spanID: SpanID?, parentSpanID: SpanID?, samplingRate: Double?) {
-        let traceID: TraceID? = attributes.removeValue(forKey: CrossPlatformAttributes.traceID)?
-            .dd.decode()
-            .map { .init($0, representation: .hexadecimal) }
-            ?? spanContext?.traceID
-        let spanID: SpanID? = attributes.removeValue(forKey: CrossPlatformAttributes.spanID)?
-            .dd.decode()
-            .map { .init($0, representation: .decimal) }
-            ?? spanContext?.spanID
-        let parentSpanID: SpanID? = attributes.removeValue(forKey: CrossPlatformAttributes.parentSpanID)?
-            .dd.decode()
-            .map { .init($0, representation: .decimal) }
-            ?? spanContext?.parentSpanID
-        let samplingRate = attributes.removeValue(forKey: CrossPlatformAttributes.rulePSR)?.dd.decode() ?? spanContext?.samplingRate
+        let rawTraceID: String? = attributes.removeValue(forKey: CrossPlatformAttributes.traceID)?.dd.decode()
+        let rawSpanID: String? = attributes.removeValue(forKey: CrossPlatformAttributes.spanID)?.dd.decode()
+        let rawParentSpanID: String? = attributes.removeValue(forKey: CrossPlatformAttributes.parentSpanID)?.dd.decode()
+        let rawSamplingRate: Double? = attributes.removeValue(forKey: CrossPlatformAttributes.rulePSR)?.dd.decode()
 
-        return (traceID, spanID, parentSpanID, samplingRate)
+        let traceID = rawTraceID.flatMap { TraceID($0, representation: .hexadecimal) } ?? spanContext?.traceID
+        let spanID = rawSpanID.flatMap(RUMResourceScope.decodeCrossPlatformSpanID) ?? spanContext?.spanID
+
+        // An all-zero id means "no parent" - it is what a cross-platform agent's id parser yields for an empty or
+        // unparseable value. Promoting it would give a root span a parent that no span in the trace can satisfy.
+        let parentSpanID = rawParentSpanID
+            .flatMap(RUMResourceScope.decodeCrossPlatformSpanID)
+            .flatMap { spanID -> SpanID? in spanID == SpanID.invalid ? nil : spanID }
+            ?? spanContext?.parentSpanID
+
+        return (traceID, spanID, parentSpanID, rawSamplingRate ?? spanContext?.samplingRate)
+    }
+
+    /// Reads a span id sent by a cross-platform SDK.
+    ///
+    /// Cross-platform agents report these ids the way `traceparent` carries them — 16 lower-case hex characters —
+    /// because for those apps the RUM resource *is* the client span: no separate span payload is uploaded for it, so
+    /// the id here has to string-match the id the receiving service records as its parent. Reading a hex id as decimal
+    /// makes `UInt64.init` return nil for anything containing `a`-`f`, which dropped the id from the event entirely
+    /// and left the trace waterfall with a missing client span.
+    ///
+    /// Decimal is still accepted as a fallback so agents predating that contract keep working. The two readings only
+    /// disagree for ids made purely of the digits 0-9, where hex is the correct one for a current agent.
+    private static func decodeCrossPlatformSpanID(_ string: String) -> SpanID? {
+        SpanID(string, representation: .hexadecimal) ?? SpanID(string, representation: .decimal)
+    }
+
+    /// The flat tag name Atatus uses for a span's kind.
+    ///
+    /// Spelled out here rather than referenced from `AtatusTrace`'s `Tracer.Tags.kind`, which holds the same string:
+    /// RUM does not link the Trace module, and an app can enable RUM without it.
+    private static let spanKindTag = "span.kind"
+
+    /// Re-publishes the cross-platform span kind on `self.attributes` under the flat `span.kind` key the rest of
+    /// Atatus uses (`Tracer.Tags.kind` / `OTTags.spanKind`), so it reaches the event as the canonical kind instead of
+    /// as an `_atatus.`-prefixed custom attribute. Without this the kind is never set and the span falls back to
+    /// `server` in the trace view, even though every resource the agent reports is an outgoing `client` call.
+    private func promoteSpanKind() {
+        guard let spanKind: String = attributes.removeValue(forKey: CrossPlatformAttributes.spanKind)?.dd.decode() else {
+            return
+        }
+
+        attributes[RUMResourceScope.spanKindTag] = spanKind
+    }
+
+    /// The duration to report for this resource, in nanoseconds.
+    ///
+    /// A cross-platform SDK observes the request on its own side of the platform channel, so it knows how long the
+    /// request actually took; the duration measured here only covers the span between the two channel hops. When the
+    /// SDK supplies its own measurement it wins. The attribute is consumed either way so it does not also surface as
+    /// custom context.
+    private func resolveReportedDuration(_ duration: TimeInterval) -> Int64 {
+        guard let attribute = attributes.removeValue(forKey: CrossPlatformAttributes.resourceDuration) else {
+            return resolveResourceDuration(duration)
+        }
+
+        // The platform channel picks the integer width from the value's magnitude, so a duration can arrive as any
+        // of these. Checking one type only would silently discard the rest.
+        var reported: Int64?
+        if let value: Int64 = attribute.dd.decode() {
+            reported = value
+        } else if let value: Int = attribute.dd.decode() {
+            reported = Int64(value)
+        } else if let value: Int32 = attribute.dd.decode() {
+            reported = Int64(value)
+        } else if let value: UInt64 = attribute.dd.decode(), value <= UInt64(Int64.max) {
+            reported = Int64(value)
+        } else if let value: Double = attribute.dd.decode() {
+            reported = Int64(value)
+        }
+
+        // A non-positive value is not a measurement - fall back rather than report it.
+        if let reported = reported, reported > 0 {
+            return reported
+        }
+
+        return resolveResourceDuration(duration)
     }
 
     /// Extracts GraphQL attributes from `self.attributes` and builds a `RUMGraphql` value.
