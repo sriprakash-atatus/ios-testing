@@ -321,7 +321,16 @@ public enum Atatus {
             // `Configuration.intakeEndpoint` extension used by the heartbeats on Android.
             endpoint: AtatusSite.intakeEndpoint(serverUrl: configuration.serverUrl, site: configuration.site),
             licenseKey: configuration.licenseKey,
-            appName: configuration.additionalConfiguration[CrossPlatformAttributes.appName] as? String ?? "",
+            // ATCHG: Only a cross-platform SDK sets `additionalConfiguration[appName]`, so a native
+            // app used to send an empty `app_name` — which the intake answers with "App name is
+            // missing!". The agent reads that as `allowAgent: false` and disables itself seconds
+            // after launch, so a native app could never pass its own heartbeat. Falls back to the
+            // same value `service` resolves to below, which is the app's identity in Atatus.
+            appName: configuration.additionalConfiguration[CrossPlatformAttributes.appName] as? String
+                ?? configuration.service
+                ?? configuration.bundle.bundleIdentifier
+                ?? "ios",
+            // ATCHG: End
             source: configuration.additionalConfiguration[CrossPlatformAttributes.atatusSource] as? String ?? "ios"
         )
         AgentHeartbeatScheduler.shared.start(configuration: heartbeatConfiguration, instanceName: instanceName)
@@ -424,7 +433,12 @@ extension AtatusCore {
         let bundleIdentifier = configuration.bundle.bundleIdentifier ?? "unknown"
         let service = configuration.service ?? configuration.bundle.bundleIdentifier ?? "ios"
         let source = configuration.additionalConfiguration[CrossPlatformAttributes.atatusSource] as? String ?? "ios"
-        let appName = configuration.additionalConfiguration[CrossPlatformAttributes.appName] as? String
+        // ATCHG: Falls back to `service` for the same reason as the heartbeat above. Only a
+        // cross-platform SDK sets `additionalConfiguration[appName]`, so on a native app this was
+        // nil and every upload went out with an empty `app_name` query item — which the intake
+        // rejects with 400 "App name is missing!".
+        let appName = configuration.additionalConfiguration[CrossPlatformAttributes.appName] as? String ?? service
+        // ATCHG: End
         let sdkVersion = configuration.additionalConfiguration[CrossPlatformAttributes.sdkVersion] as? String ?? __sdkVersion
         let buildId = configuration.additionalConfiguration[CrossPlatformAttributes.buildId] as? String
         let nativeSourceType = configuration.additionalConfiguration[CrossPlatformAttributes.nativeSourceType] as? String

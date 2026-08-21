@@ -54,7 +54,11 @@ public struct AtatusContext {
     public let buildId: String?
 
     /// The name of the application (display name / flavor), equivalent to Android's "Flavor".
-    /// Only used by cross platform SDKs. // ATCHG: renamed from `variant` to `appName`
+    /// The app's name, sent as the `app_name` query item on every intake request.
+    ///
+    /// Set from `additionalConfiguration[appName]` by cross-platform SDKs, and from `service` on a
+    /// native app. It must not be empty: the intake rejects a request without one with 400
+    /// "App name is missing!". // ATCHG: renamed from `variant` to `appName`
     public let appName: String?
 
     /// Denotes the mobile application's platform, such as `"ios"` or `"flutter"` that data is generated from.
