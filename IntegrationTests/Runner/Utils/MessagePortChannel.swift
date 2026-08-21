@@ -40,10 +40,29 @@ internal class MessagePortChannel {
     internal class Sender {
         private let remotePort: CFMessagePort
 
-        fileprivate init() throws {
-            guard let remotePort = CFMessagePortCreateRemote(nil, MessagePortChannel.portName) else {
-                throw ChannelError(description: "⚠️ `MessagePortChannel.Sender` - failed to instantiate remote port")
+        /// - Parameter timeout: how long to keep waiting for the app to register its port.
+        fileprivate init(timeout: TimeInterval = 10) throws {
+            // ATCHG: `CFMessagePortCreateRemote` returns nil while the app process has not yet
+            // registered its local port. The app registers it in `UITestsAppConfiguration.init()`,
+            // which races the runner reaching this call — failing on the first miss made every
+            // scenario that ends a RUM session intermittently fail with "failed to instantiate
+            // remote port". Polling turns that race into a wait.
+            let deadline = Date().addingTimeInterval(timeout)
+            var port = CFMessagePortCreateRemote(nil, MessagePortChannel.portName)
+            while port == nil && Date() < deadline {
+                Thread.sleep(forTimeInterval: 0.1)
+                port = CFMessagePortCreateRemote(nil, MessagePortChannel.portName)
             }
+
+            guard let remotePort = port else {
+                throw ChannelError(
+                    description: """
+                    ⚠️ `MessagePortChannel.Sender` - failed to instantiate remote port after \(timeout)s. \
+                    The app either is not running or never reached `UITestsAppConfiguration.init()`.
+                    """
+                )
+            }
+            // ATCHG: End
             self.remotePort = remotePort
         }
 
