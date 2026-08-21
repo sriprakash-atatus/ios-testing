@@ -103,9 +103,9 @@ internal struct Environment {
         /// A first party URL the app requests once, to exercise network tracing and trace
         /// propagation against a real backend. Skipped when unset.
         static let tracedRequestURL = "AT_TEST_TRACED_REQUEST_URL"
-        /// Base URL of the backend the e-commerce scenario's store talks to. Its requests are what
-        /// RUM and Trace auto-instrumentation capture, so pointing this elsewhere is how a run keeps
-        /// its traffic inside its own network.
+        /// Base URL of the backend the e-commerce scenario's store talks to (the Node server that
+        /// serves `/api/store/*`). Its requests are what RUM and Trace auto-instrumentation capture
+        /// on the app side, and what the Node APM agent records on the backend side.
         static let storeAPIURL = "AT_TEST_STORE_API_URL"
     }
     /// Launch arguments shared between UITests and Example targets.
@@ -125,9 +125,9 @@ internal struct Environment {
         static let defaultRUMApplicationID = "rum-application-id"
         static let defaultService = "ui-tests-service-name"
         static let defaultEnv = "integration"
-        /// A public catalogue API, so the e-commerce scenario makes the requests a shop actually
-        /// makes. Overridden with `AT_TEST_STORE_API_URL`.
-        static let defaultStoreAPIURL = URL(string: "https://fakestoreapi.com")!
+        /// The local Node server (`local server/server.js`) on its default port, used when neither
+        /// `AT_TEST_STORE_API_URL` nor `ATATUS_SERVER_URL` is set.
+        static let defaultStoreAPIURL = URL(string: "http://localhost:3000")!
     }
     struct InfoPlistKey {
         static let licenseKey      = "AtatusClientToken"
@@ -205,8 +205,18 @@ internal struct Environment {
     }
 
     /// The backend the e-commerce scenario's store calls.
+    ///
+    /// Falls back to `ATATUS_SERVER_URL` — the same Node server serves the store APIs and the
+    /// agent's intake, so one URL usually configures both. `AT_TEST_STORE_API_URL` splits them
+    /// apart when they differ, which is what CI does when the agent reports to a mock intake.
     static func storeAPIURL() -> URL {
-        nonEmptyValue(of: Variable.storeAPIURL).flatMap { URL(string: $0) } ?? Constants.defaultStoreAPIURL
+        let candidates = [Variable.storeAPIURL, "ATATUS_SERVER_URL"]
+        for variable in candidates {
+            if let url = nonEmptyValue(of: variable).flatMap({ URL(string: $0) }) {
+                return url
+            }
+        }
+        return Constants.defaultStoreAPIURL
     }
 
     /// Reads an ENV variable, treating a blank value the same as an absent one — CI runners

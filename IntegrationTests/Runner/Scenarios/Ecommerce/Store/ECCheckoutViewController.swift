@@ -5,9 +5,9 @@
  */
 
 // ATCHG: Checkout screen of the store in `AtatusEcommerceScenario`. The one step of the funnel that
-// fails on purpose — the first authorisation is sent to a path the store API does not serve, so the
-// run captures a genuinely failed request alongside the successful ones. Nothing about the failure
-// is reported by hand; the agent sees the response like it sees every other.
+// fails on purpose — the backend declines the first authorisation with a 502, so the run captures a
+// genuinely failed request alongside the successful ones. Nothing about the failure is reported by
+// hand; the agent sees the response like it sees every other.
 
 import UIKit
 
@@ -67,15 +67,12 @@ final class ECCheckoutViewController: UIViewController, ECStoreScreen {
         }
         attempt += 1
 
-        // The first authorisation goes to a path that is not served and fails; the retry goes to one
-        // that is and succeeds. Scripted rather than random, so every run captures the same failure
-        // and the same recovery.
-        let shouldSucceed = attempt > 1
-
         payButton.isEnabled = false
         statusLabel.text = attempt == 1 ? "Authorising payment…" : "Retrying payment…"
 
-        api.authorizePayment(amount: store.total, succeeds: shouldSucceed) { [weak self] succeeded in
+        // The backend declines attempt 1 with a 502 and accepts the retry, so every run captures the
+        // same real failure and the same recovery on both sides of the trace.
+        api.authorizePayment(amount: store.total, attempt: attempt) { [weak self] succeeded in
             guard let self = self else {
                 return
             }

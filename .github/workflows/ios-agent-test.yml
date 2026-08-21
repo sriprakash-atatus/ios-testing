@@ -15,13 +15,16 @@ name: iOS Agent Test
 #   `AtatusDemoScenario`      calls the SDK's manual APIs — one of everything the agent can report.
 #   `AtatusEcommerceScenario` calls none of them. It runs the app's e-commerce feature, a shop that
 #                             walks its own funnel (catalog → product → cart → checkout → order)
-#                             making real requests to a store backend. Everything reported comes
-#                             from auto-instrumentation: RUM views from the screens appearing,
+#                             making real requests to a store backend (`/api/store/*` on the Node
+#                             server, which runs the Atatus Node APM agent). Everything reported
+#                             comes from auto-instrumentation: RUM views from the screens appearing,
 #                             resources and network spans from the shop's own requests (including a
-#                             first payment attempt that genuinely fails), mobile vitals, app hangs,
-#                             and a Session Replay recording. It is the scenario that answers "does
-#                             the agent report a real app correctly?" rather than "does each SDK
-#                             method work?".
+#                             first payment attempt the backend genuinely declines with a 502),
+#                             mobile vitals, app hangs, and a Session Replay recording. Because the
+#                             backend is instrumented too and the agent propagates `traceparent`,
+#                             one shopping session shows up as a mobile → backend distributed trace.
+#                             It is the scenario that answers "does the agent report a real app
+#                             correctly?" rather than "does each SDK method work?".
 #
 # Neither needs a test runner: both drive themselves from `simctl launch`.
 #
@@ -118,10 +121,13 @@ jobs:
       # Optional first party URL the demo scenario requests once, to exercise network tracing and
       # traceparent propagation against a real backend. Left blank, that request is skipped.
       AT_TEST_TRACED_REQUEST_URL: ${{ vars.ATATUS_TRACED_REQUEST_URL }}
-      # Backend the e-commerce scenario's store calls. Its requests are what RUM and Trace
-      # auto-instrumentation capture. Override with an `ATATUS_STORE_API_URL` repository variable to
-      # keep the traffic inside your own network.
-      AT_TEST_STORE_API_URL: ${{ vars.ATATUS_STORE_API_URL || 'https://fakestoreapi.com' }}
+      # Backend the e-commerce scenario's store calls: the Node server that serves `/api/store/*` and
+      # runs the Atatus Node APM agent. Set explicitly rather than left to the app's fallback, because
+      # in the mock phase `ATATUS_SERVER_URL` points at the local mock intake, which serves no store
+      # routes. Keeping them separate means the agent reports to the mock intake while the shop's own
+      # traffic still reaches the real backend, so the mobile → backend distributed trace is produced
+      # in both phases.
+      AT_TEST_STORE_API_URL: ${{ vars.ATATUS_STORE_API_URL || vars.ATATUS_SERVER_URL || 'https://wrought-author-whinny.ngrok-free.dev' }}
 
     steps:
       - name: Checkout

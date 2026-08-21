@@ -49,9 +49,11 @@ final class AtatusEcommerceScenario: TestScenario {
         var rum = RUM.Configuration(applicationID: Environment.rumApplicationID())
         rum.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
         rum.uiKitActionsPredicate = DefaultUIKitRUMActionsPredicate()
-        rum.urlSessionTracking = firstPartyHosts.isEmpty
-            ? .init()
-            : .init(firstPartyHostsTracing: .trace(hosts: firstPartyHosts, sampleRate: 100))
+        var urlSessionTracking = RUM.Configuration.URLSessionTracking()
+        if !firstPartyHosts.isEmpty {
+            urlSessionTracking.firstPartyHostsTracing = .trace(hosts: firstPartyHosts, sampleRate: 100)
+        }
+        rum.urlSessionTracking = urlSessionTracking
         rum.trackFrustrations = true
         rum.trackBackgroundEvents = true
         rum.appHangThreshold = 0.25
