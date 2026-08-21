@@ -197,12 +197,12 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, URLSessionT
         XCTAssertGreaterThan(firstPartyResource2.resource.duration!, 0)
         XCTAssertEqual(
             firstPartyResource2.dd.traceId,
-            firstPartyPOSTRequestTraceID.toString(representation: .hexadecimal),
+            firstPartyPOSTRequestTraceID.toString(representation: .hexadecimal32Chars),
             "Tracing information should be propagated to `firstPartyPOSTResourceURL`"
         )
         XCTAssertEqual(
             firstPartyResource2.dd.spanId,
-            firstPartyPOSTRequestSpanID.toString(representation: .decimal),
+            firstPartyPOSTRequestSpanID.toString(representation: .hexadecimal16Chars),
             "Tracing information should be propagated to `firstPartyPOSTResourceURL`"
         )
         let firstPartyResource2SampleRate = try XCTUnwrap(firstPartyResource2.dd.rulePsr, "Traced resource should send sample rate")

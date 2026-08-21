@@ -160,11 +160,11 @@ class RUMResourceActiveSpanAugmentationTests: IntegrationTests, RUMCommonAsserts
 
             XCTAssertEqual(
                 firstPartyResource.dd.traceId,
-                traceId.toString(representation: .hexadecimal)
+                traceId.toString(representation: .hexadecimal32Chars)
             )
             XCTAssertEqual(
                 firstPartyResource.dd.spanId,
-                firstPartyPOSTRequestSpanID.toString(representation: .decimal)
+                firstPartyPOSTRequestSpanID.toString(representation: .hexadecimal16Chars)
             )
 
             // Make sure the trace ID is the same between the active span and RUM resource span
@@ -173,7 +173,7 @@ class RUMResourceActiveSpanAugmentationTests: IntegrationTests, RUMCommonAsserts
             // Make sure the active span ID is the parent span ID of the RUM resource span
             XCTAssertEqual(
                 firstPartyResource.dd.parentSpanId,
-                spanId.toString(representation: .decimal)
+                spanId.toString(representation: .hexadecimal16Chars)
             )
 
             let firstPartyResource2SampleRate = try XCTUnwrap(firstPartyResource.dd.rulePsr, "Traced resource should send sample rate")
