@@ -71,9 +71,15 @@ class RUMStopSessionScenarioTests: IntegrationTests, RUMCommonAsserts {
             // 4th session should only contain the test session ending
             let sessions = try RUMSessionMatcher.sessions(maxCount: 4, from: requests)
             // No active views in any session
-            return sessions.count == 4 && sessions.allSatisfy { session in
-                !session.views.contains(where: { $0.viewEvents.last?.view.isActive == true })
-            }
+            return sessions.count == 4
+                // ATCHG: The TTID event can arrive in a later batch than the views it belongs to, so
+                // waiting for it here turns `XCTAssertNotNil(appStartSession.ttidEvent)` below from a
+                // race into a wait. Without this the assertion fails whenever the batch carrying it
+                // had not landed yet, which a loaded CI simulator makes routine.
+                && sessions[0].ttidEvent != nil
+                && sessions.allSatisfy { session in
+                    !session.views.contains(where: { $0.viewEvents.last?.view.isActive == true })
+                }
         }
 
         assertRUM(requests: recordedRUMRequests)

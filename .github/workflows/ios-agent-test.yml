@@ -530,12 +530,24 @@ jobs:
       - name: Verify the app propagated trace headers to the backend
         if: ${{ !cancelled() && env.APP_PATH != '' && env.AT_TEST_STORE_API_URL != '' && env.HAS_ATATUS_CREDENTIALS == 'true' && (github.event_name != 'workflow_dispatch' || inputs.send_to_atatus) }}
         run: |
-          set -euo pipefail
+          set -uo pipefail
           report="$ARTIFACTS_DIR/intake/store-traceparents.json"
-          curl -s --max-time 30 -H 'ngrok-skip-browser-warning: 1' \
-            "$AT_TEST_STORE_API_URL/api/store/traceparents" -o "$report"
+
+          # Retried, and its failure handled rather than left to `set -e`. A transient DNS or tunnel
+          # blip here exits curl non-zero (6 = could not resolve host) and would otherwise kill the
+          # step with curl's raw exit code, reporting a propagation failure when the only thing that
+          # actually failed was reading the result back.
+          if ! curl -sf --max-time 30 --retry 3 --retry-delay 3 --retry-all-errors \
+               -H 'ngrok-skip-browser-warning: 1' \
+               "$AT_TEST_STORE_API_URL/api/store/traceparents" -o "$report"; then
+            echo "::warning::Could not read the traceparents back from $AT_TEST_STORE_API_URL, so \
+          propagation could not be verified. This says nothing about whether the agent propagated \
+          trace headers — only that the backend was unreachable when the check ran."
+            exit 0
+          fi
           cat "$report"
 
+          set -e
           python3 - "$report" <<'PY'
           import json, sys
 
