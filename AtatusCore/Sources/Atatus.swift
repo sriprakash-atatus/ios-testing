@@ -433,12 +433,7 @@ extension AtatusCore {
         let bundleIdentifier = configuration.bundle.bundleIdentifier ?? "unknown"
         let service = configuration.service ?? configuration.bundle.bundleIdentifier ?? "ios"
         let source = configuration.additionalConfiguration[CrossPlatformAttributes.atatusSource] as? String ?? "ios"
-        // ATCHG: Falls back to `service` for the same reason as the heartbeat above. Only a
-        // cross-platform SDK sets `additionalConfiguration[appName]`, so on a native app this was
-        // nil and every upload went out with an empty `app_name` query item — which the intake
-        // rejects with 400 "App name is missing!".
-        let appName = configuration.additionalConfiguration[CrossPlatformAttributes.appName] as? String ?? service
-        // ATCHG: End
+        let appName = configuration.additionalConfiguration[CrossPlatformAttributes.appName] as? String
         let sdkVersion = configuration.additionalConfiguration[CrossPlatformAttributes.sdkVersion] as? String ?? __sdkVersion
         let buildId = configuration.additionalConfiguration[CrossPlatformAttributes.buildId] as? String
         let nativeSourceType = configuration.additionalConfiguration[CrossPlatformAttributes.nativeSourceType] as? String

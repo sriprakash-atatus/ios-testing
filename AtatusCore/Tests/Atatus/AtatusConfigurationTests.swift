@@ -72,9 +72,7 @@ class AtatusConfigurationTests: XCTestCase {
         XCTAssertEqual(context.version, "1.0.0")
         XCTAssertEqual(context.sdkVersion, __sdkVersion)
         XCTAssertEqual(context.applicationName, "Test")
-        // ATCHG: A native app now falls back to `service`, so the intake never receives an empty
-        // `app_name` — it answers 400 "App name is missing!" to those.
-        XCTAssertEqual(context.appName, "test")
+        XCTAssertNil(context.appName)
         XCTAssertEqual(context.source, "ios")
         XCTAssertEqual(context.applicationBundleIdentifier, "test")
         XCTAssertEqual(context.trackingConsent, .granted)

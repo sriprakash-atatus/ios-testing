@@ -133,7 +133,7 @@ internal func atatusIdentificationQueryItems(
         .licenseKey(licenseKey: context.licenseKey),
         .agentName(agentName: AgentInfo.agentName),
         .agentVersion(agentVersion: AgentInfo.agentVersion),
-        .appName(appName: context.appName ?? "")
+        .appName(appName: context.appName ?? context.service)
     ]
 }
 

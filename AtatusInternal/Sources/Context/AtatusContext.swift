@@ -54,11 +54,13 @@ public struct AtatusContext {
     public let buildId: String?
 
     /// The name of the application (display name / flavor), equivalent to Android's "Flavor".
-    /// The app's name, sent as the `app_name` query item on every intake request.
+    /// Only set by cross platform SDKs.
     ///
-    /// Set from `additionalConfiguration[appName]` by cross-platform SDKs, and from `service` on a
-    /// native app. It must not be empty: the intake rejects a request without one with 400
-    /// "App name is missing!". // ATCHG: renamed from `variant` to `appName`
+    /// The `app_name` query item on intake requests falls back to ``service`` when this is nil, so
+    /// a native app still sends one — the intake rejects a request without it with 400 "App name is
+    /// missing!". The fallback is applied in the request builders rather than here, so it reaches
+    /// the URL without adding an `app_name` tag to every event's `atTags`.
+    /// // ATCHG: renamed from `variant` to `appName`
     public let appName: String?
 
     /// Denotes the mobile application's platform, such as `"ios"` or `"flutter"` that data is generated from.
