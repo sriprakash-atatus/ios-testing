@@ -363,8 +363,9 @@ jobs:
             --scenario TracingManualInstrumentationScenario \
             --expect traces --expect logs
 
-      # No `--expect logs`: the e-commerce app calls no SDK method by hand, and the Logs product has
-      # no auto-capture, so it has no logs to report. The step above is the one that gates Logs.
+      # Neither `--expect logs` nor `--expect traces`: the e-commerce app calls no SDK method by
+      # hand, Logs has no auto-capture, and a first-party request becomes a RUM resource carrying
+      # the trace ids rather than a standalone span. See the Atatus e-commerce step for the detail.
       - name: Launch app — verify the e-commerce app reports auto-captured data
         if: env.RUN_LOCAL_VALIDATION == 'true'
         run: |
@@ -372,7 +373,52 @@ jobs:
             --mode mock \
             --label ecommerce \
             --scenario AtatusEcommerceScenario \
-            --expect rum --expect traces --expect replay
+            --expect rum --expect replay
+
+      # Reads back what the agent actually put in its RUM resources. The trace linkage lives in the
+      # payload, not in the response code, so this is the only place CI can see whether the resource
+      # carries the ids the backend needs to materialize the client span from.
+      - name: Inspect trace ids on the recorded RUM resources
+        if: env.RUN_LOCAL_VALIDATION == 'true'
+        run: |
+          set -euo pipefail
+          dump="$ARTIFACTS_DIR/intake/recorded-requests-ecommerce.json"
+          [ -f "$dump" ] || { echo "::warning::No recorded intake dump at $dump."; exit 0; }
+
+          python3 - "$dump" <<'PY'
+          import json, sys
+
+          def walk(node):
+              """The dump nests decoded bodies differently per product; find every RUM event."""
+              if isinstance(node, dict):
+                  if node.get("type") == "resource" or "resource" in node:
+                      yield node
+                  for value in node.values():
+                      yield from walk(value)
+              elif isinstance(node, list):
+                  for item in node:
+                      yield from walk(item)
+
+          events = [e for e in walk(json.load(open(sys.argv[1]))) if isinstance(e.get("resource"), dict)]
+          if not events:
+              print("::warning::No RUM resource events found in the dump.")
+              sys.exit(0)
+
+          linked = 0
+          for event in events:
+              resource = event["resource"]
+              url = resource.get("url", "?")
+              trace_id = resource.get("trace_id") or event.get("_dd", {}).get("trace_id")
+              span_id = resource.get("span_id") or event.get("_dd", {}).get("span_id")
+              linked += bool(trace_id and span_id)
+              print(f"  {resource.get('method','?'):6} {url[:60]:60} trace_id={trace_id} span_id={span_id}")
+
+          print(f"{linked}/{len(events)} resource(s) carry both trace_id and span_id.")
+          if linked == 0:
+              print("::warning::No RUM resource carries trace ids. The backend has nothing to "
+                    "materialize the mobile client span from, so the backend transaction will "
+                    "appear as its own trace with no mobile parent.")
+          PY
 
       # Phase 1b: the XCUITest suite. Real taps and real requests drive the app, and every
       # assertion runs against the payloads the agent actually uploaded.
