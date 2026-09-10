@@ -31,7 +31,8 @@ final class RUMNavigationControllerScenario: TestScenario {
 
     private class Predicate: UIKitRUMViewsPredicate {
         func rumView(for viewController: UIViewController) -> RUMView? {
-            switch viewController.accessibilityLabel {
+            let label = viewController.accessibilityLabel ?? viewController.title ?? viewController.navigationItem.title
+            switch label {
             case "Screen 1":
                 return .init(name: "Screen1")
             case "Screen 2":
