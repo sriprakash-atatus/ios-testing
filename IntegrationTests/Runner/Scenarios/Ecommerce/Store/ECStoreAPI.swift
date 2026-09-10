@@ -14,6 +14,7 @@ import AtatusRUM
 import AtatusLogs
 
 final class ECStoreAPI {
+    private lazy var logger: LoggerProtocol = Logger.create()
     /// The store's backend — the local Node server (`local server/server.js`), which serves
     /// `/api/store/*` and runs the Atatus Node APM agent. Each call the app makes is therefore
     /// recorded twice: by the iOS agent as a RUM resource and client span, and by the Node agent as

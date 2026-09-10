@@ -40,20 +40,27 @@ import AtatusSessionReplay
 
 struct EcommerceUIKitRUMViewsPredicate: UIKitRUMViewsPredicate {
     func rumView(for viewController: UIViewController) -> RUMView? {
+        var view: RUMView?
         switch viewController {
         case is ECProductListViewController:
-            return RUMView(name: "Product Catalog", path: "ECProductListViewController")
+            view = RUMView(name: "Product Catalog")
+            view?.path = "ECProductListViewController"
         case is ECProductDetailViewController:
-            return RUMView(name: "Product Details", path: "ECProductDetailViewController")
+            view = RUMView(name: "Product Details")
+            view?.path = "ECProductDetailViewController"
         case is ECCartViewController:
-            return RUMView(name: "Cart", path: "ECCartViewController")
+            view = RUMView(name: "Cart")
+            view?.path = "ECCartViewController"
         case is ECCheckoutViewController:
-            return RUMView(name: "Checkout", path: "ECCheckoutViewController")
+            view = RUMView(name: "Checkout")
+            view?.path = "ECCheckoutViewController"
         case is ECOrderConfirmationViewController:
-            return RUMView(name: "Order Confirmation", path: "ECOrderConfirmationViewController")
+            view = RUMView(name: "Order Confirmation")
+            view?.path = "ECOrderConfirmationViewController"
         default:
             return DefaultUIKitRUMViewsPredicate().rumView(for: viewController)
         }
+        return view
     }
 }
 
