@@ -5,7 +5,7 @@ DEVELOPMENT_TEAM[sdk=iphoneos*]=// use your own Development Team
 
 // Atatus secrets for running Example app (manual tests, integration tests, benchmarks)
 RUM_APPLICATION_ID=// use your own RUM Application ID obtained on atatus.com
-ATATUS_LICENSE_KEY=// use your own Client Token, generated for RUM_APPLICATION_ID
+ATATUS_LICENSE_KEY=lic_apm_d136654653824da88d842015a8b4c3cc
 
 CUSTOM_LOGS_URL=// Do NOT add https! example: foo.com/api/v2/logs
 CUSTOM_TRACE_URL=// Do NOT add https! example: foo.com/api/v2/spans
