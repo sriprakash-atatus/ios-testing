@@ -38,8 +38,31 @@ import AtatusRUM
 import AtatusTrace
 import AtatusSessionReplay
 
+struct EcommerceUIKitRUMViewsPredicate: UIKitRUMViewsPredicate {
+    func rumView(for viewController: UIViewController) -> RUMView? {
+        switch viewController {
+        case is ECProductListViewController:
+            return RUMView(name: "Product Catalog", path: "ECProductListViewController")
+        case is ECProductDetailViewController:
+            return RUMView(name: "Product Details", path: "ECProductDetailViewController")
+        case is ECCartViewController:
+            return RUMView(name: "Cart", path: "ECCartViewController")
+        case is ECCheckoutViewController:
+            return RUMView(name: "Checkout", path: "ECCheckoutViewController")
+        case is ECOrderConfirmationViewController:
+            return RUMView(name: "Order Confirmation", path: "ECOrderConfirmationViewController")
+        default:
+            return DefaultUIKitRUMViewsPredicate().rumView(for: viewController)
+        }
+    }
+}
+
 final class AtatusEcommerceScenario: TestScenario {
     static let storyboardName = "AtatusEcommerceScenario"
+
+    func override(configuration: inout Atatus.Configuration) {
+        configuration.version = "2.0.0"
+    }
 
     func configureFeatures() {
         // The store's backend. Declaring it first party is what gets trace headers onto the shop's
@@ -47,7 +70,7 @@ final class AtatusEcommerceScenario: TestScenario {
         let firstPartyHosts: Set<String> = ECStoreAPI.host.isEmpty ? [] : [ECStoreAPI.host]
 
         var rum = RUM.Configuration(applicationID: Environment.rumApplicationID())
-        rum.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+        rum.uiKitViewsPredicate = EcommerceUIKitRUMViewsPredicate()
         rum.uiKitActionsPredicate = DefaultUIKitRUMActionsPredicate()
         var urlSessionTracking = RUM.Configuration.URLSessionTracking()
         if !firstPartyHosts.isEmpty {
@@ -58,7 +81,7 @@ final class AtatusEcommerceScenario: TestScenario {
         rum.trackBackgroundEvents = true
         rum.appHangThreshold = 0.25
         rum.vitalsUpdateFrequency = .frequent
-        rum.telemetrySampleRate = 100
+        rum.telemetrySampleRate = 0
         rum.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
         RUM.enable(with: rum)
 

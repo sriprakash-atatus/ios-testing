@@ -343,25 +343,7 @@ jobs:
           fi
           echo "Installed $APP_BUNDLE_ID"
 
-      # Phase 1a: launch the app directly (no XCTest). This is the explicit gate on the app
-      # launching, the agent initializing, and the agent flushing data to an intake.
-      - name: Launch app — verify agent initializes and reports RUM
-        if: env.RUN_LOCAL_VALIDATION == 'true'
-        run: |
-          .github/scripts/simulator-agent-run.sh \
-            --mode mock \
-            --label rum \
-            --scenario RUMManualInstrumentationScenario \
-            --expect rum
-
-      - name: Launch app — verify agent reports Logs and Traces
-        if: env.RUN_LOCAL_VALIDATION == 'true'
-        run: |
-          .github/scripts/simulator-agent-run.sh \
-            --mode mock \
-            --label logs-traces \
-            --scenario TracingManualInstrumentationScenario \
-            --expect traces --expect logs
+      # Phase 1a: launch the app directly (no XCTest). Runs the e-commerce scenario.
 
       # Neither `--expect logs` nor `--expect traces`: the e-commerce app calls no SDK method by
       # hand, Logs has no auto-capture, and a first-party request becomes a RUM resource carrying

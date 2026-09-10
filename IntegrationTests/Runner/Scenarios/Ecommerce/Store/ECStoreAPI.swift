@@ -11,8 +11,10 @@
 import Foundation
 // `URLSessionInstrumentation` is re-exported by AtatusRUM (and AtatusTrace), not by AtatusCore.
 import AtatusRUM
+import AtatusLogs
 
 final class ECStoreAPI {
+    private let logger = Logs.createLogger(with: Logs.LoggerConfiguration())
     /// The store's backend — the local Node server (`local server/server.js`), which serves
     /// `/api/store/*` and runs the Atatus Node APM agent. Each call the app makes is therefore
     /// recorded twice: by the iOS agent as a RUM resource and client span, and by the Node agent as
@@ -75,7 +77,13 @@ final class ECStoreAPI {
     /// run captures a genuinely failed request — an errored resource and span on the app side, an
     /// errored transaction on the backend — without the store reporting an error itself.
     func authorizePayment(amount: Double, attempt: Int, completion: @escaping (Bool) -> Void) {
-        post("/api/store/payments/authorize", body: ["amount": amount, "currency": "USD", "attempt": attempt]) { _, succeeded in
+        logger.info("Authorizing payment attempt \(attempt) for amount: \(amount)")
+        post("/api/store/payments/authorize", body: ["amount": amount, "currency": "USD", "attempt": attempt]) { [weak self] _, succeeded in
+            if succeeded {
+                self?.logger.info("Payment authorized successfully")
+            } else {
+                self?.logger.error("Payment authorization failed on attempt \(attempt)")
+            }
             completion(succeeded)
         }
     }
@@ -83,14 +91,16 @@ final class ECStoreAPI {
     /// Creates the order and returns the reference the backend assigned it.
     func placeOrder(lines: [ECCartLine], completion: @escaping (String?) -> Void) {
         let products = lines.map { ["productId": $0.product.id, "quantity": $0.quantity] }
-        post("/api/store/orders", body: ["products": products]) { data, succeeded in
+        post("/api/store/orders", body: ["products": products]) { [weak self] data, succeeded in
             guard succeeded,
                   let data = data,
                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let reference = json["reference"] as? String else {
+                self?.logger.error("Order creation failed")
                 completion(nil)
                 return
             }
+            self?.logger.info("Order placed successfully with reference: \(reference)")
             completion(reference)
         }
     }
@@ -110,9 +120,16 @@ final class ECStoreAPI {
     }
 
     private func send(_ request: URLRequest, completion: @escaping (Data?, Bool) -> Void) {
-        session.dataTask(with: request) { data, response, _ in
+        var mutableRequest = request
+        mutableRequest.setValue("true", forHTTPHeaderField: "ngrok-skip-browser-warning")
+        session.dataTask(with: mutableRequest) { data, response, error in
             let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
             let succeeded = (200..<400).contains(statusCode)
+            if let error = error {
+                print("[ECStoreAPI] Network request error for \(mutableRequest.url?.absoluteString ?? ""): \(error)")
+            } else if !succeeded {
+                print("[ECStoreAPI] Network request failed with status \(statusCode) for \(mutableRequest.url?.absoluteString ?? "")")
+            }
             // Back to the main queue: every caller updates the UI with the result.
             DispatchQueue.main.async {
                 completion(succeeded ? data : nil, succeeded)

@@ -77,7 +77,7 @@ final class AtatusDemoScenario: TestScenario {
         }
 
         var rum = RUM.Configuration(applicationID: Environment.rumApplicationID())
-        rum.telemetrySampleRate = 100
+        rum.telemetrySampleRate = 0
         if !tracedHosts.isEmpty {
             rum.urlSessionTracking = .init(
                 firstPartyHostsTracing: .trace(hosts: tracedHosts, sampleRate: 100)
