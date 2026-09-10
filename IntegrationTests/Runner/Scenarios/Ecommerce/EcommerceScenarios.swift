@@ -108,6 +108,11 @@ final class AtatusEcommerceScenario: TestScenario {
 
         var trace = Trace.Configuration(sampleRate: 100)
         trace.networkInfoEnabled = true
+        if !firstPartyHosts.isEmpty {
+            trace.urlSessionTracking = Trace.Configuration.URLSessionTracking(
+                firstPartyHostsTracing: .trace(hosts: firstPartyHosts, sampleRate: 100)
+            )
+        }
         trace.customEndpoint = Environment.serverMockConfiguration()?.tracesEndpoint
         Trace.enable(with: trace)
 
