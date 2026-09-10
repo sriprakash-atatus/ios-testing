@@ -48,7 +48,7 @@ private class DebugRUMSessionViewModel: ObservableObject {
 
     @Published var logMessage: String = ""
     @Published var spanOperationName: String = ""
-    @Published var instrumentedRequestURL: String = "https://api.shopist.io/checkout.json"
+    @Published var instrumentedRequestURL: String = "http://10.40.31.91:4000/fast"
 
     var urlSessions: [URLSession] = []
 

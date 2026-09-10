@@ -90,7 +90,9 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
                         hostsWithHeaders: [
                             "api.shopist.io": [.atatus],
                             "demo.atatus.com": [.atatus, .traceContext],
-                            "10.40.31.91": [.atatus, .traceContext]
+                            "10.40.31.91": [.atatus, .traceContext],
+                            "localhost": [.atatus, .traceContext],
+                            "127.0.0.1": [.atatus, .traceContext]
                         ],
                         sampleRate: 100
                     ),
