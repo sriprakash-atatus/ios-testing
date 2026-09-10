@@ -82,6 +82,7 @@ public enum AgentHeartbeat {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.timeoutInterval = timeout
+        request.setValue(configuration.licenseKey, forHTTPHeaderField: URLRequestBuilder.HTTPHeader.atAPIKeyHeaderField)
 
         session.dataTask(with: request) { data, response, error in
             if let error = error {

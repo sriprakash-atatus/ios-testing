@@ -90,6 +90,12 @@ final class AtatusEcommerceScenario: TestScenario {
         rum.vitalsUpdateFrequency = .frequent
         rum.telemetrySampleRate = 0
         rum.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        rum.resourceEventMapper = { resourceEvent in
+            if resourceEvent.resource.url.contains("heart-beat") || resourceEvent.resource.url.contains("agent-heartbeat") {
+                return nil
+            }
+            return resourceEvent
+        }
         RUM.enable(with: rum)
 
         // Enabled so the feature is initialized as a real app would have it. This scenario writes no

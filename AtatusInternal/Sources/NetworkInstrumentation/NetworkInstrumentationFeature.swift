@@ -378,13 +378,15 @@ extension NetworkInstrumentationFeature {
     /// - Parameter request: The URLRequest to check.
     /// - Returns: `true` if the request is an SDK internal request, `false` otherwise.
     private func hasAtatusAuthHeader(request: URLRequest?) -> Bool {
-        // Atatus internal requests authenticate with either `api-key` or `atatus-client-token`.
-        // This catches both this SDK's own uploads (preventing recursion) and other Atatus
-        // tooling that may run in the same process (e.g. `ddSDKTesting`'s CI Visibility
-        // uploader, which would otherwise pollute interception expectations via the global
-        // `__NSCFLocalSessionTask.resume` swizzle in tests).
-        return request?.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.atAPIKeyHeaderField) != nil
-            || request?.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.atClientTokenHeaderField) != nil
+        guard let request = request else { return false }
+        if request.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.atAPIKeyHeaderField) != nil
+            || request.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.atClientTokenHeaderField) != nil {
+            return true
+        }
+        if let path = request.url?.path, path.contains("heart-beat") || path.contains("agent-heartbeat") {
+            return true
+        }
+        return false
     }
 
     /// Helper structure that optionally contains a trace context and captured state, used to pass this
