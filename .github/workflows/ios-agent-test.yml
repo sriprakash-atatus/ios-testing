@@ -39,11 +39,6 @@ name: iOS Agent Test
 #      NOT verified here and must be checked by a human.
 
 on:
-  push:
-    branches:
-      - main
-      - develop
-      - "ci/**"
   workflow_dispatch:
     inputs:
       test_plan:
@@ -84,7 +79,7 @@ on:
       - ".github/workflows/ios-agent-test.yml"
       - ".github/scripts/**"
   push:
-    branches: [master, develop]
+    branches: [master, main, develop, "ci/**"]
     paths:
       - "Atatus*/**"
       - "IntegrationTests/**"
