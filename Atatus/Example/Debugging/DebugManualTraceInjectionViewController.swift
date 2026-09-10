@@ -44,7 +44,7 @@ internal struct DebugManualTraceInjectionView: View {
     }
 
     @State private var spanName = "network request"
-    @State private var requestURL = "https://httpbin.org/get"
+    @State private var requestURL = "http://10.40.31.91:4000/trace"
     @State private var selectedTraceHeaderTypes: Set<TraceHeaderType> = [.atatus, .w3c]
     @State private var selectedTraceContextInjection: TraceContextInjection = .sampled
     @State private var isRequestPending = false

@@ -41,10 +41,13 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         }
 
         // Initialize Atatus SDK
+        // Point telemetry at the local backend so uploads land on localhost:4000
+        // instead of the Atatus cloud. The backend must be running (`npm start`).
         Atatus.initialize(
             with: Atatus.Configuration(
                 licenseKey: Environment.readClientToken(),
                 env: "tests",
+                serverUrl: "http://10.40.31.91:4000",
                 service: serviceName,
                 batchSize: .small,
                 uploadFrequency: .frequent
@@ -85,7 +88,13 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
             with: RUM.Configuration(
                 applicationID: Environment.readRUMApplicationID(),
                 urlSessionTracking: .init(
-                    firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: ["api.shopist.io": [.atatus]],sampleRate: 100),
+                    firstPartyHostsTracing: .traceWithHeaders(
+                        hostsWithHeaders: [
+                            "api.shopist.io": [.atatus],
+                            "10.40.31.91": [.atatus, .traceContext]
+                        ],
+                        sampleRate: 100
+                    ),
                     resourceAttributesProvider: { req, resp, data, err in
                         print("⭐️ [Attributes Provider] data: \(String(describing: data))")
                         return [:]
