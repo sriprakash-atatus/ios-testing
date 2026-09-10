@@ -391,7 +391,7 @@ jobs:
 
           backend="$ARTIFACTS_DIR/intake/store-traceparents-mock.json"
           if [ -n "${AT_TEST_STORE_API_URL:-}" ]; then
-            curl -s --max-time 30 -H 'ngrok-skip-browser-warning: 1' \
+            curl -sf --max-time 30 -H 'ngrok-skip-browser-warning: 1' \
               "$AT_TEST_STORE_API_URL/api/store/traceparents" -o "$backend" || true
           fi
 
@@ -441,7 +441,12 @@ jobs:
                     "be correlated. The mobile half is well-formed.")
               sys.exit(0)
 
-          seen = set(json.load(open(backend_path)).get("traceIds", []))
+          try:
+              seen = set(json.load(open(backend_path)).get("traceIds", []))
+          except Exception as err:
+              print(f"::warning::The backend's traceparents at {backend_path} could not be parsed as JSON ({err}). "
+                    "The mobile half is well-formed.")
+              sys.exit(0)
           matched = [t for t in mobile if t in seen]
           print(f"\nBackend recorded {len(seen)} trace id(s); "
                 f"{len(matched)}/{linked} mobile trace id(s) match one.")
