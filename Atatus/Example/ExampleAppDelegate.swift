@@ -77,6 +77,18 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
             with: Trace.Configuration(
                 tags: ["testing-tag": "my-value"], 
                 networkInfoEnabled: true,
+                urlSessionTracking: .init(
+                    firstPartyHostsTracing: .traceWithHeaders(
+                        hostsWithHeaders: [
+                            "api.shopist.io": [.atatus],
+                            "demo.atatus.com": [.atatus, .traceContext],
+                            "10.40.31.91": [.atatus, .traceContext],
+                            "localhost": [.atatus, .traceContext],
+                            "127.0.0.1": [.atatus, .traceContext]
+                        ],
+                        sampleRate: 100
+                    )
+                ),
                 customEndpoint: Environment.readCustomTraceURL()
             )
         )
