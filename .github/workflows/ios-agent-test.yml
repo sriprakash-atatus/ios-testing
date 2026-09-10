@@ -39,6 +39,11 @@ name: iOS Agent Test
 #      NOT verified here and must be checked by a human.
 
 on:
+  push:
+    branches:
+      - main
+      - develop
+      - "ci/**"
   workflow_dispatch:
     inputs:
       test_plan:
