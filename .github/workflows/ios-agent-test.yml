@@ -132,7 +132,7 @@ jobs:
       # local server — an ngrok tunnel to port 3000. Set the `ATATUS_STORE_API_URL` repository
       # variable to it. Left unset, the store calls fail and the funnel still reports everything
       # except the backend half of the trace; the step below says so rather than failing the run.
-      AT_TEST_STORE_API_URL: ${{ vars.ATATUS_STORE_API_URL }}
+      AT_TEST_STORE_API_URL: ${{ vars.ATATUS_STORE_API_URL || 'https://wrought-author-whinny.ngrok-free.dev' }}
 
     steps:
       - name: Checkout

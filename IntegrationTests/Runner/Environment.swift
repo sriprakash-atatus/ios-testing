@@ -127,7 +127,7 @@ internal struct Environment {
         static let defaultEnv = "integration"
         /// The local Node server (`local server/server.js`) on its default port, used when neither
         /// `AT_TEST_STORE_API_URL` nor `ATATUS_SERVER_URL` is set.
-        static let defaultStoreAPIURL = URL(string: "http://localhost:4000")!
+        static let defaultStoreAPIURL = URL(string: "https://wrought-author-whinny.ngrok-free.dev")!
     }
     struct InfoPlistKey {
         static let licenseKey      = "AtatusClientToken"
