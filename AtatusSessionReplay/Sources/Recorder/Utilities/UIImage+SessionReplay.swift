@@ -110,7 +110,12 @@ extension AtatusExtension where ExtendedType: UIImage {
     private func png(image: UIImage, maxSize: CGSize, tintColor: UIColor?) -> Data? {
         let ratio = max(1, image.size.width / maxSize.width, image.size.height / maxSize.height)
 
-        guard tintColor != nil || ratio > 1 else {
+        var hasCGImage = false
+        if let _ = image.cgImage {
+            hasCGImage = true
+        }
+
+        guard tintColor != nil || ratio > 1 || !hasCGImage else {
             return image.pngData()
         }
 
@@ -127,9 +132,10 @@ extension AtatusExtension where ExtendedType: UIImage {
             if let tintColor = tintColor {
                 tintColor.setFill()
                 context.fill(rect)
+                image.draw(in: rect, blendMode: .destinationIn, alpha: 1.0)
+            } else {
+                image.draw(in: rect)
             }
-
-            image.draw(in: rect, blendMode: .destinationIn, alpha: 1.0)
         }
     }
 }

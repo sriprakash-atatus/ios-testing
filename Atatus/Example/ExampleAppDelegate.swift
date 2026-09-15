@@ -15,6 +15,7 @@ import AtatusLogs
 import AtatusTrace
 import AtatusRUM
 import AtatusCrashReporting
+import AtatusSessionReplay
 import OpenTelemetryApi
 
 let serviceName = "ios-sdk-example-app"
@@ -119,6 +120,13 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
             )
         )
         RUMMonitor.shared().debug = true
+
+        // Enable Session Replay
+        SessionReplay.enable(
+            with: SessionReplay.Configuration(
+                imagePrivacyLevel: .maskNone
+            )
+        )
 
         URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: DummySessionDataDelegate.self))
 
