@@ -55,7 +55,10 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         )
 
         // Set user information
-        Atatus.setUserInfo(id: "abcd-1234", name: "foo", email: "foo@example.com", extraInfo: ["key-extraUserInfo": "value-extraUserInfo"])
+        Atatus.setUserInfo(id: "abcd-1234",
+        name: "foo", 
+        email: "foo@example.com", 
+        extraInfo: ["key-extraUserInfo": "value-extraUserInfo"])
 
         // Set account information
         Atatus.setAccountInfo(id: "account-1234", name: "account-US")

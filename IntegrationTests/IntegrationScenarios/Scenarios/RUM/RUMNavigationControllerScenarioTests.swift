@@ -25,8 +25,8 @@ private extension ExampleApplication {
 
     func swipeInteractiveBackGesture() {
         let coordinate1 = coordinate(withNormalizedOffset: .init(dx: 0, dy: 0.5))
-        let coordinate2 = coordinate(withNormalizedOffset: .init(dx: 0.80, dy: 0.5))
-        coordinate1.press(forDuration: 0.5, thenDragTo: coordinate2)
+        let coordinate2 = coordinate(withNormalizedOffset: .init(dx: 0.90, dy: 0.5))
+        coordinate1.press(forDuration: 0.1, thenDragTo: coordinate2)
     }
 }
 
