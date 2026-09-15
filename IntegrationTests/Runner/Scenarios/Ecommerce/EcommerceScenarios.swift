@@ -6,6 +6,12 @@
 
 // ATCHG: An e-commerce app built on the agent, used by `.github/workflows/ios-agent-test.yml`.
 //
+// FlipShop, a marketplace laid out the way Indian shopping apps are: a home feed with search,
+// categories, offer banners and deals; search with autocomplete; sortable listings; product pages
+// with offers, a pincode delivery check and a wishlist; a cart with quantity steppers and a price
+// breakdown off the MRP; a delivery address step; UPI / card / net banking / cash on delivery
+// payment; and an order confirmation with a tracking timeline. Prices are in rupees.
+//
 // The other scenarios call the SDK's manual APIs. This one calls none of them: the store's own code
 // (`Scenarios/Ecommerce/Store`) has no SDK imports at all beyond the instrumented `URLSession` it
 // creates. Everything that reaches the intake is captured by the agent on its own —
@@ -42,17 +48,29 @@ struct EcommerceUIKitRUMViewsPredicate: UIKitRUMViewsPredicate {
     func rumView(for viewController: UIViewController) -> RUMView? {
         var view: RUMView?
         switch viewController {
+        case is ECHomeViewController:
+            view = RUMView(name: "Home")
+            view?.path = "ECHomeViewController"
+        case is ECSearchViewController:
+            view = RUMView(name: "Search")
+            view?.path = "ECSearchViewController"
         case is ECProductListViewController:
-            view = RUMView(name: "Product Catalog")
+            view = RUMView(name: "Product Listing")
             view?.path = "ECProductListViewController"
         case is ECProductDetailViewController:
             view = RUMView(name: "Product Details")
             view?.path = "ECProductDetailViewController"
+        case is ECWishlistViewController:
+            view = RUMView(name: "Wishlist")
+            view?.path = "ECWishlistViewController"
         case is ECCartViewController:
             view = RUMView(name: "Cart")
             view?.path = "ECCartViewController"
+        case is ECAddressViewController:
+            view = RUMView(name: "Delivery Address")
+            view?.path = "ECAddressViewController"
         case is ECCheckoutViewController:
-            view = RUMView(name: "Checkout")
+            view = RUMView(name: "Payment")
             view?.path = "ECCheckoutViewController"
         case is ECOrderConfirmationViewController:
             view = RUMView(name: "Order Confirmation")

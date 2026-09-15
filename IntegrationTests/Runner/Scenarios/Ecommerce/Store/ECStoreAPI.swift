@@ -7,11 +7,20 @@
 // ATCHG: The store's backend calls. Real `URLSession` requests through an instrumented session, so
 // the agent captures them itself as RUM resources and network spans — the store never reports a
 // resource or a span by hand.
+//
+// Every read falls back to the bundled catalog when its request fails, so the funnel walks to the
+// end against an offline or older backend too — the failed requests are then what gets captured.
 
 import Foundation
 // `URLSessionInstrumentation` is re-exported by AtatusRUM (and AtatusTrace), not by AtatusCore.
 import AtatusRUM
 import AtatusLogs
+
+/// What the backend answers when it creates an order.
+struct ECOrderReceipt: Decodable {
+    let reference: String
+    let deliveryDays: Int?
+}
 
 final class ECStoreAPI {
     private lazy var logger: LoggerProtocol = Logger.create()
@@ -43,42 +52,128 @@ final class ECStoreAPI {
         )
     }
 
+    // MARK: - Home
+
+    func loadCategories(completion: @escaping ([ECCategory]) -> Void) {
+        get("/api/store/categories") { data in
+            completion(Self.decode([ECCategory].self, from: data) ?? ECCatalog.categories)
+        }
+    }
+
+    func loadOffers(completion: @escaping ([ECOffer]) -> Void) {
+        get("/api/store/offers") { data in
+            completion(Self.decode([ECOffer].self, from: data) ?? ECCatalog.offers)
+        }
+    }
+
+    /// The home screen's "Deals of the Day": the catalog's biggest discounts.
+    func loadDeals(completion: @escaping ([ECProduct]) -> Void) {
+        let query = [URLQueryItem(name: "limit", value: "6"), URLQueryItem(name: "sort", value: ECSortOrder.discount.rawValue)]
+        get("/api/store/products", query: query) { data in
+            completion(Self.decode([ECProduct].self, from: data) ?? ECSortOrder.discount.sorted(ECCatalog.fallback))
+        }
+    }
+
     // MARK: - Catalog
 
-    /// Loads the catalog, falling back to the bundled products when the request fails so an offline
-    /// runner still has screens to walk through.
-    func loadCatalog(completion: @escaping ([ECProduct]) -> Void) {
-        get("/api/store/products?limit=5") { data in
-            guard let data = data,
-                  let products = try? JSONDecoder().decode([ECProduct].self, from: data),
-                  !products.isEmpty else {
-                completion(ECCatalog.fallback)
-                return
-            }
-            completion(products)
+    func loadProducts(category: String, sort: ECSortOrder, completion: @escaping ([ECProduct]) -> Void) {
+        let query = [URLQueryItem(name: "category", value: category), URLQueryItem(name: "sort", value: sort.rawValue)]
+        get("/api/store/products", query: query) { data in
+            completion(Self.decode([ECProduct].self, from: data) ?? sort.sorted(ECCatalog.products(in: category)))
         }
     }
 
     func loadProduct(id: Int, completion: @escaping (ECProduct?) -> Void) {
         get("/api/store/products/\(id)") { data in
-            completion(data.flatMap { try? JSONDecoder().decode(ECProduct.self, from: $0) })
+            completion(Self.decode(ECProduct.self, from: data))
         }
     }
 
-    // MARK: - Cart and orders
+    // MARK: - Search
+
+    func search(query: String, sort: ECSortOrder, completion: @escaping ([ECProduct]) -> Void) {
+        let items = [URLQueryItem(name: "q", value: query), URLQueryItem(name: "sort", value: sort.rawValue)]
+        get("/api/store/search", query: items) { data in
+            completion(Self.decode([ECProduct].self, from: data) ?? sort.sorted(ECCatalog.search(query)))
+        }
+    }
+
+    /// Autocomplete for the search box.
+    func loadSuggestions(query: String, completion: @escaping ([String]) -> Void) {
+        get("/api/store/search/suggestions", query: [URLQueryItem(name: "q", value: query)]) { data in
+            let fallback = ECCatalog.search(query).prefix(5).map { $0.title.lowercased() }
+            completion(Self.decode([String].self, from: data) ?? fallback)
+        }
+    }
+
+    // MARK: - Delivery
+
+    /// Checks whether `productID` ships to `pincode`. The backend answers 400 for a malformed pincode,
+    /// which reaches the completion as `nil`.
+    func checkDelivery(pincode: String, productID: Int, completion: @escaping (ECDeliveryEstimate?) -> Void) {
+        let query = [URLQueryItem(name: "pincode", value: pincode), URLQueryItem(name: "productId", value: "\(productID)")]
+        get("/api/store/delivery", query: query) { data in
+            completion(Self.decode(ECDeliveryEstimate.self, from: data))
+        }
+    }
+
+    // MARK: - Cart and wishlist
 
     func addToCart(productID: Int, quantity: Int, completion: @escaping () -> Void) {
-        post("/api/store/cart/items", body: ["productId": productID, "quantity": quantity]) { _, _ in
+        send("POST", "/api/store/cart/items", body: ["productId": productID, "quantity": quantity]) { _, _ in
             completion()
+        }
+    }
+
+    func updateCartItem(productID: Int, quantity: Int, completion: @escaping () -> Void) {
+        send("PUT", "/api/store/cart/items/\(productID)", body: ["quantity": quantity]) { _, _ in
+            completion()
+        }
+    }
+
+    func removeFromCart(productID: Int, completion: @escaping () -> Void) {
+        send("DELETE", "/api/store/cart/items/\(productID)") { _, _ in
+            completion()
+        }
+    }
+
+    func addToWishlist(productID: Int, completion: @escaping () -> Void) {
+        send("POST", "/api/store/wishlist/items", body: ["productId": productID]) { _, _ in
+            completion()
+        }
+    }
+
+    func removeFromWishlist(productID: Int, completion: @escaping () -> Void) {
+        send("DELETE", "/api/store/wishlist/items/\(productID)") { _, _ in
+            completion()
+        }
+    }
+
+    // MARK: - Checkout
+
+    /// Saves the delivery address. A rejected address still lets the order go ahead — the store keeps
+    /// the address locally either way — so the completion only reports whether the backend took it.
+    func saveAddress(_ address: ECAddress, completion: @escaping (Bool) -> Void) {
+        let body: [String: Any] = [
+            "name": address.name,
+            "phone": address.phone,
+            "pincode": address.pincode,
+            "line": address.line,
+            "city": address.city,
+            "type": address.type
+        ]
+        send("POST", "/api/store/addresses", body: body) { _, succeeded in
+            completion(succeeded)
         }
     }
 
     /// Authorises the payment. The server declines attempt 1 with a 502 and accepts the retry, so the
     /// run captures a genuinely failed request — an errored resource and span on the app side, an
     /// errored transaction on the backend — without the store reporting an error itself.
-    func authorizePayment(amount: Double, attempt: Int, completion: @escaping (Bool) -> Void) {
-        logger.info("Authorizing payment attempt \(attempt) for amount: \(amount)")
-        post("/api/store/payments/authorize", body: ["amount": amount, "currency": "USD", "attempt": attempt]) { [weak self] _, succeeded in
+    func authorizePayment(amount: Double, method: ECPaymentMethod, attempt: Int, completion: @escaping (Bool) -> Void) {
+        logger.info("Authorizing \(method.rawValue) payment attempt \(attempt) for amount: \(amount)")
+        let body: [String: Any] = ["amount": amount, "currency": "INR", "method": method.rawValue, "attempt": attempt]
+        send("POST", "/api/store/payments/authorize", body: body) { [weak self] _, succeeded in
             if succeeded {
                 self?.logger.info("Payment authorized successfully")
             } else {
@@ -88,34 +183,59 @@ final class ECStoreAPI {
         }
     }
 
-    /// Creates the order and returns the reference the backend assigned it.
-    func placeOrder(lines: [ECCartLine], completion: @escaping (String?) -> Void) {
+    /// Creates the order and returns the receipt the backend assigned it.
+    func placeOrder(lines: [ECCartLine], address: ECAddress, paymentMethod: ECPaymentMethod, completion: @escaping (ECOrderReceipt?) -> Void) {
         let products = lines.map { ["productId": $0.product.id, "quantity": $0.quantity] }
-        post("/api/store/orders", body: ["products": products]) { [weak self] data, succeeded in
-            guard succeeded,
-                  let data = data,
-                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                  let reference = json["reference"] as? String else {
+        let body: [String: Any] = ["products": products, "pincode": address.pincode, "paymentMethod": paymentMethod.rawValue]
+        send("POST", "/api/store/orders", body: body) { [weak self] data, succeeded in
+            guard succeeded, let receipt = Self.decode(ECOrderReceipt.self, from: data) else {
                 self?.logger.error("Order creation failed")
                 completion(nil)
                 return
             }
-            self?.logger.info("Order placed successfully with reference: \(reference)")
-            completion(reference)
+            self?.logger.info("Order placed successfully with reference: \(receipt.reference)")
+            completion(receipt)
         }
+    }
+
+    private struct TrackingResponse: Decodable {
+        let steps: [ECTrackingStep]
+    }
+
+    func loadTracking(reference: String, deliveryDays: Int, completion: @escaping ([ECTrackingStep]) -> Void) {
+        get("/api/store/orders/\(reference)/tracking") { data in
+            completion(Self.decode(TrackingResponse.self, from: data)?.steps ?? Self.fallbackTracking(deliveryDays: deliveryDays))
+        }
+    }
+
+    /// The timeline a just-placed order has: ordered, and everything after it still to come.
+    private static func fallbackTracking(deliveryDays: Int) -> [ECTrackingStep] {
+        [
+            ECTrackingStep(title: "Order Confirmed", detail: "Today", isComplete: true),
+            ECTrackingStep(title: "Packed", detail: "Expected by tomorrow", isComplete: false),
+            ECTrackingStep(title: "Shipped", detail: "Expected by \(ECDates.deliveryDate(inDays: max(deliveryDays - 2, 1)))", isComplete: false),
+            ECTrackingStep(title: "Out for Delivery", detail: "Expected by \(ECDates.deliveryDate(inDays: deliveryDays))", isComplete: false),
+            ECTrackingStep(title: "Delivered", detail: "Expected by \(ECDates.deliveryDate(inDays: deliveryDays))", isComplete: false)
+        ]
     }
 
     // MARK: - Transport
 
-    private func get(_ path: String, completion: @escaping (Data?) -> Void) {
-        send(URLRequest(url: url(path))) { data, _ in completion(data) }
+    private static func decode<T: Decodable>(_ type: T.Type, from data: Data?) -> T? {
+        data.flatMap { try? JSONDecoder().decode(type, from: $0) }
     }
 
-    private func post(_ path: String, body: [String: Any], completion: @escaping (Data?, Bool) -> Void) {
+    private func get(_ path: String, query: [URLQueryItem] = [], completion: @escaping (Data?) -> Void) {
+        send(URLRequest(url: url(path, query: query))) { data, _ in completion(data) }
+    }
+
+    private func send(_ method: String, _ path: String, body: [String: Any]? = nil, completion: @escaping (Data?, Bool) -> Void) {
         var request = URLRequest(url: url(path))
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        request.httpMethod = method
+        if let body = body {
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        }
         send(request, completion: completion)
     }
 
@@ -138,7 +258,12 @@ final class ECStoreAPI {
         .resume()
     }
 
-    private func url(_ path: String) -> URL {
-        URL(string: Self.baseURL.absoluteString + path) ?? Self.baseURL
+    private func url(_ path: String, query: [URLQueryItem] = []) -> URL {
+        let url = URL(string: Self.baseURL.absoluteString + path) ?? Self.baseURL
+        guard !query.isEmpty, var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            return url
+        }
+        components.queryItems = query
+        return components.url ?? url
     }
 }

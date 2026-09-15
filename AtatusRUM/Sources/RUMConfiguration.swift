@@ -567,7 +567,7 @@ extension RUM.Configuration {
     ///   - `RUMMonitor.shared().addAction(type:name:attributes:)` for action tracking
     #if !os(watchOS)
     public init(
-        applicationID: String,
+        applicationID: String = "",
         sessionSampleRate: SampleRate = .maxSampleRate,
         uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
         uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,
@@ -627,7 +627,7 @@ extension RUM.Configuration {
     }
     #else
     public init(
-        applicationID: String,
+        applicationID: String = "",
         sessionSampleRate: SampleRate = .maxSampleRate,
         urlSessionTracking: URLSessionTracking? = nil,
         trackFrustrations: Bool = true,

@@ -96,7 +96,6 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         // Enable RUM
         RUM.enable(
             with: RUM.Configuration(
-                applicationID: Environment.readRUMApplicationID(),
                 urlSessionTracking: .init(
                     firstPartyHostsTracing: .traceWithHeaders(
                         hostsWithHeaders: [

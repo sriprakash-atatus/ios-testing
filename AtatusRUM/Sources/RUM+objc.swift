@@ -580,6 +580,15 @@ public final class objc_TrackResourceHeaders: NSObject {
 public class objc_RUMConfiguration: NSObject {
     internal var swiftConfig: AtatusRUM.RUM.Configuration
 
+    public override init() {
+        swiftConfig = .init(
+            applicationID: "",
+            networkSettledResourcePredicate: NetworkSettledResourcePredicateBridge(objcPredicate: objc_TimeBasedTNSResourcePredicate()),
+            nextViewActionPredicate: NextViewActionPredicateBridge(objcPredicate: objc_TimeBasedINVActionPredicate())
+        )
+        super.init()
+    }
+
     public init(applicationID: String) {
         swiftConfig = .init(
             applicationID: applicationID,
