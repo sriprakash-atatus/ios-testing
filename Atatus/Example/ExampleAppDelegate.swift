@@ -44,8 +44,8 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         // Initialize Atatus SDK
         Atatus.initialize(
             with: Atatus.Configuration(
-                licenseKey: "lic_apm_d136654653824da88d842015a8b4c3cc",
-                env: "tests",
+                licenseKey: "lic_apm_3c890780dd3a4acd97fab9ce6eb5b917",
+                env: "demo",
                 serverUrl: "https://demo.atatus.com",
                 service: serviceName,
                 batchSize: .small,
@@ -79,20 +79,20 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         // Enable Trace
         Trace.enable(
             with: Trace.Configuration(
-                tags: ["testing-tag": "my-value"], 
-                networkInfoEnabled: true,
+                tags: ["testing-tag": "my-value"],
                 urlSessionTracking: .init(
                     firstPartyHostsTracing: .traceWithHeaders(
                         hostsWithHeaders: [
                             "api.shopist.io": [.atatus],
-                            "demo.atatus.com": [.atatus, .traceContext],
-                            "10.40.31.91": [.atatus, .traceContext],
-                            "localhost": [.atatus, .traceContext],
-                            "127.0.0.1": [.atatus, .traceContext]
+                            "demo.atatus.com": [.atatus, .tracecontext],
+                            "10.40.31.91": [.atatus, .tracecontext],
+                            "localhost": [.atatus, .tracecontext],
+                            "127.0.0.1": [.atatus, .tracecontext]
                         ],
                         sampleRate: 100
                     )
                 ),
+                networkInfoEnabled: true,
                 customEndpoint: Environment.readCustomTraceURL()
             )
         )
@@ -104,10 +104,10 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
                     firstPartyHostsTracing: .traceWithHeaders(
                         hostsWithHeaders: [
                             "api.shopist.io": [.atatus],
-                            "demo.atatus.com": [.atatus, .traceContext],
-                            "10.40.31.91": [.atatus, .traceContext],
-                            "localhost": [.atatus, .traceContext],
-                            "127.0.0.1": [.atatus, .traceContext]
+                            "demo.atatus.com": [.atatus, .tracecontext],
+                            "10.40.31.91": [.atatus, .tracecontext],
+                            "localhost": [.atatus, .tracecontext],
+                            "127.0.0.1": [.atatus, .tracecontext]
                         ],
                         sampleRate: 100
                     ),
@@ -127,7 +127,10 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         // Enable Session Replay
         SessionReplay.enable(
             with: SessionReplay.Configuration(
-                imagePrivacyLevel: .maskNone
+                replaySampleRate: 100,
+                textAndInputPrivacyLevel: .maskSensitiveInputs,
+                imagePrivacyLevel: .maskNone,
+                touchPrivacyLevel: .show
             )
         )
 
@@ -157,7 +160,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         #endif
 
         // Launch initial screen depending on the launch configuration
-        #if os(iOS) || os(visionOS)
+        #if os(visionOS)
         let storyboard = UIStoryboard(name: "Main iOS", bundle: nil)
         launch(storyboard: storyboard)
         #endif
@@ -181,6 +184,16 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
 
+    #if os(iOS)
+    // MARK: UISceneSession Lifecycle
+
+    func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+        let configuration = UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
+        configuration.delegateClass = SceneDelegate.self
+        return configuration
+    }
+    #endif
+
     func launch(storyboard: UIStoryboard) {
         if window == nil {
             #if os(visionOS)
@@ -193,3 +206,19 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         window?.rootViewController = storyboard.instantiateInitialViewController()!
     }
 }
+
+#if os(iOS)
+class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+    var window: UIWindow?
+
+    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+        guard let windowScene = scene as? UIWindowScene else { return }
+        let window = UIWindow(windowScene: windowScene)
+        let storyboard = UIStoryboard(name: "Main iOS", bundle: nil)
+        window.rootViewController = storyboard.instantiateInitialViewController()
+        self.window = window
+        (UIApplication.shared.delegate as? ExampleAppDelegate)?.window = window
+        window.makeKeyAndVisible()
+    }
+}
+#endif
