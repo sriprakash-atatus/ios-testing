@@ -150,7 +150,10 @@ internal struct SpanEventEncoder {
 
         case origin = "meta._atatus.origin"
 
-        case ptid = "meta._atatus.p.tid"
+        // ATCHG: Renamed from `meta._atatus.p.tid` to `meta._atatus.p.id` to match `TRACE_ID_META_KEY` in the
+        // Atatus Android agent. Only the span payload key changes: the `x-atatus-tags` propagation header keeps
+        // `_atatus.p.tid` (`TracingHTTPHeaders.traceIDHi`), as Android does.
+        case ptid = "meta._atatus.p.id"
 
         case decisionMaker = "meta._atatus.p.dm"
 
@@ -190,7 +193,7 @@ internal struct SpanEventEncoder {
         // byte-for-byte what `W3CHTTPHeadersWriter` puts in `traceparent` and what backend agents
         // report for the same trace. Encoding only `idLoHex` here made the mobile span and the
         // backend span carry different `trace_id` strings, so they were indexed as two traces.
-        // The high 64 bits stay in `meta._atatus.p.tid` for backwards compatibility.
+        // The high 64 bits stay in `meta._atatus.p.id` for backwards compatibility.
         try container.encode(String(span.traceID, representation: .hexadecimal32Chars), forKey: .traceID)
         // ATCHG: Zero-pad the span IDs to 16 characters for the same reason as the trace ID above.
         // `.hexadecimal` drops leading zeros, so a span whose ID is below 2^60 - one in eight, given

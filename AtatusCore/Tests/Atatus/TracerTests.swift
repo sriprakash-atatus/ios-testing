@@ -112,7 +112,7 @@ class TracerTests: XCTestCase {
               "metrics._top_level": 1,
               "metrics._sampling_priority_v1": 1,
               "metrics._atatus.agent_psr": 1,
-              "meta._atatus.p.tid": "a",
+              "meta._atatus.p.id": "a",
               "meta._atatus.p.dm": "-1"
             }
           ],
@@ -755,7 +755,7 @@ class TracerTests: XCTestCase {
         // Then
         let rumEvent = try XCTUnwrap(core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMViewEvent.self).last)
         let spanEvent = try XCTUnwrap(core.waitAndReturnSpanEvents().first)
-        XCTAssertEqual(spanEvent.tags[SpanTags.rumApplicationID], "rum-app-id")
+        XCTAssertNil(spanEvent.tags["_atatus.application.id"], "Spans must not carry the RUM application ID")
         XCTAssertEqual(spanEvent.tags[SpanTags.rumSessionID], rumEvent.session.id)
         XCTAssertEqual(spanEvent.tags[SpanTags.rumViewID], rumEvent.view.id)
         XCTAssertNil(spanEvent.tags[SpanTags.rumActionID])
@@ -779,7 +779,7 @@ class TracerTests: XCTestCase {
             core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMActionEvent.self).first(where: { $0.action.type == .swipe })
         )
         let spanEvent = try XCTUnwrap(core.waitAndReturnSpanEvents().first)
-        XCTAssertEqual(spanEvent.tags[SpanTags.rumApplicationID], rumEvent.application.id)
+        XCTAssertNil(spanEvent.tags["_atatus.application.id"], "Spans must not carry the RUM application ID")
         XCTAssertEqual(spanEvent.tags[SpanTags.rumSessionID], rumEvent.session.id)
         XCTAssertEqual(spanEvent.tags[SpanTags.rumViewID], rumEvent.view.id)
         XCTAssertEqual(spanEvent.tags[SpanTags.rumActionID], rumEvent.action.id)
@@ -801,7 +801,7 @@ class TracerTests: XCTestCase {
         // Then
         let rumEvent = try XCTUnwrap(core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMViewEvent.self).last)
         let spanEvent = try XCTUnwrap(core.waitAndReturnSpanEvents().first)
-        XCTAssertEqual(spanEvent.tags[SpanTags.rumApplicationID], rumEvent.application.id)
+        XCTAssertNil(spanEvent.tags["_atatus.application.id"], "Spans must not carry the RUM application ID")
         XCTAssertEqual(spanEvent.tags[SpanTags.rumSessionID], rumEvent.session.id)
         XCTAssertNil(spanEvent.tags[SpanTags.rumViewID])
         XCTAssertNil(spanEvent.tags[SpanTags.rumActionID])
@@ -821,7 +821,6 @@ class TracerTests: XCTestCase {
 
         // Then
         let spanEvent = try XCTUnwrap(core.waitAndReturnSpanEvents().first)
-        XCTAssertNil(spanEvent.tags[SpanTags.rumApplicationID])
         XCTAssertNil(spanEvent.tags[SpanTags.rumSessionID])
         XCTAssertNil(spanEvent.tags[SpanTags.rumViewID])
         XCTAssertNil(spanEvent.tags[SpanTags.rumActionID])

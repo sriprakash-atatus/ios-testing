@@ -84,7 +84,7 @@ public class SpanMatcher {
     public func traceID() throws -> TraceID? {
         // ATCHG: `trace_id` now carries the full 128-bit ID. `.hexadecimal` parses both that
         // 32-character form and the legacy low-64-bits-only form, where the high half lived
-        // solely in `meta._atatus.p.tid`.
+        // solely in `meta._atatus.p.id`.
         let traceIDStr: String = try attribute(forKeyPath: "trace_id")
         guard let traceID = TraceID(traceIDStr, representation: .hexadecimal) else {
             return nil
@@ -147,7 +147,7 @@ public class SpanMatcher {
     public struct Meta {
         fileprivate let matcher: SpanMatcher
 
-        public func tid()                  throws -> String { try matcher.meta(forKeyPath: "meta._atatus.p.tid") }
+        public func tid()                  throws -> String { try matcher.meta(forKeyPath: "meta._atatus.p.id") }
         public func source()               throws -> String { try matcher.meta(forKeyPath: "meta._atatus.source") }
         public func applicationVersion()   throws -> String { try matcher.meta(forKeyPath: "meta.version") }
         public func tracerVersion()        throws -> String { try matcher.meta(forKeyPath: "meta.tracer.version") }

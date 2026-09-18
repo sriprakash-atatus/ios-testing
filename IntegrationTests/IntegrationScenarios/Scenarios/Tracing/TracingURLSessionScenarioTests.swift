@@ -65,7 +65,7 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
     ///
     /// Regression coverage: spans used to be encoded with only the low 64 bits of the trace ID, so the
     /// mobile span and the backend span for the same request carried different `trace_id` values and were
-    /// indexed as two unrelated traces. The high 64 bits were only recoverable from `meta._atatus.p.tid`.
+    /// indexed as two unrelated traces. The high 64 bits were only recoverable from `meta._atatus.p.id`.
     ///
     /// This test asserts the reported ID only. Propagation itself is unchanged and is pinned below, so a
     /// regression in either direction fails here.
@@ -120,19 +120,19 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
             "`trace_id` must be the 128-bit ID as 32 lowercase hex characters, got '\(reportedTraceID)'"
         )
 
-        // 2. The high 64 bits must survive. A truncated ID zeroes them out here while `_atatus.p.tid`
+        // 2. The high 64 bits must survive. A truncated ID zeroes them out here while `meta._atatus.p.id`
         // still carries them, which is exactly the split that broke backend correlation.
         let traceID = try XCTUnwrap(span.traceID(), "`trace_id` should be parsable as `TraceID`")
         XCTAssertNotEqual(traceID.idHi, TraceID.invalidId, "The high 64 bits of the trace ID must not be truncated away")
         XCTAssertEqual(String(reportedTraceID.prefix(16)), String(format: "%016llx", traceID.idHi))
         XCTAssertEqual(String(reportedTraceID.suffix(16)), String(format: "%016llx", traceID.idLo))
 
-        // 3. `meta._atatus.p.tid` keeps carrying the same high 64 bits, for backwards compatibility.
+        // 3. `meta._atatus.p.id` keeps carrying the same high 64 bits, for backwards compatibility.
         let tid = try span.meta.tid()
         XCTAssertEqual(
             UInt64(tid, radix: 16),
             traceID.idHi,
-            "`_atatus.p.tid` must stay consistent with the high 64 bits of `trace_id`"
+            "`meta._atatus.p.id` must stay consistent with the high 64 bits of `trace_id`"
         )
 
         // 4. The ID the agent reports must equal the ID it propagated to the backend, so the mobile

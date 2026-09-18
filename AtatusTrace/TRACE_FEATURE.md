@@ -245,7 +245,7 @@ Set `urlSessionTracking` to connect Trace to the shared automatic `URLSession` n
 ### Span Enrichment
 - **Service**: `service` (default: SDK service value) — overrides the `service.name` tag.
 - **Global tags**: `tags: [String: OTTagValue]?` — applied to every span from the default tracer. `OTTagValue` is `Encodable & Sendable`; any custom tag type must conform to both.
-- **RUM bundling**: `bundleWithRumEnabled` (default: `true`) — adds `_dd.application.id`, `_dd.session.id`, `_dd.view.id`, `_dd.action.id` tags only when a RUM context exists and the RUM session is sampled in. Trace spans from sampled-out RUM sessions can still be sent according to Trace sampling, but they are not linked to RUM.
+- **RUM bundling**: `bundleWithRumEnabled` (default: `true`) — adds `_atatus.session.id`, `_atatus.view.id`, `_atatus.action.id` tags (no `_atatus.application.id`) only when a RUM context exists and the RUM session is sampled in. Trace spans from sampled-out RUM sessions can still be sent according to Trace sampling, but they are not linked to RUM.
 - **Network info**: `networkInfoEnabled` (default: `false`) — adds reachability, connection type, mobile carrier, etc. to every span and span log.
 
 ### Event Modification

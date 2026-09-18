@@ -39,8 +39,6 @@ public enum SpanTags {
     /// Internal tag used to encode error stack received from the user through `OTLogFields`.
     internal static let errorStack = "error.stack"
 
-    /// Internal tag used to encode the RUM application ID, linking the span to the current RUM session.
-    internal static let rumApplicationID = "_atatus.application.id"
     /// Internal tag used to encode the RUM session ID, linking the span to the current RUM session.
     internal static let rumSessionID = "_atatus.session.id"
     /// Internal tag used to encode the RUM view ID, linking the span to the current RUM session.

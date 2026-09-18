@@ -56,7 +56,8 @@ internal struct SpanEventBuilder: Sendable {
         if bundleWithRUM {
             // Enrich with RUM context
             if let rum = context.additionalContext(ofType: RUMCoreContext.self), rum.sessionSampler.isSampled {
-                tags[SpanTags.rumApplicationID] = rum.applicationID
+                // ATCHG: `_atatus.application.id` is no longer added -- Atatus spans do not carry a RUM application ID,
+                // matching `CoreTracerSpanToSpanEventMapper` in the Atatus Android agent.
                 tags[SpanTags.rumSessionID] = rum.sessionID
                 tags[SpanTags.rumViewID] = rum.viewID
                 tags[SpanTags.rumActionID] = rum.userActionID

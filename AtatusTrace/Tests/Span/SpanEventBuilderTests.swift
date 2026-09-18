@@ -702,7 +702,7 @@ class SpanEventBuilderTests: XCTestCase {
         )
 
         // Then
-        XCTAssertEqual(span.tags[SpanTags.rumApplicationID], rum.applicationID)
+        XCTAssertNil(span.tags["_atatus.application.id"], "Spans must not carry the RUM application ID")
         XCTAssertEqual(span.tags[SpanTags.rumSessionID], rum.sessionID)
         XCTAssertEqual(span.tags[SpanTags.rumViewID], rum.viewID)
         XCTAssertEqual(span.tags[SpanTags.rumActionID], rum.userActionID)
@@ -737,7 +737,6 @@ class SpanEventBuilderTests: XCTestCase {
         )
 
         // Then
-        XCTAssertNil(span.tags[SpanTags.rumApplicationID])
         XCTAssertNil(span.tags[SpanTags.rumSessionID])
         XCTAssertNil(span.tags[SpanTags.rumViewID])
         XCTAssertNil(span.tags[SpanTags.rumActionID])
@@ -773,7 +772,6 @@ class SpanEventBuilderTests: XCTestCase {
         )
 
         // Then
-        XCTAssertNil(span.tags[SpanTags.rumApplicationID])
         XCTAssertNil(span.tags[SpanTags.rumSessionID])
         XCTAssertNil(span.tags[SpanTags.rumViewID])
         XCTAssertNil(span.tags[SpanTags.rumActionID])
