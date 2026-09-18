@@ -1,18 +1,3 @@
-<p>
-    <a href="https://swiftpackageindex.com/atatus/atatus-sdk-ios">
-        <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fdd%2Fdd-sdk-ios%2Fbadge%3Ftype%3Dplatforms" />
-    </a>
-    <a href="https://swiftpackageindex.com/atatus/atatus-sdk-ios">
-        <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fdd%2Fdd-sdk-ios%2Fbadge%3Ftype%3Dswift-versions" />
-    </a>
-    <a href="https://swiftpackageindex.com/atatus/atatus-sdk-ios">
-        <img src="https://img.shields.io/github/v/release/atatus/atatus-sdk-ios?style=flat&label=Swift%20Package%20Index&color=red" />
-    </a>
-    <a href="https://cocoapods.org/pods/AtatusCore">
-        <img src="https://img.shields.io/github/v/release/atatus/atatus-sdk-ios?style=flat&label=CocoaPods" />
-    </a>
-</p>
-
 
 # Atatus SDK for iOS and tvOS
 
